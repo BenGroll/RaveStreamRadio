@@ -7,6 +7,8 @@ import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'dart:convert';
 import 'package:ravestreamradioapp/shared_state.dart';
 
+/// Forces String type on all Elements of a List.
+/// Elements that can't take String type are deleted.
 List<String> forceStringType(List<dynamic> inList) {
   List<String> outlist = [];
   for (var element in inList) {
@@ -17,6 +19,8 @@ List<String> forceStringType(List<dynamic> inList) {
   return outlist;
 }
 
+/// Forces int type on all Elements of a List.
+/// Elements that can't take int type are deleted.
 List<int> forceintType(List<dynamic> inList) {
   List<int> outlist = [];
   for (var element in inList) {
@@ -27,6 +31,8 @@ List<int> forceintType(List<dynamic> inList) {
   return outlist;
 }
 
+/// Forces DocumentReferene type on all Elements of a List.
+/// Elements that can't take DocumentReference type are deleted.
 List<DocumentReference> forceDocumentReferenceType(List<dynamic> inList) {
   List<DocumentReference> outlist = [];
   for (var element in inList) {
@@ -39,6 +45,8 @@ List<DocumentReference> forceDocumentReferenceType(List<dynamic> inList) {
   return outlist;
 }
 
+/// Converts given [query] into a List<Map<String, dynamic>>
+/// Needet to work with data queried from Firestore
 List<Map<String, dynamic>> querySnapshotToMapList(QuerySnapshot query) {
   List<Map<String, dynamic>> documents = [];
   query.docs.forEach((element) {
@@ -46,7 +54,9 @@ List<Map<String, dynamic>> querySnapshotToMapList(QuerySnapshot query) {
   });
   return documents;
 }
-
+/// Takes a Map<String, dynamic> 
+///
+/// Returns Map<DocumentReference, String>?
 Map<DocumentReference<Object?>, String>?
     forceDocumentReferenceStringMapTypeFromStringDynamic(
         Map<String, dynamic> input) {
@@ -57,16 +67,21 @@ Map<DocumentReference<Object?>, String>?
   return outmap;
 }
 
+/// Takes Map<String, dynamic>?
+///
+/// Returns Map<String, String>
 Map<String, String>? forceStringStringMapFromStringDynamic(
     Map<String, dynamic>? inputmap) {
   Map<String, String> outputmap = {};
   inputmap?.forEach((key, value) {
     outputmap[key] = value.toString();
   });
-
   return outputmap;
 }
 
+/// Converts unix timestamp to readable date and Time
+///
+/// Format: DD:MM:YY hh:mm
 String timestamp2readablestamp(Timestamp? timestamp) {
   DateTime? date = timestamp?.toDate();
   if (date == null) {
@@ -76,12 +91,19 @@ String timestamp2readablestamp(Timestamp? timestamp) {
   }
 }
 
+/// Converts Firebase Type Timestamp to Dart Timestamp
 Timestamp? firebaseTimestampToTimeStamp(Timestamp? timestamp) {
   return timestamp != null
       ? Timestamp.fromMillisecondsSinceEpoch(timestamp.seconds * 1000)
       : null;
 }
-
+/// Converts String into Multiple Textspans
+///
+/// Used for saving Strings with multiline formatting and display them correctly
+/// 
+/// Newline Pattern: {/}
+///
+/// TBA: Takes nl-Pattern as argument
 List<TextSpan> stringToTextSpanList(String mlinestring) {
   List<TextSpan> returnlist = [];
   mlinestring.split("{/}").forEach((element) {
@@ -90,6 +112,7 @@ List<TextSpan> stringToTextSpanList(String mlinestring) {
   return returnlist;
 }
 
+/// The prefix used to access the different branches of firestore database
 String get branchPrefix {
   if (selectedbranch.value == ServerBranches.develop) {
     return "dev.";
@@ -103,13 +126,14 @@ String get branchPrefix {
     throw Exception("Prefix for selected Branch not set.");
   }
 }
-
+/// Returns a String of random characters with length len
 String getRandString(int len) {
   var random = Random.secure();
   var values = List<int>.generate(len, (i) => random.nextInt(255));
   return base64UrlEncode(values);
 }
 
+/// Widget to support asynchronous loading of event titles
 class EventTitle extends StatelessWidget {
   final TextStyle style;
   final dbc.Event event;
@@ -128,6 +152,11 @@ class EventTitle extends StatelessWidget {
   }
 }
 
+/// Returns Event title
+/// 
+/// Nullsafe
+///
+/// Falls back to host if no title specified
 Future<String> getEventTitle(dbc.Event event) async {
   if (event.title == null) {
     if (event.hostreference == null ||
@@ -147,6 +176,7 @@ Future<String> getEventTitle(dbc.Event event) async {
   }
 }
 
+/// returns true if event with [eventid] is hosted by [user]
 bool isEventHostedByUser(String eventid, dbc.User? user) {
   if (user == null) {
     return false;
