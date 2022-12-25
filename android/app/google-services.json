@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "984403060226",
+    "project_id": "ravestreammobileapp",
+    "storage_bucket": "ravestreammobileapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:984403060226:android:cd278d722429078602291b",
+        "android_client_info": {
+          "package_name": "com.example.ravestreamradioapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "984403060226-v7m0bkt0karolquf75es7hg41gdpafgk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDy4Dw4xTKPNz2XqxKYNn_YnaBVYQmKG4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "984403060226-v7m0bkt0karolquf75es7hg41gdpafgk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "984403060226-2mic36kktqh28ellrv55g5pd9u8k1r2e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.ravestreamradioapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:984403060226:android:dad7709dd75477ed02291b",
+        "android_client_info": {
+          "package_name": "de.ravestream.radio"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "984403060226-v7m0bkt0karolquf75es7hg41gdpafgk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDy4Dw4xTKPNz2XqxKYNn_YnaBVYQmKG4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "984403060226-v7m0bkt0karolquf75es7hg41gdpafgk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "984403060226-2mic36kktqh28ellrv55g5pd9u8k1r2e.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.ravestreamradioapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
