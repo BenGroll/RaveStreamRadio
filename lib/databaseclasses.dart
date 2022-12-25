@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/database.dart' show db;
 import 'package:ravestreamradioapp/conv.dart';
 
+/// Template class for Events to avoid type and valueerrors
 class Event {
   final String? title;
   final String eventid;
@@ -170,7 +171,7 @@ class Event {
         savedcount.hashCode;
   }
 }
-
+/// Template class for Groups to avoid type and valueerrors
 class Group {
   final String title;
   final String groupid;
@@ -267,6 +268,7 @@ class Group {
   }
 }
 
+/// Template class for Users to avoid type and valueerrors
 class User {
   String username;
   String alias;
