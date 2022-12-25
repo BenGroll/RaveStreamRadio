@@ -8,6 +8,7 @@ import 'package:ravestreamradioapp/shared_state.dart';
 
 var db = FirebaseFirestore.instance;
 
+/// adds dbc.demoUser to database of current branch
 Future addTestUser() async {
   await db
       .collection("${branchPrefix}users")
@@ -19,6 +20,7 @@ Future addTestUser() async {
   return Future.delayed(Duration.zero);
 }
 
+/// adds dbc.demoEvent to database of current branch
 Future addTestEvent() async {
   /*print(
       "demoEvent guestlist Runtime Type: ${dbc.demoEvent.guestlist.runtimeType}");*/
@@ -32,6 +34,7 @@ Future addTestEvent() async {
   return Future.delayed(Duration.zero);
 }
 
+/// adds dbc.demoGroup to database of current branch
 Future addTestGroup() async {
   await db
       .collection("${branchPrefix}groups")
@@ -43,6 +46,7 @@ Future addTestGroup() async {
   return Future.delayed(Duration.zero);
 }
 
+/// Uploads event to database
 Future<String?> uploadEventToDatabase(dbc.Event event) async {
   await db
       .collection("${branchPrefix}events")
@@ -50,7 +54,7 @@ Future<String?> uploadEventToDatabase(dbc.Event event) async {
       .set(event.toMap());
   return Future.delayed(Duration(seconds: 2));
 }
-
+/// Adds 10 demoevents to current branch.
 Future setTestDBScenario() async {
   for (int i = 0; i < 10; i++) {
     dbc.Event testevent = dbc.Event(
@@ -90,6 +94,11 @@ Future<dbc.User?> tryUserLogin(String username, String password) async {
   }
 }
 
+/// Tries to login with saved login credrntials
+///
+/// Returns dbc.User Object if successfull, null on fail
+///
+/// TBA for web, only typesafe, defaults to failed login on web
 Future<dbc.User?> doStartupLoginDataCheck() async {
   //Uncomment the following line to manually change the saved logindata
   //await files.writeLoginData("", "");
@@ -105,6 +114,8 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
       savedlogindata["username"], savedlogindata["password"]);
 }
 
+//// Returns total count of Events ending after today
+//// TBA Get event count from given query, not only default query
 Future<int> getEventCount() async {
   int itemcount = await db
       .collection("${branchPrefix}events")
