@@ -2,11 +2,13 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
+import 'package:ravestreamradioapp/screens/devsettingsscreen.dart';
 import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:ravestreamradioapp/screens/loginscreen.dart';
 import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 class ProfileScreen extends StatefulWidget {
   final dbc.User? loggedinas;
@@ -31,8 +33,10 @@ class NotLoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const cw.NavBar(),
       backgroundColor: cl.nearly_black,
       appBar: AppBar(
+        leading: const cw.OpenSidebarButton(),
         title: const Text("Not logged in."),
         centerTitle: true,
       ),
@@ -47,7 +51,7 @@ class NotLoggedInScaffold extends StatelessWidget {
               onPressed: () {
                 //Navigate to Login Screen
                 kIsWeb
-                ? Beamer.of(context).beamToNamed("/login/")
+                ? Beamer.of(context).beamToNamed("/login")
                 : Navigator.of(context).push(
                     MaterialPageRoute(builder: ((context) => LoginScreen())));
               },
@@ -64,8 +68,10 @@ class LoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const cw.NavBar(),
       backgroundColor: cl.nearly_black,
       appBar: AppBar(
+        leading: const cw.OpenSidebarButton(),
         title: Text(loggedinas.username),
         actions: [
           IconButton(
@@ -78,6 +84,9 @@ class LoggedInScaffold extends StatelessWidget {
               icon: Icon(Icons.logout))
         ],
       ),
+      body : selectedbranch.value == ServerBranches.develop
+      ? DevSettingsScreen()
+      : Container()
     );
   }
 }

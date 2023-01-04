@@ -11,6 +11,7 @@ import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:flutter/scheduler.dart';
 
 enum Screen { general, description, links }
 
@@ -22,12 +23,18 @@ ValueNotifier<DateTime?> end_date = ValueNotifier<DateTime?>(null);
 ValueNotifier<TimeOfDay?> end_time = ValueNotifier<TimeOfDay?>(null);
 String eventidcontent = "";
 String eventtitlecontent = "";
+String eventlocationcontent = "";
+ValueNotifier<String> descriptiontext = ValueNotifier("");
 
 Widget mapScreenToWidget(Screen selection) {
   switch (selection) {
     case Screen.general:
       {
         return GeneralSettingsPage();
+      }
+    case Screen.description:
+      {
+        return const DescriptionEditingPage();
       }
     default:
       return Container();
@@ -77,6 +84,7 @@ class EventCreationScreen extends StatelessWidget {
           return WillPopScope(
               onWillPop: () async {
                 return await showDialog(
+                    barrierDismissible: false,
                     context: context,
                     // ignore: prefer_const_constructors
                     builder: ((context) => AlertDialog(
@@ -130,9 +138,7 @@ class EventCreationScreen extends StatelessWidget {
                                         title: const Text("Submit Event?",
                                             style:
                                                 TextStyle(color: Colors.white)),
-                                        content: const Text('''
-                                            Upload?
-                                          ''',
+                                        content: const Text("",
                                             maxLines: 3,
                                             style:
                                                 TextStyle(color: Colors.white)),
@@ -142,84 +148,78 @@ class EventCreationScreen extends StatelessWidget {
                                                 Navigator.of(context).pop();
                                               },
                                               child:
-                                                  const Text("No, go back.")),
+                                                  const Text("No, go back.",style: TextStyle(
+                                                    color: Colors.white
+                                                  ),)),
                                           TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                                showDialog(
+                                              onPressed: () async {
+                                                /*showDialog(
                                                     barrierDismissible: false,
                                                     context: context,
                                                     builder: ((context) {
-                                                      db
-                                                          .uploadEventToDatabase(
-                                                        dbc.Event(
-                                                            eventid:
-                                                                eventidcontent,
-                                                            title:
-                                                                eventtitlecontent,
-                                                            hostreference: db.db
-                                                                .doc(
-                                                                    "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
-                                                            begin: beginning_date != null
-                                                                ? Timestamp.fromDate(DateTime(
-                                                                    beginning_date
-                                                                        .value!
-                                                                        .year,
-                                                                    beginning_date
-                                                                        .value!
-                                                                        .month,
-                                                                    beginning_date
-                                                                        .value!
-                                                                        .day,
-                                                                    beginning_time.value?.hour ??
-                                                                        0,
-                                                                    beginning_time.value?.minute ??
-                                                                        0))
-                                                                : null,
-                                                            end: end_date != null
-                                                                ? Timestamp.fromDate(DateTime(
-                                                                    end_date.value!.year,
-                                                                    end_date.value!.month,
-                                                                    end_date.value!.day,
-                                                                    end_time.value?.hour ?? 0,
-                                                                    end_time.value?.minute ?? 0))
-                                                                : null,
-                                                            guestlist: {
-                                                              db.db.doc(
-                                                                      "${branchPrefix}users/${currently_loggedin_as.value!.username}"):
-                                                                  "Host"
-                                                            }),
-                                                      )
-                                                          .then((value) async {
-                                                        await reloadEventPage();
-                                                        // ignore: use_build_context_synchronously
-                                                        currently_loggedin_as
-                                                                .value =
-                                                            currently_loggedin_as
-                                                                .value;
-                                                        Beamer.of(context)
-                                                            .beamToNamed(
-                                                                "/events/");
-                                                        sleep(const Duration(
-                                                            seconds: 1));
-                                                        // ignore: use_build_context_synchronously
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                                cw.hintSnackBar(
-                                                                    "Event Created Successfully!"));
-                                                      });
                                                       return AlertDialog(
-                                                        backgroundColor: cl.deep_black,
+                                                        backgroundColor:
+                                                            cl.deep_black,
                                                         title: const Text(
-                                                            "Uploading event...",
-                                                            style: TextStyle(color: Colors.white),
-                                                            ),
+                                                          "Uploading event...",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
                                                       );
-                                                    }));
+                                                    }));*/
+                                                await db.uploadEventToDatabase(
+                                                    dbc.Event(
+                                                  eventid: eventidcontent,
+                                                  title: eventtitlecontent,
+                                                  hostreference: db.db.doc(
+                                                      "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
+                                                  description:
+                                                      descriptiontext.value,
+                                                  end: end_date.value == null
+                                                      ? null
+                                                      : Timestamp.fromDate(
+                                                          DateTime(
+                                                              end_date
+                                                                  .value!.year,
+                                                              end_date
+                                                                  .value!.month,
+                                                              end_date
+                                                                  .value!.day,
+                                                              end_time.value
+                                                                      ?.hour ??
+                                                                  0,
+                                                              end_time.value
+                                                                      ?.minute ??
+                                                                  0)),
+                                                  begin: beginning_date
+                                                              .value ==
+                                                          null
+                                                      ? null
+                                                      : Timestamp.fromDate(DateTime(
+                                                          beginning_date
+                                                              .value!.year,
+                                                          beginning_date
+                                                              .value!.month,
+                                                          beginning_date
+                                                              .value!.day,
+                                                          beginning_time.value
+                                                                  ?.hour ??
+                                                              0,
+                                                          beginning_time.value
+                                                                  ?.minute ??
+                                                              0)),
+                                                ));
+                                                Navigator.of(context).pop();
+                                                kIsWeb
+                                                    ? Beamer.of(context)
+                                                        .popToNamed("/events")
+                                                    : Navigator.of(context)
+                                                        .pop();
                                               },
-                                              child:
-                                                  const Text("Yes, submit.", style: TextStyle(color: Colors.white))),
+                                              child: const Text("Yes, submit.",
+                                                  style: TextStyle(
+                                                      color: Colors.white))),
                                         ],
                                       );
                                     }));
@@ -376,8 +376,8 @@ class GeneralSettingsPage extends StatelessWidget {
                                                   initialDate: DateTime.now(),
                                                   firstDate: DateTime.now(),
                                                   lastDate: DateTime(
-                                                      DateTime.now().year +
-                                                          20));
+                                                    DateTime.now().year + 20,
+                                                  ));
                                           if (picked_date != null) {
                                             beginning_date.value = picked_date;
                                           }
@@ -491,8 +491,30 @@ class GeneralSettingsPage extends StatelessWidget {
                       ],
                     ),
                   );
-                }))
+                })),
+                TextFormField()
           ],
         ));
+  }
+}
+
+class DescriptionEditingPage extends StatelessWidget {
+  const DescriptionEditingPage({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      style: const TextStyle(color: Colors.white),
+      keyboardType: TextInputType.multiline,
+      maxLines: null,
+      autofocus: true,
+      expands: true,
+      cursorColor: Colors.white,
+      onChanged: (value) {
+        descriptiontext.value = value;
+      },
+      onSubmitted: (value) {
+        descriptiontext.value = value;
+      },
+    );
   }
 }

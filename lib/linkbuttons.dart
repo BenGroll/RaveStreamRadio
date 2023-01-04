@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/screens/overviewpages/useroverviewpage.dart';
+import 'package:ravestreamradioapp/screens/overviewpages/groupoverviewpage.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/eventoverviewpage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'shared_state.dart';
@@ -15,10 +16,10 @@ Widget buildLinkButtonFromRef(DocumentReference? doc, TextStyle labelstyle) {
   if (doc.path.contains("users/")) {
     return UsernameLinkButton(target: doc, style: labelstyle);
   }
-  if (doc.path.startsWith("groups/")) {
+  if (doc.path.contains("groups/")) {
     return GroupLinkButton(target: doc, style: labelstyle);
   }
-  if (doc.path.startsWith("events/")) {
+  if (doc.path.contains("events/")) {
     return EventLinkButton(target: doc, style: labelstyle);
   }
   return Text("Not a linkable entry.");
@@ -34,7 +35,6 @@ class UsernameLinkButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
         onPressed: () {
-          print("/users/${target.id}");
           kIsWeb
               ? Beamer.of(context).beamToNamed("/users/${target.id}")
               : Navigator.of(context).push(MaterialPageRoute(
@@ -57,7 +57,8 @@ class GroupLinkButton extends StatelessWidget {
     return TextButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => UserOverviewPage(username: target.id)));
+              builder: (context) =>
+                  GroupOverviewPage(groupid: "${target.id}")));
         },
         child: Text(
           "@${target.id}",

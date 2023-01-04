@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
+import 'package:ravestreamradioapp/debugsettings.dart';
 import 'colors.dart' as cl;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'shared_state.dart' as shs;
@@ -85,8 +86,9 @@ Future writeLoginDataWeb(String username, String password) async {
   return Future;
 }
 /// Not Working RN, Only typesafe
+/// Define if function should default to error or success with DEBUG_LOGIN_RETURN_TRUE_ON_WEB
 Future<Map> readLoginDataWeb() async {
-  return {"username": "", "password": ""};
+  return DEBUG_LOGIN_RETURN_TRUE_ON_WEB ? {"username": "demouser", "password": ""} : {"username": "", "password": ""};
 }
 
 Future<Widget?> getImage(String imagepath) async {

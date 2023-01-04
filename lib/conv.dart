@@ -54,7 +54,8 @@ List<Map<String, dynamic>> querySnapshotToMapList(QuerySnapshot query) {
   });
   return documents;
 }
-/// Takes a Map<String, dynamic> 
+
+/// Takes a Map<String, dynamic>
 ///
 /// Returns Map<DocumentReference, String>?
 Map<DocumentReference<Object?>, String>?
@@ -78,7 +79,6 @@ Map<String, String>? forceStringStringMapFromStringDynamic(
   });
   return outputmap;
 }
-
 /// Converts unix timestamp to readable date and Time
 ///
 /// Format: DD:MM:YY hh:mm
@@ -90,7 +90,6 @@ String timestamp2readablestamp(Timestamp? timestamp) {
     return "${date.day < 10 ? "0${date.day}" : date.day.toString()}.${date.month < 10 ? "0${date.month}" : date.month.toString()}.${date.year} ${date.hour < 10 ? "0${date.hour}" : date.hour.toString()}:${date.minute < 10 ? "0${date.minute}" : date.minute.toString()}";
   }
 }
-
 /// Converts Firebase Type Timestamp to Dart Timestamp
 Timestamp? firebaseTimestampToTimeStamp(Timestamp? timestamp) {
   return timestamp != null
@@ -100,7 +99,7 @@ Timestamp? firebaseTimestampToTimeStamp(Timestamp? timestamp) {
 /// Converts String into Multiple Textspans
 ///
 /// Used for saving Strings with multiline formatting and display them correctly
-/// 
+///
 /// Newline Pattern: {/}
 ///
 /// TBA: Takes nl-Pattern as argument
@@ -111,7 +110,6 @@ List<TextSpan> stringToTextSpanList(String mlinestring) {
   });
   return returnlist;
 }
-
 /// The prefix used to access the different branches of firestore database
 String get branchPrefix {
   if (selectedbranch.value == ServerBranches.develop) {
@@ -132,7 +130,6 @@ String getRandString(int len) {
   var values = List<int>.generate(len, (i) => random.nextInt(255));
   return base64UrlEncode(values);
 }
-
 /// Widget to support asynchronous loading of event titles
 class EventTitle extends StatelessWidget {
   final TextStyle style;
@@ -151,9 +148,8 @@ class EventTitle extends StatelessWidget {
         }));
   }
 }
-
 /// Returns Event title
-/// 
+///
 /// Nullsafe
 ///
 /// Falls back to host if no title specified
@@ -175,7 +171,6 @@ Future<String> getEventTitle(dbc.Event event) async {
     return event.title ?? "This should never display";
   }
 }
-
 /// returns true if event with [eventid] is hosted by [user]
 bool isEventHostedByUser(String eventid, dbc.User? user) {
   if (user == null) {
@@ -188,4 +183,11 @@ bool isEventHostedByUser(String eventid, dbc.User? user) {
   }
   return false;
 }
-
+Map<DocumentReference, dynamic>? mapStringDynamic2DocRefDynamic(
+    Map<String, dynamic> input) {
+  Map<DocumentReference, dynamic> out = {};
+  input.keys.forEach((element) {
+    out[db.db.doc(element)] = input[element];
+  });
+  return out;
+}

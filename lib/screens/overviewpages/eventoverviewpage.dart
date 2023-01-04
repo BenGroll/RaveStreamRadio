@@ -174,6 +174,7 @@ class EventOverviewPage extends StatelessWidget {
                                                   maxLines: 50,
                                                   softWrap: true,
                                                   text: TextSpan(
+                                                    style: const TextStyle(color: Colors.white),
                                                       children:
                                                           stringToTextSpanList(
                                                               event.description ??

@@ -10,17 +10,29 @@ import 'package:ravestreamradioapp/main.dart' as main;
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:beamer/beamer.dart';
+import 'package:ravestreamradioapp/screens/overviewpages/groupoverviewpage.dart';
 
 Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   // Routes for web navigation
-  "/": (context, state, data) => const BeamPage(child: main.MainRoute(), title: "Events"),
+  "/": (context, state, data) =>
+      const BeamPage(child: main.MainRoute(), title: "Events"),
   "/events": (context, state, data) => const BeamPage(child: main.MainRoute()),
   "/favorites": (context, state, data) =>
       const BeamPage(child: main.MainRoute(startingscreen: Screens.favourites)),
   "/groups": (context, state, data) =>
       const BeamPage(child: main.MainRoute(startingscreen: Screens.forums)),
+  "/groups/:groupid": (context, state, data) {
+    final groupid = state.pathParameters["groupid"];
+    return BeamPage(
+        key: ValueKey("Group - $groupid"),
+        //type: BeamPageType.scaleTransition,
+        title: "@$groupid",
+        child: groupid == null
+            ? const Text("Empty Userid")
+            : GroupOverviewPage(groupid: groupid));
+  },
   "/profile": (context, state, data) =>
-      const BeamPage(child: main.MainRoute(startingscreen: Screens.profile))  ,
+      const BeamPage(child: main.MainRoute(startingscreen: Screens.profile)),
   "/users": (context, state, data) => const Text("No user provided"),
   "/users/:username": (context, state, data) {
     final username = state.pathParameters["username"];
@@ -33,7 +45,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
             : UserOverviewPage(username: username));
   },
 
-  "/events/:eventid": (context, state, data){
+  "/events/:eventid": (context, state, data) {
     final eventid = state.pathParameters["eventid"]!;
     return BeamPage(
         key: ValueKey("Event - $eventid"),

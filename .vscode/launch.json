@@ -5,19 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Flutter Port 42069",
+            "name": "Flutter Debug",
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug",
         },
         {
-            "name": "ravestreamradioapp (profile mode)",
+            "name": "Flutter Profile",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile",
         },
         {
-            "name": "ravestreamradioapp (release mode)",
+            "name": "Flutter Release",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",

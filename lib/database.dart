@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
+import 'package:ravestreamradioapp/debugsettings.dart';
 import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'testdbscenario.dart';
 
 var db = FirebaseFirestore.instance;
 
@@ -47,33 +49,50 @@ Future addTestGroup() async {
 }
 
 /// Uploads event to database
-Future<String?> uploadEventToDatabase(dbc.Event event) async {
+Future uploadEventToDatabase(dbc.Event event) async {
   await db
       .collection("${branchPrefix}events")
       .doc(event.eventid)
       .set(event.toMap());
-  return Future.delayed(Duration(seconds: 2));
-}
-/// Adds 10 demoevents to current branch.
-Future setTestDBScenario() async {
-  for (int i = 0; i < 10; i++) {
-    dbc.Event testevent = dbc.Event(
-        eventid: "testevent$i",
-        //hostreference: db.doc(branchPrefix + "users/demouser"),
-        end: Timestamp.fromDate(DateTime.now().add(Duration(days: 14 + i))));
-    try {
-      db.doc("${branchPrefix}events/testevent$i").set(testevent.toMap());
-    } catch (e) {
-      print(e);
+  if (event.hostreference != null) {
+    Map<String, dynamic>? hostdata = await event.hostreference!
+        .get()
+        .then((value) => value.data() as Map<String, dynamic>);
+    if (hostdata == null) {
+      return Future.delayed(Duration.zero);
     }
+    List hostedevents = hostdata["events"];
+    hostedevents.add(db.doc("${branchPrefix}events/${event.eventid}"));
+    hostdata["events"] = hostedevents;
+    await event.hostreference!.set(hostdata);
   }
+  return Future.delayed(Duration.zero);
+}
+
+/// Adds demoevents to current branch.
+Future setTestDBScenario() async {
+  testuserlist.forEach((element) async {
+    await db
+        .doc("${branchPrefix}users/${element.username}")
+        .set(element.toMap());
+  });
+  testgrouplist.forEach((element) async {
+    await db
+        .doc("${branchPrefix}groups/${element.groupid}")
+        .set(element.toMap());
+  });
+  testeventlist.forEach((dbc.Event element) async {
+    await uploadEventToDatabase(element);
+  });
+  return Future;
 }
 
 /// TBA for Web
 /// Returns Failed attempt on Web until Filesystem alternative is worked out
 /// Only typesafe on web, doesnt work.
 Future<dbc.User?> tryUserLogin(String username, String password) async {
-  if (kIsWeb) return null;
+  if (kIsWeb && DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return dbc.demoUser;
+  if (kIsWeb && !DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return null;
   try {
     print("Trying to login using username : $username, password: $password");
     if (username.isEmpty || password.isEmpty) {
@@ -105,6 +124,11 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
   //Uncomment the following line to manually add an event
   //db.collection("events").doc(dbc.demoEvent.eventid).set(dbc.demoEvent.toMap());
   //await setTestDBScenario();
+  db.doc("/dev.groups/rsr").set(dbc.Group(
+        groupid: "rsr",
+        title: "RaveStreamRadio",
+        members_roles: {db.doc("dev.users/admin"): "Founder"},
+      ).toMap());
   //print(await saveEventToUserReturnWasSaved(dbc.demoEvent, dbc.demoUser));
   Map savedlogindata = kIsWeb
       ? await files.readLoginDataWeb()
@@ -114,8 +138,18 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
       savedlogindata["username"], savedlogindata["password"]);
 }
 
-//// Returns total count of Events ending after today
-//// TBA Get event count from given query, not only default query
+Future<dbc.User?> getUser(String username) async {
+  DocumentSnapshot userdoc =
+      await db.doc("${branchPrefix}users/$username").get();
+  if (userdoc.exists && userdoc.data() != null) {
+    return dbc.User.fromMap(userdoc.data() as Map<String, dynamic>);
+  } else {
+    return null;
+  }
+}
+
+/// Returns total count of Events ending after today
+/// TBA Get event count from given query, not only default query
 Future<int> getEventCount() async {
   int itemcount = await db
       .collection("${branchPrefix}events")
@@ -233,4 +267,36 @@ Future<dbc.Event?> getEvent(String eventid) async {
     return dbc.Event.fromMap(snap.data() as Map<String, dynamic>);
   }
   return null;
+}
+
+Future<List<dbc.Group>> showJoinedGroupsForUser(String username) async {
+  dbc.User? user = await getUser(username);
+  if (user == null) return [];
+  List<DocumentReference> docrefs = user.joined_groups;
+  List<dbc.Group> groups = [];
+
+  for (int i = 0; i < docrefs.length; i++) {
+    dbc.Group singlegroup = await dbc.Group.fromMap(await docrefs[i]
+        .get()
+        .then((value) => value.data() as Map<String, dynamic>));
+    groups.add(singlegroup);
+  }
+  return groups;
+}
+/*
+bool userIsAdminOfGroup(dbc.User user, String groupid) {
+  for (int i = 0; i < user.joined_groups.length; i++) {
+    DocumentReference docRef = user.joined_groups[i];
+    if (docRef.id)
+  }
+}
+*/
+
+bool hasGroupPinned(dbc.Group group, dbc.User user) {
+  for (int i = 0; i < user.pinned_groups.length; i++) {
+    if (user.pinned_groups[i].id == group.groupid) {
+      return true;
+    }
+  }
+  return false;
 }

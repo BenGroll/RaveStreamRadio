@@ -25,14 +25,14 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
+final routerDelegate = BeamerDelegate(
+        locationBuilder: RoutesLocationBuilder(routes: webroutes));
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final routerDelegate = BeamerDelegate(
-        locationBuilder: RoutesLocationBuilder(routes: webroutes));
     return MaterialApp.router(
       routeInformationParser: BeamerParser(),
       routerDelegate: routerDelegate,
@@ -50,29 +50,34 @@ class MainRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-        child: FutureBuilder(
-            future: Firebase.initializeApp(
-                options: DefaultFirebaseOptions.currentPlatform),
-            builder: (BuildContext context, AsyncSnapshot snap) {
-              if (snap.connectionState == ConnectionState.done) {
-                return FutureBuilder(
-                    future: db.doStartupLoginDataCheck(),
-                    builder: (context, AsyncSnapshot snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return SafeArea(
-                            minimum: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                            child: HomeScreen(
-                                loggedinas: snapshot.data,
-                                startingscreen: startingscreen));
-                      } else {
-                        return const SpinKitRotatingCircle(
-                            color: Colors.white, size: 50.0);
-                      }
-                    });
-              } else {
-                return const SpinKitRotatingCircle(
-                    color: Colors.white, size: 50.0);
-              }
-            }));
+        child: ValueListenableBuilder(
+          valueListenable: selectedbranch,
+          builder: (context, snapshot, foo) {
+            return FutureBuilder(
+                future: Firebase.initializeApp(
+                    options: DefaultFirebaseOptions.currentPlatform),
+                builder: (BuildContext context, AsyncSnapshot snap) {
+                  if (snap.connectionState == ConnectionState.done) {
+                    return FutureBuilder(
+                        future: db.doStartupLoginDataCheck(),
+                        builder: (context, AsyncSnapshot snapshot) {
+                          if (snapshot.connectionState == ConnectionState.done) {
+                            return SafeArea(
+                                minimum: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                                child: HomeScreen(
+                                    loggedinas: snapshot.data,
+                                    startingscreen: startingscreen));
+                          } else {
+                            return const SpinKitRotatingCircle(
+                                color: Colors.white, size: 50.0);
+                          }
+                        });
+                  } else {
+                    return const SpinKitRotatingCircle(
+                        color: Colors.white, size: 50.0);
+                  }
+                });
+          }
+        ));
   }
 }

@@ -105,10 +105,8 @@ class Event {
           title: inputmap["title"],
           eventid: inputmap["eventid"],
           hostreference: inputmap["hostreference"],
-          begin: firebaseTimestampToTimeStamp(
-              inputmap["begin"]),
-          end: firebaseTimestampToTimeStamp(
-              inputmap["end"]),
+          begin: firebaseTimestampToTimeStamp(inputmap["begin"]),
+          end: firebaseTimestampToTimeStamp(inputmap["end"]),
           location: inputmap["location"],
           locationname: inputmap["locationname"],
           age: inputmap["age"],
@@ -171,21 +169,22 @@ class Event {
         savedcount.hashCode;
   }
 }
+
 /// Template class for Groups to avoid type and valueerrors
 class Group {
-  final String title;
+  final String? title;
   final String groupid;
   final dynamic design;
-  final Map<String, MaterialColor> custom_roles;
+  final Map<String, MaterialColor>? custom_roles;
   final Map<DocumentReference, dynamic>? members_roles;
   final List<DocumentReference> events;
   Group({
-    required this.title,
+    this.title,
     required this.groupid,
     this.design = null,
-    required this.custom_roles,
+    this.custom_roles,
     required this.members_roles,
-    required this.events,
+    this.events = const [],
   });
 
   Group copyWith({
@@ -212,10 +211,8 @@ class Group {
       'groupid': groupid,
       'design': design,
       'custom_roles': custom_roles,
-      'members_roles': members_roles!.map((dynamic key, value) {
-        key = key.path;
-        value = value;
-        return MapEntry(key, value);
+      'members_roles': members_roles!.map((DocumentReference key, value) {
+        return MapEntry(key.path, value);
       }),
       'events': events.map((x) => x).toList(),
     };
@@ -223,16 +220,12 @@ class Group {
 
   factory Group.fromMap(Map<String, dynamic> map) {
     return Group(
-        title: map['title'] as String,
+        title: map['title'] as String?,
         groupid: map['groupid'] as String,
         design: map['design'] as dynamic,
-        custom_roles: map['custom_roles'] as Map<String, MaterialColor>,
-        members_roles: map['members_roles'].map((dynamic key, value) {
-          key = db.doc(key.path);
-          value = value;
-          return MapEntry(key, value);
-        }),
-        events: forceDocumentReferenceType(['events']));
+        custom_roles: map['custom_roles'] as Map<String, MaterialColor>?,
+        members_roles: mapStringDynamic2DocRefDynamic(map["members_roles"]),
+        events: forceDocumentReferenceType(map['events']));
   }
 
   String toJson() => json.encode(toMap());
@@ -242,7 +235,7 @@ class Group {
 
   @override
   String toString() {
-    return 'Group(title: $title, groupid: $groupid, : $design, custom_roles: $custom_roles, members_roles: $members_roles, events: $events)';
+    return 'Group(title: $title, groupid: $groupid, Design : $design, custom_roles: $custom_roles, members_roles: $members_roles, events: $events)';
   }
 
   @override
@@ -281,20 +274,22 @@ class User {
   List<DocumentReference> saved_events;
   List<DocumentReference> followed_groups;
   List<DocumentReference> close_friends;
-  User({
-    required this.username,
-    required this.alias,
-    required this.password,
-    this.description,
-    this.mail,
-    this.profile_picture,
-    this.events = const <DocumentReference>[],
-    this.joined_groups = const <DocumentReference>[],
-    this.saved_events = const <DocumentReference>[],
-    this.followed_groups = const <DocumentReference>[],
-    this.close_friends = const <DocumentReference>[],
-  });
-
+  List<DocumentReference> pinned_groups;
+  bool? is_dev;
+  User(
+      {required this.username,
+      required this.alias,
+      required this.password,
+      this.description,
+      this.mail,
+      this.profile_picture,
+      this.events = const <DocumentReference>[],
+      this.joined_groups = const <DocumentReference>[],
+      this.saved_events = const <DocumentReference>[],
+      this.followed_groups = const <DocumentReference>[],
+      this.close_friends = const <DocumentReference>[],
+      this.pinned_groups = const <DocumentReference>[],
+      this.is_dev = false});
   User copyWith({
     String? username,
     String? alias,
@@ -302,25 +297,28 @@ class User {
     String? description,
     String? mail,
     String? profile_picture,
+    bool? is_dev,
     List<DocumentReference>? events,
     List<DocumentReference>? joined_groups,
     List<DocumentReference>? saved_events,
     List<DocumentReference>? followed_groups,
     List<DocumentReference>? close_friends,
+    List<DocumentReference>? pinned_groups,
   }) {
     return User(
-      username: username ?? this.username,
-      alias: alias ?? this.alias,
-      password: password ?? this.password,
-      description: description ?? this.description,
-      mail: mail ?? this.mail,
-      profile_picture: profile_picture ?? this.profile_picture,
-      events: events ?? this.events,
-      joined_groups: joined_groups ?? this.joined_groups,
-      saved_events: saved_events ?? this.saved_events,
-      followed_groups: followed_groups ?? this.followed_groups,
-      close_friends: close_friends ?? this.close_friends,
-    );
+        username: username ?? this.username,
+        alias: alias ?? this.alias,
+        password: password ?? this.password,
+        description: description ?? this.description,
+        mail: mail ?? this.mail,
+        profile_picture: profile_picture ?? this.profile_picture,
+        events: events ?? this.events,
+        joined_groups: joined_groups ?? this.joined_groups,
+        saved_events: saved_events ?? this.saved_events,
+        followed_groups: followed_groups ?? this.followed_groups,
+        close_friends: close_friends ?? this.close_friends,
+        pinned_groups: pinned_groups ?? this.pinned_groups,
+        is_dev: is_dev ?? this.is_dev);
   }
 
   Map<String, dynamic> toMap() {
@@ -336,6 +334,8 @@ class User {
       'saved_events': saved_events.map((x) => x).toList(),
       'followed_groups': followed_groups.map((x) => x).toList(),
       'close_friends': close_friends.map((x) => x).toList(),
+      'pinned_groups' : pinned_groups.map((x) => x).toList(),
+      'is_dev': is_dev
     };
   }
 
@@ -352,7 +352,12 @@ class User {
         joined_groups: forceDocumentReferenceType(map['joined_groups']),
         saved_events: forceDocumentReferenceType(map['saved_events']),
         followed_groups: forceDocumentReferenceType(map['followed_groups']),
-        close_friends: forceDocumentReferenceType(map['close_friends']));
+        close_friends: forceDocumentReferenceType(map['close_friends']),
+        pinned_groups: forceDocumentReferenceType(map['pinned_groups']),
+        is_dev: map["is_dev"] as bool?,
+
+        );
+        
   }
 
   String toJson() => json.encode(toMap());
@@ -362,7 +367,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends)';
+    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups, is_dev: $is_dev)';
   }
 
   @override
@@ -379,7 +384,10 @@ class User {
         listEquals(other.joined_groups, joined_groups) &&
         listEquals(other.saved_events, saved_events) &&
         listEquals(other.followed_groups, followed_groups) &&
-        listEquals(other.close_friends, close_friends);
+        listEquals(other.close_friends, close_friends) &&
+        listEquals(other.pinned_groups, pinned_groups) &&
+        other.is_dev == is_dev
+        ;
   }
 
   @override
@@ -394,7 +402,10 @@ class User {
         joined_groups.hashCode ^
         saved_events.hashCode ^
         followed_groups.hashCode ^
-        close_friends.hashCode;
+        close_friends.hashCode ^
+        pinned_groups.hashCode ^
+        is_dev.hashCode
+        ;
   }
 }
 
@@ -421,6 +432,5 @@ Event demoEvent = Event(
 Group demoGroup = Group(
     title: "Demo Group",
     groupid: "demogroup",
-    custom_roles: {},
     members_roles: {db.doc("${branchPrefix}users/demouser/"): "Role"},
     events: []);

@@ -5,7 +5,7 @@ import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/favourites.dart';
-import 'package:ravestreamradioapp/screens/mainscreens/forums.dart';
+import 'package:ravestreamradioapp/screens/mainscreens/groups.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/profile.dart';
 import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
@@ -61,6 +61,32 @@ int map_Screen_to_Index(Screens screen) {
   }
 }
 
+String get FloatingActionButtonTooltip {
+  switch (currently_selected_screen.value) {
+    case Screens.events:
+      {
+        return "Host new Event";
+      }
+    case Screens.favourites:
+      {
+        return "Find friends";
+      }
+    case Screens.forums:
+      {
+        return "Add new Group";
+      }
+    case Screens.profile:
+      {
+        return "ASDSAD";
+      }
+    default:
+      {
+        return "Useless Tooltip";
+      }
+  }
+}
+
+
 Widget map_Widget_to_Screen(Screens screen) {
   switch (screen) {
     case Screens.events:
@@ -73,7 +99,7 @@ Widget map_Widget_to_Screen(Screens screen) {
       }
     case Screens.forums:
       {
-        return ForumsScreen(loggedinas: currently_loggedin_as.value);
+        return GroupsScreen(loggedinas: currently_loggedin_as.value);
       }
     case Screens.profile:
       {
@@ -103,27 +129,30 @@ class HomeScreen extends StatelessWidget {
         builder: ((context, value, child) {
           return ValueListenableBuilder(
               valueListenable: currently_selected_screen,
-              builder: ((context, value, child) {
+              builder: ((context, screen, child) {
                 return Scaffold(
                   body: map_Widget_to_Screen(currently_selected_screen.value),
                   floatingActionButtonLocation:
                       FloatingActionButtonLocation.centerDocked,
-                  floatingActionButton: FloatingActionButton(
-                    backgroundColor: cl.deep_black,
-                    onPressed: () {
-                      if (currently_loggedin_as.value != null) {
-                        kIsWeb
-                        ? Beamer.of(context).beamToNamed("/hostevent/")
-                        : Navigator.of(context).push(MaterialPageRoute(
-                            builder: ((context) => EventCreationScreen())));
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            cw.hintSnackBar(
-                                "Has to be logged in to create Event"));
-                      }
-                    },
-                    child: Icon(Icons.add),
-                  ),
+                  floatingActionButton: (screen == Screens.events || screen == Screens.forums) ? Tooltip(
+                    message: FloatingActionButtonTooltip,
+                    child: FloatingActionButton(
+                      backgroundColor: cl.deep_black,
+                      onPressed: () {
+                        if (currently_loggedin_as.value != null) {
+                          if (currently_selected_screen.value ==
+                              Screens.events) {
+                            Beamer.of(context).beamToNamed("/hostevent");
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              cw.hintSnackBar(
+                                  "Has to be logged in to create Event"));
+                        }
+                      },
+                      child: Icon(Icons.add),
+                    ),
+                  ) : null,
                   bottomNavigationBar: BottomAppBar(
                     shape: CircularNotchedRectangle(),
                     clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -142,6 +171,12 @@ class HomeScreen extends StatelessWidget {
                                       Screens.events
                                   ? Icons.calendar_month
                                   : Icons.calendar_month_outlined)),
+                          /*BottomNavigationBarItem(
+                              label: "News",
+                              icon: Icon(currently_selected_screen.value ==
+                                      Screens.events
+                                  ? Icons.article
+                                  : Icons.article_outlined)),*/
                           BottomNavigationBarItem(
                               label: "Favourites",
                               icon: Icon(currently_selected_screen.value ==
@@ -152,8 +187,15 @@ class HomeScreen extends StatelessWidget {
                               label: "",
                               icon: Icon(Icons.add,
                                   color: Color.fromARGB(0, 255, 255, 255))),
+
+                          /*BottomNavigationBarItem(
+                              label: "Chats",
+                              icon: Icon(currently_selected_screen.value ==
+                                      Screens.forums
+                                  ? Icons.question_answer
+                                  : Icons.question_answer_outlined)),*/
                           BottomNavigationBarItem(
-                              label: "Forums",
+                              label: "Groups",
                               icon: Icon(currently_selected_screen.value ==
                                       Screens.forums
                                   ? Icons.groups
