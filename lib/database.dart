@@ -69,7 +69,7 @@ Future uploadEventToDatabase(dbc.Event event) async {
   return Future.delayed(Duration.zero);
 }
 
-/// Adds demoevents to current branch.
+/// Adds demoevents, demousers and demogroups to current branch.
 Future setTestDBScenario() async {
   testuserlist.forEach((element) async {
     await db
@@ -84,7 +84,7 @@ Future setTestDBScenario() async {
   testeventlist.forEach((dbc.Event element) async {
     await uploadEventToDatabase(element);
   });
-  return Future;
+  return Future.delayed(Duration.zero);
 }
 
 /// TBA for Web
@@ -122,14 +122,9 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
   //Uncomment the following line to manually change the saved logindata
   //await files.writeLoginData("", "");
   //Uncomment the following line to manually add an event
-  //db.collection("events").doc(dbc.demoEvent.eventid).set(dbc.demoEvent.toMap());
   //await setTestDBScenario();
-  db.doc("/dev.groups/rsr").set(dbc.Group(
-        groupid: "rsr",
-        title: "RaveStreamRadio",
-        members_roles: {db.doc("dev.users/admin"): "Founder"},
-      ).toMap());
   //print(await saveEventToUserReturnWasSaved(dbc.demoEvent, dbc.demoUser));
+  //await db.doc("dev.users/admin").set(testuserlist.first.toMap());
   Map savedlogindata = kIsWeb
       ? await files.readLoginDataWeb()
       : await files.readLoginDataMobile();
@@ -299,4 +294,11 @@ bool hasGroupPinned(dbc.Group group, dbc.User user) {
     }
   }
   return false;
+}
+
+bool doIHavePermission(GlobalPermission permit) {
+  if (currently_loggedin_as.value == null) return false;
+  return dbc
+      .dbPermissionsToGlobal(currently_loggedin_as.value!.permissions)
+      .contains(permit);
 }

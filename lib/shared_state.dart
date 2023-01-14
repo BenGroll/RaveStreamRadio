@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 
 enum ServerBranches { public, test, develop }
-
+enum GlobalPermission {MANAGE_EVENTS,CHANGE_DEV_SETTINGS}
 const bool kIsWeb = bool.fromEnvironment('dart.library.js_util');
 
 ValueNotifier<ServerBranches> selectedbranch = kIsWeb 

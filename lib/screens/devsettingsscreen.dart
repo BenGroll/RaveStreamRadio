@@ -9,7 +9,9 @@ class DevSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return currently_loggedin_as.value!.is_dev ?? false
+    bool sees_devsettings =
+        db.doIHavePermission(GlobalPermission.CHANGE_DEV_SETTINGS);
+    return sees_devsettings
         ? Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -71,6 +73,11 @@ class DevSettingsScreen extends StatelessWidget {
               ],
             ),
           )
-        : Text("You dont have privileges to edit developer settings.");
+        : Center(
+          child: Text(
+            "You dont have privileges to edit developer settings.",
+            style: TextStyle(color: Colors.white),
+            )
+          );
   }
 }

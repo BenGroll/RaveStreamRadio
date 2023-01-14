@@ -8,20 +8,14 @@ import 'package:ravestreamradioapp/screens/overviewpages/groupoverviewpage.dart'
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
-class GroupsScreen extends StatefulWidget {
-  final dbc.User? loggedinas;
-  const GroupsScreen({super.key, required this.loggedinas});
 
+class GroupsScreen extends StatefulWidget {
+  ValueNotifier<List<Widget>> widgets = ValueNotifier([]);
+  final dbc.User? loggedinas;
+  GroupsScreen({super.key, required this.loggedinas});
   @override
   State<GroupsScreen> createState() => _GroupsScreenState();
 }
-
-TabBar tabbar = const TabBar(
-            tabs: [
-              Tab(text: "Groups"),
-              Tab(text: "Chats")
-            ],
-          );
 
 class _GroupsScreenState extends State<GroupsScreen> {
   @override
@@ -29,32 +23,41 @@ class _GroupsScreenState extends State<GroupsScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        drawer: const cw.NavBar(),
         backgroundColor: cl.nearly_black,
-        appBar: AppBar(
-          leading: const cw.OpenSidebarButton(),
-          elevation: 8,
-          backgroundColor: cl.deep_black,
-          title: PreferredSize(
-            preferredSize: tabbar.preferredSize,
-            child: tabbar
-          ),
-          centerTitle: true,
-        ),
         body: Padding(
           padding: const EdgeInsets.all(0),
-          child: FutureBuilder(
-              future: buildGroupTiles(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return ListView(
-                    children: snapshot.data ?? [Text("Something went wrong")],
-                  );
-                } else {
-                  return Center(
-                      child: CircularProgressIndicator(color: Colors.white));
-                }
-              }),
+          child: RefreshIndicator(
+            onRefresh: () async {
+              widget.widgets.value = await buildGroupTiles();
+            },
+            child: FutureBuilder(
+                future: buildGroupTiles(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    widget.widgets.value = snapshot.data ??
+                        [
+                          Text(
+                            "HALLO",
+                            style: TextStyle(color: Colors.white),
+                          )
+                        ];
+                    return ValueListenableBuilder(
+                        valueListenable: widget.widgets,
+                        builder: (context, widgetlist, foo) {
+                          return ListView(
+                            children: widgetlist,
+                          );
+                        });
+                  } else {
+                    return const Center(
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+                    );
+                  }
+                }),
+          ),
         ),
       ),
     );
@@ -67,7 +70,13 @@ Future<List<Widget>> buildGroupTiles() async {
   }
   List<dbc.Group> groups =
       await db.showJoinedGroupsForUser(currently_loggedin_as.value!.username);
-
+  if (groups.isEmpty)
+    return [
+      Text(
+        "You haven't joined any groups yet.",
+        style: TextStyle(color: Colors.white),
+      )
+    ];
   List<Widget> tiles = [];
   groups.forEach((element) {
     if (db.hasGroupPinned(

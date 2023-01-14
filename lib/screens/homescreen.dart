@@ -11,6 +11,7 @@ import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/shared_state.dart';
 
+
 Screens map_Index_to_Screen(int index) {
   switch (index) {
     case 0:
@@ -112,6 +113,31 @@ Widget map_Widget_to_Screen(Screens screen) {
   }
 }
 
+AppBar mapScreenToAppBar(Screens screen, dbc.User? loggedinas) {
+  switch (screen) {
+    case Screens.events:
+      {
+        return cw.CalendarAppBar;
+      }
+    case Screens.favourites:
+      {
+        return cw.FavouritesAppBar;
+      }
+    case Screens.forums:
+      {
+        return cw.GroupsAppBar;
+      }
+    case Screens.profile:
+      {
+        return cw.ProfileAppBar(loggedinas);
+      }
+    default:
+      {
+        return AppBar();
+      }
+  }
+}
+
 class HomeScreen extends StatelessWidget {
   dbc.User? loggedinas;
   final Screens startingscreen;
@@ -120,6 +146,7 @@ class HomeScreen extends StatelessWidget {
       required this.loggedinas,
       this.startingscreen = Screens.events});
 
+  
   @override
   Widget build(BuildContext context) {
     currently_selected_screen.value = startingscreen;
@@ -131,6 +158,8 @@ class HomeScreen extends StatelessWidget {
               valueListenable: currently_selected_screen,
               builder: ((context, screen, child) {
                 return Scaffold(
+                  drawer: cw.NavBar(),
+                  appBar: mapScreenToAppBar(screen, currently_loggedin_as.value),
                   body: map_Widget_to_Screen(currently_selected_screen.value),
                   floatingActionButtonLocation:
                       FloatingActionButtonLocation.centerDocked,

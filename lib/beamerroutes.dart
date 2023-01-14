@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ravestreamradioapp/screens/aboutus.dart';
 import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/screens/loginscreen.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/eventoverviewpage.dart';
@@ -11,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:beamer/beamer.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/groupoverviewpage.dart';
+import 'screens/privacypolicy.dart';
+import 'screens/imprint.dart';
 
 Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   // Routes for web navigation
@@ -44,7 +47,6 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
             ? const Text("Empty Userid")
             : UserOverviewPage(username: username));
   },
-
   "/events/:eventid": (context, state, data) {
     final eventid = state.pathParameters["eventid"]!;
     return BeamPage(
@@ -58,4 +60,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   "/login": (context, state, data) => LoginScreen(),
   "/hostevent": (context, state, data) => EventCreationScreen(),
   "/createaccount": (context, state, data) => CreateAccountScreen(),
+  "/policy":(context, state, data) => const PrivacyPolicy(),
+  "/imprint": (context, state, data) => const ImPrint(),
+  "/social": (context, state, data) => const AboutUsPage()
 };

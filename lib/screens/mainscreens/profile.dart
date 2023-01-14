@@ -33,13 +33,7 @@ class NotLoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const cw.NavBar(),
       backgroundColor: cl.nearly_black,
-      appBar: AppBar(
-        leading: const cw.OpenSidebarButton(),
-        title: const Text("Not logged in."),
-        centerTitle: true,
-      ),
       body: Padding(
           padding: const EdgeInsets.symmetric(
             vertical: 20.0,
@@ -68,22 +62,7 @@ class LoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const cw.NavBar(),
       backgroundColor: cl.nearly_black,
-      appBar: AppBar(
-        leading: const cw.OpenSidebarButton(),
-        title: Text(loggedinas.username),
-        actions: [
-          IconButton(
-              onPressed: () async {
-                kIsWeb
-                ? await files.writeLoginDataWeb("", "")
-                : await files.writeLoginDataMobile("", "");
-                currently_loggedin_as.value = await db.doStartupLoginDataCheck();
-              },
-              icon: Icon(Icons.logout))
-        ],
-      ),
       body : selectedbranch.value == ServerBranches.develop
       ? DevSettingsScreen()
       : Container()

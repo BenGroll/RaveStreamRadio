@@ -25,6 +25,16 @@ String eventidcontent = "";
 String eventtitlecontent = "";
 String eventlocationcontent = "";
 ValueNotifier<String> descriptiontext = ValueNotifier("");
+ValueNotifier<List<dbc.Link>> added_links = ValueNotifier([]);
+ValueNotifier<bool> is_awaiting_upload = ValueNotifier(false);
+
+Map<String, String> linkListToDBMap(List<dbc.Link> list) {
+  Map<String, String> outmap = {};
+  list.forEach((element) {
+    outmap[element.title] = element.url;
+  });
+  return outmap;
+}
 
 Widget mapScreenToWidget(Screen selection) {
   switch (selection) {
@@ -36,6 +46,10 @@ Widget mapScreenToWidget(Screen selection) {
       {
         return const DescriptionEditingPage();
       }
+    case Screen.links:
+      {
+        return const LinkEditingScreen();
+      }
     default:
       return Container();
   }
@@ -43,7 +57,7 @@ Widget mapScreenToWidget(Screen selection) {
 
 String? validateEventIDFieldLight(String content) {
   if (content.isEmpty) {
-    return "Can't be empty.";
+    return "EventID: Can't be empty.";
   }
   String allowed = "abcdefghijklmnopqrstuvwxyz0123456789";
   bool notallowed = false;
@@ -53,19 +67,19 @@ String? validateEventIDFieldLight(String content) {
     }
   });
   if (notallowed) {
-    return "Only a-z and 0-9 allowed.";
+    return "EventID: Only a-z and 0-9 allowed.";
   }
-
   return null;
 }
 
 Future<String?> validateEventIDFieldDB(String content) async {
+  if (content.isEmpty) return "";
   bool isFree = await db.db
       .collection("${branchPrefix}events")
       .doc(content)
       .get()
       .then((value) => !value.exists);
-  return isFree ? null : "Eventid already taken.";
+  return isFree ? null : "Eventid: Already taken.";
 }
 
 class EventCreationScreen extends StatelessWidget {
@@ -131,97 +145,136 @@ class EventCreationScreen extends StatelessWidget {
                             case Screen.links:
                               {
                                 showDialog(
+                                  barrierDismissible: false,
                                     context: context,
                                     builder: ((context) {
-                                      return AlertDialog(
-                                        backgroundColor: cl.deep_black,
-                                        title: const Text("Submit Event?",
-                                            style:
-                                                TextStyle(color: Colors.white)),
-                                        content: const Text("",
-                                            maxLines: 3,
-                                            style:
-                                                TextStyle(color: Colors.white)),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
-                                              child:
-                                                  const Text("No, go back.",style: TextStyle(
-                                                    color: Colors.white
-                                                  ),)),
-                                          TextButton(
-                                              onPressed: () async {
-                                                /*showDialog(
-                                                    barrierDismissible: false,
-                                                    context: context,
-                                                    builder: ((context) {
-                                                      return AlertDialog(
-                                                        backgroundColor:
-                                                            cl.deep_black,
-                                                        title: const Text(
-                                                          "Uploading event...",
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.white),
-                                                        ),
-                                                      );
-                                                    }));*/
-                                                await db.uploadEventToDatabase(
-                                                    dbc.Event(
-                                                  eventid: eventidcontent,
-                                                  title: eventtitlecontent,
-                                                  hostreference: db.db.doc(
-                                                      "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
-                                                  description:
-                                                      descriptiontext.value,
-                                                  end: end_date.value == null
-                                                      ? null
-                                                      : Timestamp.fromDate(
-                                                          DateTime(
-                                                              end_date
-                                                                  .value!.year,
-                                                              end_date
-                                                                  .value!.month,
-                                                              end_date
-                                                                  .value!.day,
-                                                              end_time.value
-                                                                      ?.hour ??
-                                                                  0,
-                                                              end_time.value
-                                                                      ?.minute ??
-                                                                  0)),
-                                                  begin: beginning_date
-                                                              .value ==
-                                                          null
-                                                      ? null
-                                                      : Timestamp.fromDate(DateTime(
-                                                          beginning_date
-                                                              .value!.year,
-                                                          beginning_date
-                                                              .value!.month,
-                                                          beginning_date
-                                                              .value!.day,
-                                                          beginning_time.value
-                                                                  ?.hour ??
-                                                              0,
-                                                          beginning_time.value
-                                                                  ?.minute ??
-                                                              0)),
-                                                ));
-                                                Navigator.of(context).pop();
-                                                kIsWeb
-                                                    ? Beamer.of(context)
-                                                        .popToNamed("/events")
-                                                    : Navigator.of(context)
-                                                        .pop();
-                                              },
-                                              child: const Text("Yes, submit.",
+                                      return ValueListenableBuilder(
+                                          valueListenable: is_awaiting_upload,
+                                          builder:
+                                              (context, awaiting_reload, foo) {
+                                            return awaiting_reload ? Dialog(
+                                              child: Center(child: CircularProgressIndicator(color: Colors.white, backgroundColor: Colors.black))) : AlertDialog(
+                                              backgroundColor: cl.deep_black,
+                                              title: const Text("Submit Event?",
                                                   style: TextStyle(
-                                                      color: Colors.white))),
-                                        ],
-                                      );
+                                                      color: Colors.white)),
+                                              content: const Text("",
+                                                  maxLines: 3,
+                                                  style: TextStyle(
+                                                      color: Colors.white)),
+                                              actions: [
+                                                TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: const Text(
+                                                      "No, go back.",
+                                                      style: TextStyle(
+                                                          color: Colors.white),
+                                                    )),
+                                                TextButton(
+                                                    onPressed: () async {
+                                                      String?
+                                                          idmatchessemantics =
+                                                          validateEventIDFieldLight(
+                                                              eventidcontent);
+                                                      String? idalreadytaken =
+                                                          await validateEventIDFieldDB(
+                                                              eventidcontent);
+                                                      bool eventtitleempty =
+                                                          eventtitlecontent
+                                                              .isEmpty;
+                                                      print(idmatchessemantics);
+                                                      print(idalreadytaken);
+                                                      print(eventtitleempty);
+                                                      if ((idalreadytaken !=
+                                                              null) ||
+                                                          (idmatchessemantics !=
+                                                              null) ||
+                                                          eventtitleempty) {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return Dialog(
+                                                                backgroundColor:
+                                                                    cl.deep_black,
+                                                                child: Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .min,
+                                                                  children: [
+                                                                    idmatchessemantics ==
+                                                                            null
+                                                                        ? const SizedBox(
+                                                                            height:
+                                                                                0)
+                                                                        : Text(
+                                                                            idmatchessemantics,
+                                                                            style:
+                                                                                const TextStyle(color: Colors.white)),
+                                                                    idalreadytaken ==
+                                                                            null
+                                                                        ? const SizedBox(
+                                                                            height:
+                                                                                0)
+                                                                        : Text(
+                                                                            idalreadytaken,
+                                                                            style:
+                                                                                const TextStyle(color: Colors.white)),
+                                                                    eventtitleempty
+                                                                        ? const Text(
+                                                                            "EventTitle: Can't be empty",
+                                                                            style:
+                                                                                TextStyle(color: Colors.white))
+                                                                        : const SizedBox(height: 0)
+                                                                  ],
+                                                                ),
+                                                              );
+                                                            });
+                                                        return;
+                                                      }
+                                                      dbc.Event uploadEventFile = dbc.Event(
+                                                          eventid:
+                                                              eventidcontent,
+                                                          title:
+                                                              eventtitlecontent,
+                                                          hostreference: db.db.doc(
+                                                              "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
+                                                          description:
+                                                              descriptiontext
+                                                                  .value.isEmpty ? null : descriptiontext.value,
+                                                          end: end_date.value == null
+                                                              ? null
+                                                              : Timestamp.fromDate(DateTime(
+                                                                  end_date
+                                                                      .value!
+                                                                      .year,
+                                                                  end_date
+                                                                      .value!
+                                                                      .month,
+                                                                  end_date
+                                                                      .value!
+                                                                      .day,
+                                                                  end_time.value?.hour ?? 0,
+                                                                  end_time.value?.minute ?? 0)),
+                                                          begin: beginning_date.value == null ? null : Timestamp.fromDate(DateTime(beginning_date.value!.year, beginning_date.value!.month, beginning_date.value!.day, beginning_time.value?.hour ?? 0, beginning_time.value?.minute ?? 0)),
+                                                          locationname: eventlocationcontent.isEmpty ? null : eventlocationcontent,
+                                                          links: linkListToDBMap(added_links.value));
+                                                      uploadEvent(
+                                                          uploadEventFile,
+                                                          context);
+                                                    },
+                                                    child: const Text(
+                                                        "Yes, submit.",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white))),
+                                              ],
+                                            );
+                                          });
                                     }));
                                 break;
                               }
@@ -465,7 +518,9 @@ class GeneralSettingsPage extends StatelessWidget {
                                 valueListenable: beginning_time,
                                 builder: (context, time, child) {
                                   return date == null
-                                      ? SizedBox(height: 0)
+                                      ? Text(
+                                          "If you dont provide at least 'end date', your event will not be visible in default calendar",
+                                          style: TextStyle(color: Colors.grey))
                                       : Text(
                                           "Begins at: ${timestamp2readablestamp(Timestamp.fromDate(DateTime(beginning_date.value!.year, beginning_date.value!.month, beginning_date.value!.day, beginning_time.value?.hour ?? 0, beginning_time.value?.minute ?? 0)))}",
                                           style: TextStyle(color: Colors.white),
@@ -492,7 +547,20 @@ class GeneralSettingsPage extends StatelessWidget {
                     ),
                   );
                 })),
-                TextFormField()
+            TextFormField(
+              onChanged: (value) {
+                eventlocationcontent = value;
+              },
+              style: const TextStyle(color: Colors.white),
+              cursorColor: Colors.white,
+              decoration: const InputDecoration(
+                icon: Icon(Icons.location_on, color: Colors.white),
+                labelText: "Event Location",
+                labelStyle: TextStyle(color: Colors.white),
+                hintText: "Describe where to find your event",
+                hintStyle: TextStyle(color: Colors.grey),
+              ),
+            ),
           ],
         ));
   }
@@ -517,4 +585,177 @@ class DescriptionEditingPage extends StatelessWidget {
       },
     );
   }
+}
+
+List<Widget> getLinkList(BuildContext context, List<dbc.Link> links) {
+  List<Widget> linkso = [];
+  links.forEach((element) {
+    linkso.add(LinkListCard(link: element));
+  });
+  linkso.add(AddLinkButton());
+  print("linkwidgets: $linkso");
+  return linkso;
+}
+
+class AddLinkButton extends StatelessWidget {
+  String label = "";
+  String url = "";
+  AddLinkButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+        onPressed: () {
+          showDialog(
+              context: context, builder: (context) => LinkCreateDialog());
+        },
+        child: Text("Add new link"));
+  }
+}
+
+class LinkEditingScreen extends StatelessWidget {
+  const LinkEditingScreen({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+        valueListenable: added_links,
+        builder: (context, links, foo) {
+          return ListView(
+            padding: EdgeInsets.symmetric(
+                vertical: MediaQuery.of(context).size.height / 50,
+                horizontal: MediaQuery.of(context).size.width / 50),
+            children: getLinkList(context, links),
+          );
+        });
+  }
+}
+
+class LinkListCard extends StatelessWidget {
+  dbc.Link link;
+  LinkListCard({required this.link});
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: () {
+        showDialog(
+            context: context,
+            builder: ((context) => LinkEditDialog(link: link)));
+      },
+      tileColor: Colors.black,
+      title: Center(
+          child: Text(link.title, style: TextStyle(color: Colors.white))),
+    );
+  }
+}
+
+class LinkCreateDialog extends StatelessWidget {
+  String label = "";
+  String url = "";
+  LinkCreateDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text("Enter Link Data"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            autofocus: true,
+            decoration: InputDecoration(hintText: "Label, e.g 'Instagram'"),
+            onChanged: (value) {
+              label = value;
+            },
+            maxLines: null,
+          ),
+          TextFormField(
+            autofocus: true,
+            decoration: InputDecoration(hintText: "URL"),
+            onChanged: (value) {
+              url = value;
+            },
+            maxLines: null,
+          ),
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+            onPressed: () {
+              List<dbc.Link> formerlist = added_links.value;
+              formerlist.add(dbc.Link(title: label, url: url));
+              Navigator.of(context).pop();
+              added_links.value = formerlist;
+              added_links.notifyListeners();
+            },
+            child: Text("Add link to event"))
+      ],
+    );
+  }
+}
+
+class LinkEditDialog extends StatelessWidget {
+  dbc.Link link;
+  LinkEditDialog({super.key, required this.link});
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text("Edit Link"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            initialValue: link.title,
+            autofocus: true,
+            decoration: InputDecoration(hintText: "Label, e.g 'Instagram'"),
+            onChanged: (value) {
+              link.title = value;
+            },
+            maxLines: null,
+          ),
+          TextFormField(
+            initialValue: link.url,
+            autofocus: true,
+            decoration: InputDecoration(hintText: "URL"),
+            onChanged: (value) {
+              link.url = value;
+            },
+            maxLines: null,
+          ),
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+            onPressed: () {
+              List<dbc.Link> formerlist = added_links.value;
+              Navigator.of(context).pop();
+              added_links.value = editLinkInList(added_links.value, link);
+              added_links.notifyListeners();
+            },
+            child: Text("Save changes to Link"))
+      ],
+    );
+  }
+}
+
+List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
+  List<dbc.Link> bufferlist = links.reversed.toList().reversed.toList();
+  for (int i = 0; i < links.length; i++) {
+    if (links[i] == searchlink) {
+      bufferlist[i].title = searchlink.title;
+      bufferlist[i].url = searchlink.url;
+      return bufferlist;
+    }
+  }
+  return bufferlist;
+}
+
+Future uploadEvent(dbc.Event event, BuildContext context) async {
+  is_awaiting_upload.value = true;
+  await db.uploadEventToDatabase(event);
+  kIsWeb
+      ? Beamer.of(context).popToNamed("/events")
+      : Navigator.of(context).pop();
+  ScaffoldMessenger.of(context)
+      .showSnackBar(cw.hintSnackBar("Event created successfully!"));
+  currently_selected_screen.notifyListeners();
+  Navigator.of(context).pop();
 }

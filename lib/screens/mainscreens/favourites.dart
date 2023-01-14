@@ -15,14 +15,7 @@ class _FavouritesState extends State<Favourites> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const cw.NavBar(),
       backgroundColor: cl.nearly_black,
-      appBar: AppBar(
-        leading: const cw.OpenSidebarButton(),
-        backgroundColor: cl.deep_black,
-        title: const Text("Favourites"),
-        centerTitle: true,
-      ),
     );
   }
 }

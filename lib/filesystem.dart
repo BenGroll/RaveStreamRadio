@@ -130,29 +130,29 @@ Future<Widget> getEventIcon(dbc.Event event) async {
     return await getImage(event.icon ?? "") ?? errorWhiteImage;
   } else {
     if (event.hostreference == null) {
-      print("@fs : No Host specified.");
+      //print("@fs : No Host specified.");
       return const Image(
           image: AssetImage("graphics/DefaultEventTemplate.jpg"));
     } else {
       DocumentSnapshot<Map<String, dynamic>> host = await event.hostreference
           ?.get() as DocumentSnapshot<Map<String, dynamic>>;
       if (host == null) {
-        print("@fs : Couldnt get Host document");
+        //print("@fs : Couldnt get Host document");
         return errorWhiteImage;
       }
       if (host.data() == null) {
-        print("@fs : Host data couldnt be read");
+        //print("@fs : Host data couldnt be read");
         return errorWhiteImage;
       }
       if (host.data()?["profile_picture"] == null) {
-        print("@fs : Host has no profile picture.");
+        //print("@fs : Host has no profile picture.");
         return SvgPicture.asset("graphics/person_black_48dp.svg",
             color: cl.greynothighlight);
       }
       Widget? hostProfilePic =
           await getImage(host.data()?["profile_picture"] as String);
       if (hostProfilePic == null) {
-        print("@fs : Host has no profile picture.");
+        //print("@fs : Host has no profile picture.");
         return SvgPicture.asset("graphics/person_black_48dp.svg",
             color: cl.greynothighlight);
       } else {

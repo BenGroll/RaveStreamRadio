@@ -5,6 +5,41 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/database.dart' show db;
 import 'package:ravestreamradioapp/conv.dart';
+import 'package:ravestreamradioapp/shared_state.dart';
+
+class Link {
+  String title;
+  String url;
+  Link({required this.title, required this.url});
+  bool operator ==(covariant Link other) {
+    if (identical(this, other)) return true;
+    return other.title == other.title && other.url == other.url;
+  }
+}
+
+List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
+  List<GlobalPermission> outlist = [];
+  if (permits.contains("ADMIN")) {
+    for (int i = 0; i < GlobalPermission.values.length; i++) {
+      outlist.add(GlobalPermission.values[i]);
+    }
+  } else {
+    permits.forEach((element) {
+      if (GlobalPermission.values.contains(element)) {
+        switch (element) {
+          case "MANAGE_EVENTS":
+            outlist.add(GlobalPermission.MANAGE_EVENTS);
+            break;
+          case "CHANGE_DEV_SETTINGS":
+            outlist.add(GlobalPermission.CHANGE_DEV_SETTINGS);
+            break;
+          default:
+        }
+      }
+    });
+  }
+  return outlist;
+}
 
 /// Template class for Events to avoid type and valueerrors
 class Event {
@@ -129,7 +164,7 @@ class Event {
 
   @override
   String toString() {
-    return 'Event(title: $title, eventid: $eventid, hostreference: $hostreference, begin: $begin, end: $end, location: $location, locationname: $locationname, age: $age, icon: $icon, description: $description, timetable: $timetable, links: $links, guestlist: $guestlist, savedcount: $savedcount)';
+    return 'Event(title: "$title", eventid: "$eventid", hostreference: "$hostreference", begin: "$begin", end: "$end", location: "$location", locationname: "$locationname", age: "$age", icon: "$icon", description: "${title /*description*/}", timetable: "$timetable", links: "$links", guestlist: "$guestlist", savedcount: "$savedcount")';
   }
 
   @override
@@ -264,32 +299,32 @@ class Group {
 /// Template class for Users to avoid type and valueerrors
 class User {
   String username;
-  String alias;
+  String? alias;
   String password;
   String? description;
   String? mail;
   String? profile_picture;
+  List<String> permissions;
   List<DocumentReference> events;
   List<DocumentReference> joined_groups;
   List<DocumentReference> saved_events;
   List<DocumentReference> followed_groups;
   List<DocumentReference> close_friends;
   List<DocumentReference> pinned_groups;
-  bool? is_dev;
   User(
       {required this.username,
-      required this.alias,
+      this.alias,
       required this.password,
       this.description,
       this.mail,
       this.profile_picture,
+      this.permissions = const <String>[],
       this.events = const <DocumentReference>[],
       this.joined_groups = const <DocumentReference>[],
       this.saved_events = const <DocumentReference>[],
       this.followed_groups = const <DocumentReference>[],
       this.close_friends = const <DocumentReference>[],
-      this.pinned_groups = const <DocumentReference>[],
-      this.is_dev = false});
+      this.pinned_groups = const <DocumentReference>[]});
   User copyWith({
     String? username,
     String? alias,
@@ -297,7 +332,7 @@ class User {
     String? description,
     String? mail,
     String? profile_picture,
-    bool? is_dev,
+    List<String>? permissions,
     List<DocumentReference>? events,
     List<DocumentReference>? joined_groups,
     List<DocumentReference>? saved_events,
@@ -318,7 +353,7 @@ class User {
         followed_groups: followed_groups ?? this.followed_groups,
         close_friends: close_friends ?? this.close_friends,
         pinned_groups: pinned_groups ?? this.pinned_groups,
-        is_dev: is_dev ?? this.is_dev);
+        permissions: permissions ?? this.permissions);
   }
 
   Map<String, dynamic> toMap() {
@@ -334,30 +369,28 @@ class User {
       'saved_events': saved_events.map((x) => x).toList(),
       'followed_groups': followed_groups.map((x) => x).toList(),
       'close_friends': close_friends.map((x) => x).toList(),
-      'pinned_groups' : pinned_groups.map((x) => x).toList(),
-      'is_dev': is_dev
+      'pinned_groups': pinned_groups.map((x) => x).toList(),
+      'permissions': permissions,
     };
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
     //print(map);
     return User(
-        username: map['username'] as String,
-        alias: map['alias'] as String,
-        password: map['password'] as String,
-        description: map['description'] as String,
-        mail: map['mail'] as String?,
-        profile_picture: map['profile_picture'] as String?,
-        events: forceDocumentReferenceType(map['events']),
-        joined_groups: forceDocumentReferenceType(map['joined_groups']),
-        saved_events: forceDocumentReferenceType(map['saved_events']),
-        followed_groups: forceDocumentReferenceType(map['followed_groups']),
-        close_friends: forceDocumentReferenceType(map['close_friends']),
-        pinned_groups: forceDocumentReferenceType(map['pinned_groups']),
-        is_dev: map["is_dev"] as bool?,
-
-        );
-        
+      username: map['username'] as String,
+      alias: map['alias'] as String?,
+      password: map['password'] as String,
+      description: map['description'] as String?,
+      mail: map['mail'] as String?,
+      profile_picture: map['profile_picture'] as String?,
+      permissions: forceStringType(map['permissions']),
+      events: forceDocumentReferenceType(map['events']),
+      joined_groups: forceDocumentReferenceType(map['joined_groups']),
+      saved_events: forceDocumentReferenceType(map['saved_events']),
+      followed_groups: forceDocumentReferenceType(map['followed_groups']),
+      close_friends: forceDocumentReferenceType(map['close_friends']),
+      pinned_groups: forceDocumentReferenceType(map['pinned_groups']),
+    );
   }
 
   String toJson() => json.encode(toMap());
@@ -367,7 +400,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups, is_dev: $is_dev)';
+    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups)';
   }
 
   @override
@@ -380,14 +413,13 @@ class User {
         other.description == description &&
         other.mail == mail &&
         other.profile_picture == profile_picture &&
+        listEquals(other.permissions, permissions) &&
         listEquals(other.events, events) &&
         listEquals(other.joined_groups, joined_groups) &&
         listEquals(other.saved_events, saved_events) &&
         listEquals(other.followed_groups, followed_groups) &&
         listEquals(other.close_friends, close_friends) &&
-        listEquals(other.pinned_groups, pinned_groups) &&
-        other.is_dev == is_dev
-        ;
+        listEquals(other.pinned_groups, pinned_groups);
   }
 
   @override
@@ -398,14 +430,13 @@ class User {
         description.hashCode ^
         mail.hashCode ^
         profile_picture.hashCode ^
+        permissions.hashCode ^
         events.hashCode ^
         joined_groups.hashCode ^
         saved_events.hashCode ^
         followed_groups.hashCode ^
         close_friends.hashCode ^
-        pinned_groups.hashCode ^
-        is_dev.hashCode
-        ;
+        pinned_groups.hashCode;
   }
 }
 
@@ -413,24 +444,7 @@ class User {
   Demo Objects
 */
 
-User demoUser = User(
-    username: "demouser",
-    alias: "Demo User",
-    password: "DemoPasswort",
-    description: "User created solely for Testing Purposes",
-    mail: "bengroll002@gmail.com",
-    joined_groups: [db.doc("${branchPrefix}groups/demogroup")],
-    saved_events: [db.doc("${branchPrefix}events/demoevent")],
-    events: [db.doc("${branchPrefix}events/demoevent")]);
-
-Event demoEvent = Event(
-    title: "Demo Event4",
-    eventid: "demoevent4",
-    hostreference: db.doc("${branchPrefix}users/demouser"),
-    guestlist: {db.doc("${branchPrefix}users/demouser"): "Host"});
-
+User demoUser = User(username: "demo", password: "demo");
 Group demoGroup = Group(
-    title: "Demo Group",
-    groupid: "demogroup",
-    members_roles: {db.doc("${branchPrefix}users/demouser/"): "Role"},
-    events: []);
+    groupid: "demo", members_roles: {db.doc("${branchPrefix}/groups/demo"): "Founder"});
+Event demoEvent = Event(eventid: "demo");

@@ -4,8 +4,12 @@ import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/database.dart' as db;
 
-List<dbc.User> testuserlist = [];
-
+List<dbc.User> testuserlist = [
+  dbc.User(
+    username: "admin",
+    password: "Admin"
+  )
+];
 List<dbc.Group> testgrouplist = [
   dbc.Group(
       groupid: "bavarianfetish",
