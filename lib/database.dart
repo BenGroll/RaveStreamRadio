@@ -302,3 +302,23 @@ bool doIHavePermission(GlobalPermission permit) {
       .dbPermissionsToGlobal(currently_loggedin_as.value!.permissions)
       .contains(permit);
 }
+
+Future<dbc.Event?> currentlyEditedEvent(String? eventid) async {
+  return eventid == null ? null : getEvent(eventid);
+}
+
+Future<bool> hasPermissionToEditEvent(String eventID) async {
+  if (currently_loggedin_as.value == null) {
+    return false;
+  }
+  if (doIHavePermission(GlobalPermission.MANAGE_EVENTS)) {
+    dbc.Event? event = await getEvent(eventID);
+    if (event == null) return false;
+    if (event.exModHostname != null) {
+      return true;
+    }
+  }
+  dbc.Event? event = await getEvent(eventID);
+  if (event == null) return false;
+  return isEventHostedByUser(event, currently_loggedin_as.value);
+}

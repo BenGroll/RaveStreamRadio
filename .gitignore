@@ -9,6 +9,8 @@
 .history
 .svn/
 migrate_working_dir/
+key.properties
+app/upload-keystore.jks
 
 # IntelliJ related
 *.iml

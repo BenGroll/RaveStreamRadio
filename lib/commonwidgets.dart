@@ -120,7 +120,7 @@ class NavBar extends StatelessWidget {
             onTap: () {
               Beamer.of(context).beamToNamed("/social");
             },
-            title: Text("About Us",
+            title: Text("About Us(DE)",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: MediaQuery.of(context).size.height / 40)),
@@ -129,7 +129,7 @@ class NavBar extends StatelessWidget {
             onTap: () {
               Beamer.of(context).beamToNamed("/imprint");
             },
-            title: Text("Imprint",
+            title: Text("Imprint(DE)",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: MediaQuery.of(context).size.height / 40)),
@@ -138,7 +138,7 @@ class NavBar extends StatelessWidget {
             onTap: () {
               Beamer.of(context).beamToNamed("/policy");
             },
-            title: Text("Privacy Policy",
+            title: Text("Privacy Policy(DE)",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: MediaQuery.of(context).size.height / 40)),
@@ -153,5 +153,32 @@ class NavBar extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class ErrorScreen extends StatelessWidget {
+  final String errormessage;
+  final int? errorcode;
+  final List<Widget>? actions;
+  const ErrorScreen(
+      {super.key,
+      this.errormessage = "Unknown Error occured",
+      this.errorcode,
+      this.actions});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: cl.deep_black,
+      body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(errormessage, style: TextStyle(color: Colors.white)),
+            Text("ErrorCode: ${errorcode ?? -1}",
+                style: TextStyle(color: Colors.white))
+          ]),
+    );
+    ;
   }
 }

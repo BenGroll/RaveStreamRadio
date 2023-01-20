@@ -525,3 +525,4 @@ class EventOverviewPage extends StatelessWidget {
         });
   }
 }
+

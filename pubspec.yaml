@@ -47,6 +47,7 @@ dependencies:
   url_strategy:
   beamer: 1.5.3
   numberpicker: 2.0.1
+  
 
 dev_dependencies: 
   change_app_package_name: ^1.1.0

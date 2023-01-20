@@ -59,8 +59,19 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   },
   "/login": (context, state, data) => LoginScreen(),
   "/hostevent": (context, state, data) => EventCreationScreen(),
+  "/editevent/:eventid": (context, state, data) {
+    final eventid = state.pathParameters["eventid"]!;
+    return BeamPage(
+        key: ValueKey("EditEvent - $eventid"),
+        popToNamed: "/events",
+        type: BeamPageType.scaleTransition,
+        child: eventid.isEmpty
+          ? const Text("Event not found")
+          : EventCreationScreen(eventIDToBeEdited: eventid)
+        );
+  },
   "/createaccount": (context, state, data) => CreateAccountScreen(),
-  "/policy":(context, state, data) => const PrivacyPolicy(),
+  "/policy": (context, state, data) => const PrivacyPolicy(),
   "/imprint": (context, state, data) => const ImPrint(),
   "/social": (context, state, data) => const AboutUsPage()
 };

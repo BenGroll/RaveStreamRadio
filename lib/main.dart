@@ -1,9 +1,11 @@
 /*
 Left-off-Marker
 To remember where I left of if I need to take a break;
-File: calendar.dart
-Line: 136
-Description: Need to add editing window for events
+File: eventcreationscreen.dart
+
+Need to implement uploading/saving events.
+Command to (re)build android app bundle: flutter build appbundle
+                        build\app\outputs\bundle\release\app-release.aab Location of App bundle
 Command to deploy safely to hosting: firebase deploy --only hosting
 */
 //TestChange

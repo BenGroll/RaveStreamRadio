@@ -17,7 +17,7 @@
     </queries>
 
    <application
-        android:label="ravestreamradioapp"
+        android:label="RaveStreamRadio"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

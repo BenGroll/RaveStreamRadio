@@ -32,12 +32,13 @@ class EventCalendar extends StatelessWidget {
     totalelements = 0;
     current_page.value = 0;
     return Scaffold(
-      drawer: cw.NavBar(),
+        drawer: cw.NavBar(),
         backgroundColor: cl.nearly_black,
         body: RefreshIndicator(
           backgroundColor: cl.deep_black,
           color: Colors.white,
-          onRefresh: () => Future.delayed(Duration(seconds: 1)).then((value) => reloadEventPage()),
+          onRefresh: () => Future.delayed(Duration(seconds: 1))
+              .then((value) => reloadEventPage()),
           child: FutureBuilder(
               future: db.getEventCount(),
               builder: (context, snapshot) {
@@ -84,8 +85,8 @@ class EventCalendar extends StatelessWidget {
                                     ? shownitems.add(PageIndicator())
                                     : null;
                                 shownitems.add(SizedBox(
-                                    height:
-                                        MediaQuery.of(context).size.height / 35));
+                                    height: MediaQuery.of(context).size.height /
+                                        35));
                                 return ListView(children: shownitems);
                               }
                             }));
@@ -122,12 +123,11 @@ class CalendarEventCard extends StatelessWidget {
   CalendarEventCard(dbc.Event event) {
     this.event = event;
   }
-
   @override
   Widget build(BuildContext context) {
     ValueNotifier<bool> saved =
         ValueNotifier(db.isEventSaved(event, currently_loggedin_as.value));
-    if (isEventHostedByUser(event.eventid, currently_loggedin_as.value)) {
+    if (isEventHostedByUser(event, currently_loggedin_as.value)) {
       return Dismissible(
           direction: DismissDirection.horizontal,
           onDismissed: (direction) async {},
@@ -144,6 +144,7 @@ class CalendarEventCard extends StatelessWidget {
             }
             if (direction == DismissDirection.endToStart) {
               // Open Editing Screen vor Event
+              Beamer.of(context).beamToNamed("/editevent/${event.eventid}");
             }
             return false;
           },
@@ -309,16 +310,49 @@ class _CalendarEventCardBody extends StatelessWidget {
                                             const Text("by",
                                                 style: TextStyle(
                                                     color: Colors.white)),
-                                            event.hostreference != null
-                                                ? linkbuttons
-                                                    .buildLinkButtonFromRef(
-                                                        event.hostreference,
-                                                        const TextStyle(
-                                                            color:
-                                                                Colors.white))
-                                                : const Text("Unknown User",
-                                                    style: TextStyle(
-                                                        color: Colors.white))
+                                            event.exModHostname != null
+                                                ? Padding(
+                                                    padding:
+                                                        EdgeInsets.fromLTRB(
+                                                            MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width /
+                                                                100,
+                                                            0,
+                                                            0,
+                                                            0),
+                                                    child: Text(
+                                                      event.exModHostname ??
+                                                          "This should never display",
+                                                      style: const TextStyle(
+                                                          color: Colors.white),
+                                                    ),
+                                                  )
+                                                : (event.hostreference != null
+                                                    ? linkbuttons
+                                                        .buildLinkButtonFromRef(
+                                                            event.hostreference,
+                                                            const TextStyle(
+                                                                color: Colors
+                                                                    .white))
+                                                    : Padding(
+                                                        padding:
+                                                            EdgeInsets.fromLTRB(
+                                                                MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width /
+                                                                    100,
+                                                                0,
+                                                                0,
+                                                                0),
+                                                        child: const Text(
+                                                            "Unknown User",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white)),
+                                                      ))
                                           ],
                                         ),
                                       ),

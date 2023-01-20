@@ -17,6 +17,22 @@ class Link {
   }
 }
 
+List<Link> linkListFromMap(Map<String, String> map) {
+  List<Link> outmap = [];
+  map.keys.forEach((element) {
+    outmap.add(Link(title: element, url: map[element]!));
+  });
+  return outmap;
+}
+
+Map<String, String> mapToLinkList(List<Link> linklist) {
+  Map<String, String> outmap = {};
+  linklist.forEach((element) {
+    outmap[element.title] = element.url;
+  });
+  return outmap;
+}
+
 List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
   List<GlobalPermission> outlist = [];
   if (permits.contains("ADMIN")) {
@@ -42,71 +58,116 @@ List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
 }
 
 /// Template class for Events to avoid type and valueerrors
+///
+/// If [title] isnt provided it will default to [hostreference]'s name
+///
+/// If both [title] and [hostreference] are null, it will default to "Unnamed Event"
+///
+/// [eventid] has to be provided. Only lowercase characters and numbers are allowed.
+///
+/// [eventid] has to be unique, this has to be checked before uploading event
+///
+/// [hostreference] can be a User or Group, also can be null.
+///
+/// [begin] is the timestamp where the event begins, can be null
+///
+/// [end] is the timestamp where the event endss, can be null
+///
+/// [location] is TBI, will be picked by google maps location picker. Can be null
+///
+/// [locationname] is an alternative to [location], host has to manually type in location-info. Can be null
+///
+/// both [location] and [locationname] can be null, can also be null at the same time.
+///
+/// in the [age] parameter the host can specify which age-requirements each attendee has to meet.
+///
+/// if the [icon] parameter is provided, the calendar-preview card and the event overview page will show the image
+/// meeting this path. If null, said image will default to [hostreference]'s profile picture. If both are null, it will default to a 'missing picture' image built into the app
+///
+/// the [description] gets displayed right beneath the [hostreference]'s data in event overview. Its a complex Text widget which allows for Multi-line, Custom formatting and use of emojis
+///
+/// [timetable] TBI
+///
+/// [links] will contain title:url pairs of links matching the event provided by the host. They are displayed in the event overview page if provided, converted into clickable url-launching links
+///
+/// [guestlist] TBI
+///
+/// [savedcount] corresponds to the amount of users which saved this event to their favourites
+///
+/// [exModHostname] (externally moderated Hostname override)
+///
+/// [exModHostname] is used to implement the option to add events to the calendar as a ravestream member.
+///
+/// If [exModHostname] is null, it will default to load event to be hostet by a Host themselves.
+///
+/// If [exModHostname] is not null, it will be modifyable by ravestream members, and the value given will be displayed instead of the linkbutton that normally links to the host
+///
 class Event {
-  final String? title;
-  final String eventid;
-  final DocumentReference? hostreference;
-  final Timestamp? begin;
-  final Timestamp? end;
-  final GeoPoint? location;
-  final String? locationname;
-  final String? age;
-  final String? icon;
-  final String? description;
-  final String? timetable;
-  final Map<String, String>? links;
-  final Map<DocumentReference, String>? guestlist;
-  final int savedcount;
+  String? title;
+  String eventid;
+  DocumentReference? hostreference;
+  Timestamp? begin;
+  Timestamp? end;
+  GeoPoint? location;
+  String? locationname;
+  String? age;
+  String? icon;
+  String? description;
+  String? timetable;
+  Map<String, String>? links;
+  Map<DocumentReference, String>? guestlist;
+  int savedcount;
+  String? exModHostname;
 
-  Event({
-    this.title = null,
-    required this.eventid,
-    this.hostreference = null,
-    this.begin = null,
-    this.end = null,
-    this.location = null,
-    this.locationname,
-    this.age = null,
-    this.icon = null,
-    this.description,
-    this.timetable = null,
-    this.links = null,
-    this.guestlist,
-    this.savedcount = 0,
-  });
+  Event(
+      {this.title = null,
+      required this.eventid,
+      this.hostreference = null,
+      this.begin = null,
+      this.end = null,
+      this.location = null,
+      this.locationname,
+      this.age = null,
+      this.icon = null,
+      this.description,
+      this.timetable = null,
+      this.links = null,
+      this.guestlist,
+      this.savedcount = 0,
+      this.exModHostname});
 
-  Event copyWith({
-    String? title,
-    required String eventid,
-    dynamic host,
-    Timestamp? begin,
-    Timestamp? end,
-    GeoPoint? location,
-    String? locationname,
-    String? age,
-    String? icon,
-    String? description,
-    String? timetable,
-    Map<String, String>? links,
-    Map<DocumentReference, String>? guestlist,
-    int? savedcount,
-  }) {
+  Event copyWith(
+      {String? title,
+      required String eventid,
+      dynamic host,
+      Timestamp? begin,
+      Timestamp? end,
+      GeoPoint? location,
+      String? locationname,
+      String? age,
+      String? icon,
+      String? description,
+      String? timetable,
+      Map<String, String>? links,
+      Map<DocumentReference, String>? guestlist,
+      int? savedcount,
+      String? exModHostname}) {
     return Event(
-      title: title ?? this.title,
-      eventid: eventid,
-      hostreference: hostreference ?? hostreference,
-      begin: begin ?? this.begin,
-      end: end ?? this.end,
-      location: location ?? this.location,
-      locationname: locationname ?? this.locationname,
-      age: age ?? this.age,
-      icon: icon ?? this.icon,
-      description: description ?? this.description,
-      timetable: timetable ?? this.timetable,
-      links: links ?? this.links,
-      guestlist: guestlist ?? this.guestlist,
-      savedcount: savedcount ?? this.savedcount,
-    );
+        title: title ?? this.title,
+        eventid: eventid,
+        hostreference: hostreference ?? hostreference,
+        begin: begin ?? this.begin,
+        end: end ?? this.end,
+        location: location ?? this.location,
+        locationname: locationname ?? this.locationname,
+        age: age ?? this.age,
+        icon: icon ?? this.icon,
+        description: description ?? this.description,
+        timetable: timetable ?? this.timetable,
+        links: links ?? this.links,
+        guestlist: guestlist ?? this.guestlist,
+        savedcount: savedcount ?? this.savedcount,
+        exModHostname: exModHostname ?? this.exModHostname);
   }
 
   Map<String, dynamic> toMap() {
@@ -131,6 +192,7 @@ class Event {
             })
           : {},
       'savedcount': savedcount,
+      'exModHostname': exModHostname
     };
   }
 
@@ -150,7 +212,8 @@ class Event {
           timetable: inputmap["timetable"],
           links: forceStringStringMapFromStringDynamic(inputmap["links"]),
           guestlist: forceDocumentReferenceStringMapTypeFromStringDynamic(
-              inputmap["guestlist"]));
+              inputmap["guestlist"]),
+          exModHostname: inputmap['exModHostname']);
       return mapevent;
     } catch (e) {
       print(e);
@@ -164,7 +227,7 @@ class Event {
 
   @override
   String toString() {
-    return 'Event(title: "$title", eventid: "$eventid", hostreference: "$hostreference", begin: "$begin", end: "$end", location: "$location", locationname: "$locationname", age: "$age", icon: "$icon", description: "${title /*description*/}", timetable: "$timetable", links: "$links", guestlist: "$guestlist", savedcount: "$savedcount")';
+    return 'Event(title: "$title", eventid: "$eventid", hostreference: "$hostreference", begin: "$begin", end: "$end", location: "$location", locationname: "$locationname", age: "$age", icon: "$icon", description: "${title /*description*/}", timetable: "$timetable", links: "$links", guestlist: "$guestlist", savedcount: "$savedcount", exModHostName: $exModHostname)';
   }
 
   @override
@@ -183,7 +246,8 @@ class Event {
         other.timetable == timetable &&
         mapEquals(other.links, links) &&
         mapEquals(other.guestlist, guestlist) &&
-        other.savedcount == savedcount;
+        other.savedcount == savedcount &&
+        other.exModHostname == exModHostname;
   }
 
   @override
@@ -201,7 +265,8 @@ class Event {
         timetable.hashCode ^
         links.hashCode ^
         guestlist.hashCode ^
-        savedcount.hashCode;
+        savedcount.hashCode ^
+        exModHostname.hashCode;
   }
 }
 
@@ -446,5 +511,6 @@ class User {
 
 User demoUser = User(username: "demo", password: "demo");
 Group demoGroup = Group(
-    groupid: "demo", members_roles: {db.doc("${branchPrefix}/groups/demo"): "Founder"});
+    groupid: "demo",
+    members_roles: {db.doc("${branchPrefix}/groups/demo"): "Founder"});
 Event demoEvent = Event(eventid: "demo");

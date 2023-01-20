@@ -79,6 +79,7 @@ Map<String, String>? forceStringStringMapFromStringDynamic(
   });
   return outputmap;
 }
+
 /// Converts unix timestamp to readable date and Time
 ///
 /// Format: DD:MM:YY hh:mm
@@ -90,12 +91,14 @@ String timestamp2readablestamp(Timestamp? timestamp) {
     return "${date.day < 10 ? "0${date.day}" : date.day.toString()}.${date.month < 10 ? "0${date.month}" : date.month.toString()}.${date.year} ${date.hour < 10 ? "0${date.hour}" : date.hour.toString()}:${date.minute < 10 ? "0${date.minute}" : date.minute.toString()}";
   }
 }
+
 /// Converts Firebase Type Timestamp to Dart Timestamp
 Timestamp? firebaseTimestampToTimeStamp(Timestamp? timestamp) {
   return timestamp != null
       ? Timestamp.fromMillisecondsSinceEpoch(timestamp.seconds * 1000)
       : null;
 }
+
 /// Converts String into Multiple Textspans
 ///
 /// Used for saving Strings with multiline formatting and display them correctly
@@ -105,11 +108,12 @@ Timestamp? firebaseTimestampToTimeStamp(Timestamp? timestamp) {
 /// TBA: Takes nl-Pattern as argument
 List<TextSpan> stringToTextSpanList(String mlinestring) {
   List<TextSpan> returnlist = [];
-  mlinestring.split("{/}").forEach((element) {
+  mlinestring.split("\n").forEach((element) {
     returnlist.add(TextSpan(text: "$element\n"));
   });
   return returnlist;
 }
+
 /// The prefix used to access the different branches of firestore database
 String get branchPrefix {
   if (selectedbranch.value == ServerBranches.develop) {
@@ -124,12 +128,14 @@ String get branchPrefix {
     throw Exception("Prefix for selected Branch not set.");
   }
 }
+
 /// Returns a String of random characters with length len
 String getRandString(int len) {
   var random = Random.secure();
   var values = List<int>.generate(len, (i) => random.nextInt(255));
   return base64UrlEncode(values);
 }
+
 /// Widget to support asynchronous loading of event titles
 class EventTitle extends StatelessWidget {
   final TextStyle style;
@@ -148,6 +154,7 @@ class EventTitle extends StatelessWidget {
         }));
   }
 }
+
 /// Returns Event title
 ///
 /// Nullsafe
@@ -171,18 +178,24 @@ Future<String> getEventTitle(dbc.Event event) async {
     return event.title ?? "This should never display";
   }
 }
+
 /// returns true if event with [eventid] is hosted by [user]
-bool isEventHostedByUser(String eventid, dbc.User? user) {
+bool isEventHostedByUser(dbc.Event event, dbc.User? user) {
   if (user == null) {
     return false;
   }
+  if (event.exModHostname != null &&
+      db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)) {
+    return true;
+  }
   for (int i = 0; i < user.events.length; i++) {
-    if (user.events[i].id == eventid) {
+    if (user.events[i].id == event.eventid) {
       return true;
     }
   }
   return false;
 }
+
 Map<DocumentReference, dynamic>? mapStringDynamic2DocRefDynamic(
     Map<String, dynamic> input) {
   Map<DocumentReference, dynamic> out = {};
@@ -191,3 +204,4 @@ Map<DocumentReference, dynamic>? mapStringDynamic2DocRefDynamic(
   });
   return out;
 }
+

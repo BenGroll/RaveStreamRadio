@@ -7,7 +7,7 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/screens/homescreen.dart';
-import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
+import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
@@ -15,18 +15,43 @@ import 'package:flutter/scheduler.dart';
 
 enum Screen { general, description, links }
 
+const loader = CircularProgressIndicator(color: Colors.white);
+
+bool isOpenedByRSRTeamMember = false;
 ValueNotifier<Screen> current_screen = ValueNotifier<Screen>(Screen.general);
 ValueNotifier<bool> eventtitleIsEmpty = ValueNotifier<bool>(true);
-ValueNotifier<DateTime?> beginning_date = ValueNotifier<DateTime?>(null);
-ValueNotifier<TimeOfDay?> beginning_time = ValueNotifier<TimeOfDay?>(null);
-ValueNotifier<DateTime?> end_date = ValueNotifier<DateTime?>(null);
-ValueNotifier<TimeOfDay?> end_time = ValueNotifier<TimeOfDay?>(null);
-String eventidcontent = "";
-String eventtitlecontent = "";
-String eventlocationcontent = "";
-ValueNotifier<String> descriptiontext = ValueNotifier("");
-ValueNotifier<List<dbc.Link>> added_links = ValueNotifier([]);
 ValueNotifier<bool> is_awaiting_upload = ValueNotifier(false);
+bool block_upload = false;
+bool is_overriding_existing_event = false;
+
+ValueNotifier<dbc.Event> currentEventData = ValueNotifier<dbc.Event>(dbc.Event(
+    eventid: "", title: "", locationname: "", description: "", links: {}));
+
+/// if it returns an empty list, the validate is without error.
+///
+/// The List contains the seperate error messages
+Future<List<String>> validateUpload() async {
+  dbc.Event toValidate = currentEventData.value;
+  List<String> errormessages = [];
+  if (toValidate.exModHostname == null && toValidate.hostreference == null) {
+    errormessages.add("Event needs a host specified.");
+  }
+  if (validateEventIDFieldLight(currentEventData.value.eventid) != null) {
+    errormessages
+        .add(validateEventIDFieldLight(currentEventData.value.eventid)!);
+  }
+  if (is_overriding_existing_event) {
+  } else {
+    if (await validateEventIDFieldDB(currentEventData.value.eventid) != null) {
+      errormessages.add("EventID is taken. Choose another one");
+    }
+  }
+  if (currentEventData.value.title == null ||
+      currentEventData.value.title!.isEmpty) {
+    errormessages.add("You have to give your event a title.");
+  }
+  return errormessages;
+}
 
 Map<String, String> linkListToDBMap(List<dbc.Link> list) {
   Map<String, String> outmap = {};
@@ -83,231 +108,195 @@ Future<String?> validateEventIDFieldDB(String content) async {
 }
 
 class EventCreationScreen extends StatelessWidget {
-  EventCreationScreen({super.key});
+  final String? eventIDToBeEdited;
+  EventCreationScreen({super.key, this.eventIDToBeEdited = null});
   @override
   Widget build(BuildContext context) {
     current_screen.value = Screen.general;
     eventtitleIsEmpty.value = true;
-    beginning_date.value = null;
-    beginning_time.value = null;
-    end_date.value = null;
-    end_time.value = null;
-    return ValueListenableBuilder(
-        valueListenable: current_screen,
-        builder: (context, snapshot, foo) {
-          return WillPopScope(
-              onWillPop: () async {
-                return await showDialog(
-                    barrierDismissible: false,
-                    context: context,
-                    // ignore: prefer_const_constructors
-                    builder: ((context) => AlertDialog(
-                          backgroundColor: cl.deep_black,
-                          title: const Text("Leave Event creation?",
-                              style: TextStyle(color: Colors.white)),
-                          content: const Text("All progress will be lost.",
-                              style: TextStyle(color: Colors.white)),
-                          actionsAlignment: MainAxisAlignment.spaceEvenly,
-                          actions: [
-                            TextButton(
-                                onPressed: (() {
-                                  Navigator.of(context).pop(true);
-                                }),
-                                child: const Text("Yes, leave.",
-                                    style: TextStyle(color: Colors.white))),
-                            TextButton(
-                                onPressed: (() {
-                                  Navigator.of(context).pop(false);
-                                }),
-                                child: const Text("No, stay.",
-                                    style: TextStyle(color: Colors.white)))
-                          ],
-                        )));
-              },
-              child: Scaffold(
-                appBar: AppBar(
-                  centerTitle: true,
-                  title: const Text("Create Event"),
-                  actions: [
-                    IconButton(
-                        onPressed: () {
-                          switch (current_screen.value) {
-                            case Screen.general:
-                              {
-                                current_screen.value = Screen.description;
-                                break;
-                              }
-                            case Screen.description:
-                              {
-                                current_screen.value = Screen.links;
-                                break;
-                              }
-                            case Screen.links:
-                              {
-                                showDialog(
-                                  barrierDismissible: false,
+    currentEventData.value = dbc.Event(
+        eventid: "", title: "", locationname: "", description: "", links: {});
+    // Add decision tree
+    if (currently_loggedin_as.value == null) {
+      return const ErrorScreen(
+          errormessage: "You have to be logged in to create or edit events.");
+    } else {
+      //String docref = "${branchPrefix}users/${currently_loggedin_as.value!.username}";
+      currentEventData.value.hostreference = db.db
+          .doc("${branchPrefix}users/${currently_loggedin_as.value!.username}");
+      if (eventIDToBeEdited == null) {
+        // Check if user is calendar manager
+        isOpenedByRSRTeamMember =
+            db.doIHavePermission(GlobalPermission.MANAGE_EVENTS);
+        // Open Create new event eventcreationscreen
+        return DefaultTabController(
+          length: 3,
+          child: ValueListenableBuilder(
+              valueListenable: current_screen,
+              builder: (context, screen, child) {
+                return Scaffold(
+                    backgroundColor: cl.deep_black,
+                    appBar: AppBar(
+                      bottom: const TabBar(tabs: [
+                        Tab(
+                          child: Text("1. General"),
+                        ),
+                        Tab(
+                          child: Text("2. Description"),
+                        ),
+                        Tab(
+                          child: Text("3. Links"),
+                        ),
+                      ]),
+                      actions: [
+                        TextButton(
+                            onPressed: () async {
+                              print("HERE");
+                              if (!block_upload) {
+                                block_upload = true;
+                                List<Widget> errorcontent =
+                                    await validateUpload().then((value) {
+                                  return value
+                                      .map((e) => Text(e,
+                                          style:
+                                              TextStyle(color: Colors.white)))
+                                      .toList();
+                                });
+                                block_upload = false;
+                                print(errorcontent);
+                                if (errorcontent.isEmpty) {
+                                  showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) =>
+                                          const UploadEventDialog());
+                                } else {
+                                  print("HERE2");
+                                  showDialog(
+                                    barrierDismissible: true,
                                     context: context,
-                                    builder: ((context) {
-                                      return ValueListenableBuilder(
-                                          valueListenable: is_awaiting_upload,
-                                          builder:
-                                              (context, awaiting_reload, foo) {
-                                            return awaiting_reload ? Dialog(
-                                              child: Center(child: CircularProgressIndicator(color: Colors.white, backgroundColor: Colors.black))) : AlertDialog(
-                                              backgroundColor: cl.deep_black,
-                                              title: const Text("Submit Event?",
-                                                  style: TextStyle(
-                                                      color: Colors.white)),
-                                              content: const Text("",
-                                                  maxLines: 3,
-                                                  style: TextStyle(
-                                                      color: Colors.white)),
-                                              actions: [
-                                                TextButton(
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                    child: const Text(
-                                                      "No, go back.",
-                                                      style: TextStyle(
-                                                          color: Colors.white),
-                                                    )),
-                                                TextButton(
-                                                    onPressed: () async {
-                                                      String?
-                                                          idmatchessemantics =
-                                                          validateEventIDFieldLight(
-                                                              eventidcontent);
-                                                      String? idalreadytaken =
-                                                          await validateEventIDFieldDB(
-                                                              eventidcontent);
-                                                      bool eventtitleempty =
-                                                          eventtitlecontent
-                                                              .isEmpty;
-                                                      print(idmatchessemantics);
-                                                      print(idalreadytaken);
-                                                      print(eventtitleempty);
-                                                      if ((idalreadytaken !=
-                                                              null) ||
-                                                          (idmatchessemantics !=
-                                                              null) ||
-                                                          eventtitleempty) {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        showDialog(
-                                                            context: context,
-                                                            builder: (context) {
-                                                              return Dialog(
-                                                                backgroundColor:
-                                                                    cl.deep_black,
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .min,
-                                                                  children: [
-                                                                    idmatchessemantics ==
-                                                                            null
-                                                                        ? const SizedBox(
-                                                                            height:
-                                                                                0)
-                                                                        : Text(
-                                                                            idmatchessemantics,
-                                                                            style:
-                                                                                const TextStyle(color: Colors.white)),
-                                                                    idalreadytaken ==
-                                                                            null
-                                                                        ? const SizedBox(
-                                                                            height:
-                                                                                0)
-                                                                        : Text(
-                                                                            idalreadytaken,
-                                                                            style:
-                                                                                const TextStyle(color: Colors.white)),
-                                                                    eventtitleempty
-                                                                        ? const Text(
-                                                                            "EventTitle: Can't be empty",
-                                                                            style:
-                                                                                TextStyle(color: Colors.white))
-                                                                        : const SizedBox(height: 0)
-                                                                  ],
-                                                                ),
-                                                              );
-                                                            });
-                                                        return;
-                                                      }
-                                                      dbc.Event uploadEventFile = dbc.Event(
-                                                          eventid:
-                                                              eventidcontent,
-                                                          title:
-                                                              eventtitlecontent,
-                                                          hostreference: db.db.doc(
-                                                              "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
-                                                          description:
-                                                              descriptiontext
-                                                                  .value.isEmpty ? null : descriptiontext.value,
-                                                          end: end_date.value == null
-                                                              ? null
-                                                              : Timestamp.fromDate(DateTime(
-                                                                  end_date
-                                                                      .value!
-                                                                      .year,
-                                                                  end_date
-                                                                      .value!
-                                                                      .month,
-                                                                  end_date
-                                                                      .value!
-                                                                      .day,
-                                                                  end_time.value?.hour ?? 0,
-                                                                  end_time.value?.minute ?? 0)),
-                                                          begin: beginning_date.value == null ? null : Timestamp.fromDate(DateTime(beginning_date.value!.year, beginning_date.value!.month, beginning_date.value!.day, beginning_time.value?.hour ?? 0, beginning_time.value?.minute ?? 0)),
-                                                          locationname: eventlocationcontent.isEmpty ? null : eventlocationcontent,
-                                                          links: linkListToDBMap(added_links.value));
-                                                      uploadEvent(
-                                                          uploadEventFile,
-                                                          context);
-                                                    },
-                                                    child: const Text(
-                                                        "Yes, submit.",
-                                                        style: TextStyle(
-                                                            color:
-                                                                Colors.white))),
-                                              ],
-                                            );
-                                          });
-                                    }));
-                                break;
+                                    builder: (context) => UploadingErrorDialog(
+                                        errormessages: errorcontent),
+                                  );
+                                }
                               }
-                            default:
-                          }
-                        },
-                        icon: const Icon(Icons.arrow_forward))
-                  ],
-                ),
-                backgroundColor: cl.nearly_black,
-                bottomNavigationBar: Theme(
-                  data: Theme.of(context).copyWith(canvasColor: cl.deep_black),
-                  child: BottomNavigationBar(
-                    selectedItemColor: Colors.white,
-                    unselectedItemColor: Colors.white,
-                    // ignore: prefer_const_literals_to_create_immutables
-                    items: [
-                      const BottomNavigationBarItem(
-                          icon: SizedBox(height: 0), label: "General"),
-                      const BottomNavigationBarItem(
-                          icon: SizedBox(height: 0), label: "Description"),
-                      const BottomNavigationBarItem(
-                          icon: SizedBox(height: 0), label: "Links")
-                    ],
-                    currentIndex: current_screen.value.index,
-                    onTap: (value) {
-                      current_screen.value = Screen.values[value];
-                    },
-                  ),
-                ),
-                body: mapScreenToWidget(current_screen.value),
-              ));
-        });
+                            },
+                            child: Text("Upload",
+                                style: TextStyle(color: Colors.white)))
+                      ],
+                    ),
+                    body: TabBarView(
+                      children: [
+                        GeneralSettingsPage(),
+                        DescriptionEditingPage(),
+                        LinkEditingScreen()
+                      ],
+                    ));
+              }),
+        );
+      } else {
+        // Am I allowed to edit this event?
+        return FutureBuilder(
+            future: db.hasPermissionToEditEvent(eventIDToBeEdited!),
+            builder: (context, canEditSnap) {
+              if (canEditSnap.connectionState == ConnectionState.done) {
+                if (canEditSnap.data == null) {
+                  return ErrorScreen(
+                      errormessage:
+                          "Snapshot from 'db.hasPermissionToEditEvent' has no data.");
+                } else {
+                  if (canEditSnap.data!) {
+                    // User has permission to edit event
+                    is_overriding_existing_event = true;
+                    return DefaultTabController(
+                      length: 3,
+                      child: FutureBuilder(
+                          future: db.getEvent(eventIDToBeEdited!),
+                          builder: (context, existingEventDataSnap) {
+                            if (existingEventDataSnap.connectionState ==
+                                ConnectionState.done) {
+                              if (existingEventDataSnap.hasData &&
+                                  existingEventDataSnap.data != null) {
+                                // Load existing values
+                                dbc.Event event = existingEventDataSnap.data!;
+                                currentEventData.value = event;
+                                // / Load existing values
+                                isOpenedByRSRTeamMember = db.doIHavePermission(
+                                    GlobalPermission.MANAGE_EVENTS);
+                                return ValueListenableBuilder(
+                                    valueListenable: current_screen,
+                                    builder: (context, screen, child) {
+                                      return Scaffold(
+                                          backgroundColor: cl.deep_black,
+                                          appBar: AppBar(
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () async {
+                                                    if (!block_upload) {
+                                                      block_upload = true;
+                                                      List<Widget>
+                                                          errorcontent =
+                                                          await validateUpload()
+                                                              .then((value) {
+                                                        return value
+                                                            .map((e) => Text(e,
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .white)))
+                                                            .toList();
+                                                      });
+                                                      if (errorcontent
+                                                          .isEmpty) {
+                                                        showDialog(
+                                                            barrierDismissible:
+                                                                false,
+                                                            context: context,
+                                                            builder: (context) =>
+                                                                const UploadEventDialog());
+                                                      } else {
+                                                        showDialog(
+                                                          barrierDismissible:
+                                                              true,
+                                                          context: context,
+                                                          builder: (context) =>
+                                                              UploadingErrorDialog(
+                                                                  errormessages:
+                                                                      errorcontent),
+                                                        );
+                                                      }
+                                                    }
+                                                  },
+                                                  child: Text("Upload",
+                                                      style: TextStyle(
+                                                          color: Colors.white)))
+                                            ],
+                                          ),
+                                          body: mapScreenToWidget(screen));
+                                    });
+                              } else {
+                                return ErrorScreen(
+                                    errormessage:
+                                        "Snapshot from 'db.getEvent' has no data or data is null.");
+                              }
+                            } else {
+                              return loader;
+                            }
+                          }),
+                    );
+                  } else {
+                    return ErrorScreen(
+                        errormessage:
+                            "You do not have the permission to edit event @$eventIDToBeEdited.\nIf you believe this is an error, please contact the host or the RaveStreamRadio team.");
+                  }
+                }
+              } else {
+                return loader;
+              }
+            });
+      }
+    }
+
+    // For type safety
   }
 }
 
@@ -332,21 +321,50 @@ class GeneralSettingsPage extends StatelessWidget {
                           vertical: MediaQuery.of(context).size.height / 100,
                           horizontal: MediaQuery.of(context).size.width / 50),
                       child: Column(children: [
+                        isOpenedByRSRTeamMember
+                            ? SizedBox(height: 0)
+                            : TextFormField(
+                                initialValue:
+                                    currentEventData.value.exModHostname,
+                                onChanged: (value) async {
+                                  currentEventData.value.exModHostname = value;
+                                },
+                                onFieldSubmitted: (value) async {
+                                  currentEventData.value.exModHostname = value;
+                                },
+                                onSaved: (newValue) async {
+                                  currentEventData.value.exModHostname =
+                                      newValue ?? "";
+                                },
+                                style: const TextStyle(color: Colors.white),
+                                cursorColor: Colors.white,
+                                decoration: const InputDecoration(
+                                  icon: Icon(Icons.perm_identity,
+                                      color: Colors.white),
+                                  labelText: "Hostname",
+                                  labelStyle:
+                                      const TextStyle(color: Colors.white),
+                                  hintText: "Enter Name of the host",
+                                  hintStyle:
+                                      const TextStyle(color: Colors.grey),
+                                ),
+                              ),
                         TextFormField(
+                          initialValue: currentEventData.value.eventid,
                           onChanged: (value) async {
                             eventidvalidator.value =
                                 validateEventIDFieldLight(value);
-                            eventidcontent = value;
+                            currentEventData.value.eventid = value;
                           },
                           onFieldSubmitted: (value) async {
                             eventidvalidator.value =
                                 await validateEventIDFieldDB(value);
-                            eventidcontent = value;
+                            currentEventData.value.eventid = value;
                           },
                           onSaved: (newValue) async {
                             eventidvalidator.value =
                                 await validateEventIDFieldDB(newValue ?? "");
-                            eventidcontent = newValue ?? "";
+                            currentEventData.value.eventid = newValue ?? "";
                           },
                           style: const TextStyle(color: Colors.white),
                           cursorColor: Colors.white,
@@ -378,9 +396,10 @@ class GeneralSettingsPage extends StatelessWidget {
                     child: Column(
                       children: [
                         TextFormField(
+                          initialValue: currentEventData.value.title,
                           onChanged: (value) async {
                             eventtitleIsEmpty.value = value.isEmpty;
-                            eventtitlecontent = value;
+                            currentEventData.value.title = value;
                           },
                           style: const TextStyle(color: Colors.white),
                           cursorColor: Colors.white,
@@ -426,13 +445,22 @@ class GeneralSettingsPage extends StatelessWidget {
                                           DateTime? picked_date =
                                               await showDatePicker(
                                                   context: context,
-                                                  initialDate: DateTime.now(),
+                                                  initialDate: currentEventData
+                                                              .value.begin ==
+                                                          null
+                                                      ? DateTime.now()
+                                                      : currentEventData
+                                                          .value.begin!
+                                                          .toDate(),
                                                   firstDate: DateTime.now(),
                                                   lastDate: DateTime(
                                                     DateTime.now().year + 20,
                                                   ));
                                           if (picked_date != null) {
-                                            beginning_date.value = picked_date;
+                                            currentEventData.value.begin =
+                                                Timestamp.fromDate(picked_date);
+                                            print(currentEventData.value.begin);
+                                            currentEventData.notifyListeners();
                                           }
                                         },
                                         child: const Text(
@@ -444,10 +472,31 @@ class GeneralSettingsPage extends StatelessWidget {
                                           TimeOfDay? picked_time =
                                               await showTimePicker(
                                                   context: context,
-                                                  initialTime: const TimeOfDay(
-                                                      hour: 0, minute: 0));
+                                                  initialTime: currentEventData
+                                                              .value.begin ==
+                                                          null
+                                                      ? const TimeOfDay(
+                                                          hour: 0, minute: 0)
+                                                      : TimeOfDay.fromDateTime(
+                                                          currentEventData
+                                                              .value.begin!
+                                                              .toDate()));
                                           if (picked_time != null) {
-                                            beginning_time.value = picked_time;
+                                            DateTime currentTime =
+                                                currentEventData.value.begin ==
+                                                        null
+                                                    ? DateTime.now()
+                                                    : currentEventData
+                                                        .value.begin!
+                                                        .toDate();
+                                            currentEventData.value.begin =
+                                                Timestamp.fromDate(DateTime(
+                                                    currentTime.year,
+                                                    currentTime.month,
+                                                    currentTime.day,
+                                                    picked_time.hour,
+                                                    picked_time.minute));
+                                            currentEventData.notifyListeners();
                                           }
                                         },
                                         child: const Text(
@@ -479,13 +528,23 @@ class GeneralSettingsPage extends StatelessWidget {
                                           DateTime? picked_date =
                                               await showDatePicker(
                                                   context: context,
-                                                  initialDate: DateTime.now(),
+                                                  initialDate: currentEventData
+                                                              .value.end ==
+                                                          null
+                                                      ? DateTime.now()
+                                                      : currentEventData
+                                                          .value.end!
+                                                          .toDate(),
                                                   firstDate: DateTime.now(),
                                                   lastDate: DateTime(
                                                       DateTime.now().year +
                                                           20));
                                           if (picked_date != null) {
-                                            end_date.value = picked_date;
+                                            currentEventData.value.end =
+                                                Timestamp.fromDate(picked_date);
+                                            print(timestamp2readablestamp(
+                                                currentEventData.value.end));
+                                            currentEventData.notifyListeners();
                                           }
                                         },
                                         child: const Text(
@@ -497,10 +556,31 @@ class GeneralSettingsPage extends StatelessWidget {
                                           TimeOfDay? picked_time =
                                               await showTimePicker(
                                                   context: context,
-                                                  initialTime: const TimeOfDay(
-                                                      hour: 0, minute: 0));
+                                                  initialTime: currentEventData
+                                                              .value.end ==
+                                                          null
+                                                      ? const TimeOfDay(
+                                                          hour: 0, minute: 0)
+                                                      : TimeOfDay.fromDateTime(
+                                                          currentEventData
+                                                              .value.end!
+                                                              .toDate()));
                                           if (picked_time != null) {
-                                            end_time.value = picked_time;
+                                            DateTime currentTime =
+                                                currentEventData.value.end ==
+                                                        null
+                                                    ? DateTime.now()
+                                                    : currentEventData
+                                                        .value.end!
+                                                        .toDate();
+                                            currentEventData.value.end =
+                                                Timestamp.fromDate(DateTime(
+                                                    currentTime.year,
+                                                    currentTime.month,
+                                                    currentTime.day,
+                                                    picked_time.hour,
+                                                    picked_time.minute));
+                                            currentEventData.notifyListeners();
                                           }
                                         },
                                         child: const Text(
@@ -512,35 +592,31 @@ class GeneralSettingsPage extends StatelessWidget {
                           ],
                         ),
                         ValueListenableBuilder(
-                          valueListenable: beginning_date,
-                          builder: (context, date, child) {
-                            return ValueListenableBuilder(
-                                valueListenable: beginning_time,
-                                builder: (context, time, child) {
-                                  return date == null
-                                      ? Text(
-                                          "If you dont provide at least 'end date', your event will not be visible in default calendar",
-                                          style: TextStyle(color: Colors.grey))
-                                      : Text(
-                                          "Begins at: ${timestamp2readablestamp(Timestamp.fromDate(DateTime(beginning_date.value!.year, beginning_date.value!.month, beginning_date.value!.day, beginning_time.value?.hour ?? 0, beginning_time.value?.minute ?? 0)))}",
-                                          style: TextStyle(color: Colors.white),
-                                        );
-                                });
+                          valueListenable: currentEventData,
+                          builder: (context, eventData, child) {
+                            print(eventData.begin);
+                            print(eventData.end);
+                            return eventData.begin == null &&
+                                    eventData.end == null
+                                ? Text(
+                                    "If you dont provide at least 'end date', your event will not be visible in default calendar",
+                                    style: TextStyle(color: Colors.grey))
+                                : Text(
+                                    "Begins at: ${timestamp2readablestamp(eventData.begin)}",
+                                    style: TextStyle(color: Colors.white),
+                                  );
+                            ;
                           },
                         ),
                         ValueListenableBuilder(
-                          valueListenable: end_date,
-                          builder: (context, date, child) {
-                            return ValueListenableBuilder(
-                                valueListenable: end_time,
-                                builder: (context, time, child) {
-                                  return date == null
-                                      ? SizedBox(height: 0)
-                                      : Text(
-                                          "Ends at: ${timestamp2readablestamp(Timestamp.fromDate(DateTime(end_date.value!.year, end_date.value!.month, end_date.value!.day, end_time.value?.hour ?? 0, end_time.value?.minute ?? 0)))}",
-                                          style: TextStyle(color: Colors.white),
-                                        );
-                                });
+                          valueListenable: currentEventData,
+                          builder: (context, event, child) {
+                            return event.end == null
+                                ? SizedBox(height: 0)
+                                : Text(
+                                    "Ends at: ${timestamp2readablestamp(event.end)}",
+                                    style: TextStyle(color: Colors.white),
+                                  );
                           },
                         )
                       ],
@@ -548,8 +624,9 @@ class GeneralSettingsPage extends StatelessWidget {
                   );
                 })),
             TextFormField(
+              initialValue: currentEventData.value.locationname,
               onChanged: (value) {
-                eventlocationcontent = value;
+                currentEventData.value.locationname = value;
               },
               style: const TextStyle(color: Colors.white),
               cursorColor: Colors.white,
@@ -570,7 +647,8 @@ class DescriptionEditingPage extends StatelessWidget {
   const DescriptionEditingPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
+      initialValue: currentEventData.value.description,
       style: const TextStyle(color: Colors.white),
       keyboardType: TextInputType.multiline,
       maxLines: null,
@@ -578,10 +656,7 @@ class DescriptionEditingPage extends StatelessWidget {
       expands: true,
       cursorColor: Colors.white,
       onChanged: (value) {
-        descriptiontext.value = value;
-      },
-      onSubmitted: (value) {
-        descriptiontext.value = value;
+        currentEventData.value.description = value;
       },
     );
   }
@@ -617,13 +692,14 @@ class LinkEditingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-        valueListenable: added_links,
-        builder: (context, links, foo) {
+        valueListenable: currentEventData,
+        builder: (context, eventdata, foo) {
           return ListView(
             padding: EdgeInsets.symmetric(
                 vertical: MediaQuery.of(context).size.height / 50,
                 horizontal: MediaQuery.of(context).size.width / 50),
-            children: getLinkList(context, links),
+            children: getLinkList(
+                context, dbc.linkListFromMap(eventdata.links ?? {})),
           );
         });
   }
@@ -655,13 +731,26 @@ class LinkCreateDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Enter Link Data"),
+      shape: RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.circular(MediaQuery.of(context).size.width / 50),
+          side: BorderSide(color: Color.fromARGB(255, 60, 60, 60))),
+      backgroundColor: cl.deep_black,
+      title: Text("Enter Link Data", style: TextStyle(color: Colors.white)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextFormField(
+            style: TextStyle(color: Colors.white),
             autofocus: true,
-            decoration: InputDecoration(hintText: "Label, e.g 'Instagram'"),
+            decoration: InputDecoration(
+                disabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white)),
+                enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white)),
+                hintText: "Label, e.g 'Instagram'",
+                hintStyle: TextStyle(color: Colors.white)),
+            cursorColor: Colors.white,
             onChanged: (value) {
               label = value;
             },
@@ -669,7 +758,14 @@ class LinkCreateDialog extends StatelessWidget {
           ),
           TextFormField(
             autofocus: true,
-            decoration: InputDecoration(hintText: "URL"),
+            style: TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+                enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white)),
+                focusColor: Colors.white,
+                hintText: "URL",
+                hintStyle: TextStyle(color: Colors.white)),
+            cursorColor: Colors.white,
             onChanged: (value) {
               url = value;
             },
@@ -678,15 +774,18 @@ class LinkCreateDialog extends StatelessWidget {
         ],
       ),
       actions: [
-        ElevatedButton(
+        TextButton(
             onPressed: () {
-              List<dbc.Link> formerlist = added_links.value;
+              List<dbc.Link> formerlist =
+                  dbc.linkListFromMap(currentEventData.value.links ?? {});
               formerlist.add(dbc.Link(title: label, url: url));
               Navigator.of(context).pop();
-              added_links.value = formerlist;
-              added_links.notifyListeners();
+              currentEventData.value.links = dbc.mapToLinkList(formerlist);
+              currentEventData.notifyListeners();
+              print(currentEventData.value.links);
             },
-            child: Text("Add link to event"))
+            child: Text("Add link to event",
+                style: TextStyle(color: Colors.white)))
       ],
     );
   }
@@ -698,14 +797,17 @@ class LinkEditDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Edit Link"),
+      backgroundColor: cl.deep_black,
+      title: Text("Edit Link", style: TextStyle(color: Colors.white)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextFormField(
             initialValue: link.title,
             autofocus: true,
-            decoration: InputDecoration(hintText: "Label, e.g 'Instagram'"),
+            decoration: InputDecoration(
+                hintText: "Label, e.g 'Instagram'",
+                hintStyle: TextStyle(color: Colors.white)),
             onChanged: (value) {
               link.title = value;
             },
@@ -714,7 +816,8 @@ class LinkEditDialog extends StatelessWidget {
           TextFormField(
             initialValue: link.url,
             autofocus: true,
-            decoration: InputDecoration(hintText: "URL"),
+            decoration: InputDecoration(
+                hintText: "URL", hintStyle: TextStyle(color: Colors.white)),
             onChanged: (value) {
               link.url = value;
             },
@@ -725,12 +828,14 @@ class LinkEditDialog extends StatelessWidget {
       actions: [
         ElevatedButton(
             onPressed: () {
-              List<dbc.Link> formerlist = added_links.value;
+              List<dbc.Link> formerlist =
+                  dbc.linkListFromMap(currentEventData.value.links ?? {});
               Navigator.of(context).pop();
-              added_links.value = editLinkInList(added_links.value, link);
-              added_links.notifyListeners();
+              currentEventData.value.links =
+                  dbc.mapToLinkList(editLinkInList(formerlist, link));
             },
-            child: Text("Save changes to Link"))
+            child: Text("Save changes to Link",
+                style: TextStyle(color: Colors.white)))
       ],
     );
   }
@@ -751,11 +856,80 @@ List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
 Future uploadEvent(dbc.Event event, BuildContext context) async {
   is_awaiting_upload.value = true;
   await db.uploadEventToDatabase(event);
+  await Future.delayed(Duration(seconds: 2));
   kIsWeb
       ? Beamer.of(context).popToNamed("/events")
       : Navigator.of(context).pop();
-  ScaffoldMessenger.of(context)
-      .showSnackBar(cw.hintSnackBar("Event created successfully!"));
+  is_overriding_existing_event 
+  ? ScaffoldMessenger.of(context)
+      .showSnackBar(hintSnackBar("Event edited successfully!"))
+  : ScaffoldMessenger.of(context)
+      .showSnackBar(hintSnackBar("Event created successfully!"));
   currently_selected_screen.notifyListeners();
   Navigator.of(context).pop();
+  is_awaiting_upload.value = false;
+}
+
+class UploadEventDialog extends StatelessWidget {
+  const UploadEventDialog({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+        valueListenable: is_awaiting_upload,
+        builder: (context, uploading, foo) {
+          return AlertDialog(
+            backgroundColor: cl.deep_black,
+            title: uploading
+                ? null
+                : Text("Finished?", style: TextStyle(color: Colors.white)),
+            content: uploading
+                ? Center(child: loader)
+                : Text(
+                    "Post the event?\nYou can also save your event to publish later.",
+                    style: TextStyle(color: Colors.white)),
+            actions: uploading
+                ? null
+                : [
+                    TextButton(
+                      child: Text("Discard",
+                          style: TextStyle(color: Colors.white)),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                        onPressed: () {},
+                        child: Text("Save(TBA)",
+                            style: TextStyle(color: Colors.white))),
+                    TextButton(
+                        onPressed: () {
+                          uploadEvent(currentEventData.value, context);
+                        },
+                        child: Text("Publish",
+                            style: TextStyle(color: Colors.white))),
+                  ],
+          );
+        });
+  }
+}
+
+class UploadingErrorDialog extends StatelessWidget {
+  final List<Widget> errormessages;
+  const UploadingErrorDialog({super.key, required this.errormessages});
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: cl.deep_black,
+      title:
+          Text("Couldn't upload Event", style: TextStyle(color: Colors.white)),
+      content: FutureBuilder(
+          future: validateUpload(),
+          builder: (context, snapshot) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: errormessages,
+            );
+          }),
+    );
+  }
 }
