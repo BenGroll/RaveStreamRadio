@@ -110,7 +110,13 @@ class EventCalendar extends StatelessWidget {
                         shownitems.add(PageIndicator());
                         shownitems.add(SizedBox(
                             height: MediaQuery.of(context).size.height / 35));
-                        return ListView(children: shownitems);
+                            ScrollController cont = ScrollController();
+                        return Scrollbar(
+                          controller: cont,
+                          isAlwaysShown: true,
+                          child: ListView(
+                            controller: cont,
+                            children: shownitems));
                       }
                     }));
               }),
@@ -125,6 +131,8 @@ class CalendarEventCard extends StatelessWidget {
   }
   @override
   Widget build(BuildContext context) {
+    print(currently_loggedin_as.value);
+    print(isEventHostedByUser(event, currently_loggedin_as.value));
     ValueNotifier<bool> saved =
         ValueNotifier(db.isEventSaved(event, currently_loggedin_as.value));
     if (isEventHostedByUser(event, currently_loggedin_as.value)) {

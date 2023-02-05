@@ -91,15 +91,21 @@ Future setTestDBScenario() async {
 /// Returns Failed attempt on Web until Filesystem alternative is worked out
 /// Only typesafe on web, doesnt work.
 Future<dbc.User?> tryUserLogin(String username, String password) async {
-  if (kIsWeb && DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return dbc.demoUser;
-  if (kIsWeb && !DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return null;
+  print("tryUserLogin with $username $password");
+  //if (kIsWeb && DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return dbc.demoUser;
+  //if (kIsWeb && !DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return null;
   try {
     print("Trying to login using username : $username, password: $password");
     if (username.isEmpty || password.isEmpty) {
       return null;
     }
+    print("${branchPrefix}users/$username");
+
     DocumentSnapshot<Map<String, dynamic>> doc =
         await db.doc("${branchPrefix}users/$username").get();
+    /*DocumentSnapshot<Map<String, dynamic>> doc =
+        await db.doc("users/admin").get();*/
+    print("Doc: $doc");
     if (doc.data() == null) {
       return null;
     }
@@ -129,8 +135,13 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
       ? await files.readLoginDataWeb()
       : await files.readLoginDataMobile();
   //return await tryUserLogin(savedlogindata["username"], savedlogindata["password"]);
-  return await tryUserLogin(
-      savedlogindata["username"], savedlogindata["password"]);
+
+  if (kIsWeb) {
+    ///
+  } else {
+    return await tryUserLogin(
+        savedlogindata["username"], savedlogindata["password"]);
+  }
 }
 
 Future<dbc.User?> getUser(String username) async {
@@ -178,6 +189,7 @@ Future<List<dbc.Event>> getEvents(
   maplist.forEach((element) {
     events.add(dbc.Event.fromMap(element));
   });
+
   return events;
 }
 

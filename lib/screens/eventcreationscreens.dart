@@ -349,37 +349,43 @@ class GeneralSettingsPage extends StatelessWidget {
                                       const TextStyle(color: Colors.grey),
                                 ),
                               ),
-                        TextFormField(
-                          initialValue: currentEventData.value.eventid,
-                          onChanged: (value) async {
-                            eventidvalidator.value =
-                                validateEventIDFieldLight(value);
-                            currentEventData.value.eventid = value;
-                          },
-                          onFieldSubmitted: (value) async {
-                            eventidvalidator.value =
-                                await validateEventIDFieldDB(value);
-                            currentEventData.value.eventid = value;
-                          },
-                          onSaved: (newValue) async {
-                            eventidvalidator.value =
-                                await validateEventIDFieldDB(newValue ?? "");
-                            currentEventData.value.eventid = newValue ?? "";
-                          },
-                          style: const TextStyle(color: Colors.white),
-                          cursorColor: Colors.white,
-                          decoration: InputDecoration(
-                            icon: Icon(
-                                eventidvalidatedstring != null
-                                    ? Icons.highlight_off
-                                    : Icons.check_circle_outline,
-                                color: Colors.white),
-                            labelText: "Event-ID",
-                            labelStyle: const TextStyle(color: Colors.white),
-                            hintText: "only letters and numbers allowed.",
-                            hintStyle: const TextStyle(color: Colors.grey),
-                          ),
-                        ),
+                        is_overriding_existing_event
+                            ? Text("EventID: ${currentEventData.value.eventid}")
+                            : TextFormField(
+                                initialValue: currentEventData.value.eventid,
+                                onChanged: (value) async {
+                                  eventidvalidator.value =
+                                      validateEventIDFieldLight(value);
+                                  currentEventData.value.eventid = value;
+                                },
+                                onFieldSubmitted: (value) async {
+                                  eventidvalidator.value =
+                                      await validateEventIDFieldDB(value);
+                                  currentEventData.value.eventid = value;
+                                },
+                                onSaved: (newValue) async {
+                                  eventidvalidator.value =
+                                      await validateEventIDFieldDB(
+                                          newValue ?? "");
+                                  currentEventData.value.eventid =
+                                      newValue ?? "";
+                                },
+                                style: const TextStyle(color: Colors.white),
+                                cursorColor: Colors.white,
+                                decoration: InputDecoration(
+                                  icon: Icon(
+                                      eventidvalidatedstring != null
+                                          ? Icons.highlight_off
+                                          : Icons.check_circle_outline,
+                                      color: Colors.white),
+                                  labelText: "Event-ID",
+                                  labelStyle:
+                                      const TextStyle(color: Colors.white),
+                                  hintText: "only letters and numbers allowed.",
+                                  hintStyle:
+                                      const TextStyle(color: Colors.grey),
+                                ),
+                              ),
                         Text(
                           eventidvalidatedstring ?? "",
                           style: const TextStyle(color: Colors.grey),
@@ -857,17 +863,17 @@ Future uploadEvent(dbc.Event event, BuildContext context) async {
   is_awaiting_upload.value = true;
   await db.uploadEventToDatabase(event);
   await Future.delayed(Duration(seconds: 2));
-  kIsWeb
-      ? Beamer.of(context).popToNamed("/events")
-      : Navigator.of(context).pop();
-  is_overriding_existing_event 
-  ? ScaffoldMessenger.of(context)
-      .showSnackBar(hintSnackBar("Event edited successfully!"))
-  : ScaffoldMessenger.of(context)
-      .showSnackBar(hintSnackBar("Event created successfully!"));
+  kIsWeb ? Beamer.of(context).popToNamed("/") : Navigator.of(context).pop();
+  if (kIsWeb) {
+    is_overriding_existing_event
+        ? ScaffoldMessenger.of(context)
+            .showSnackBar(hintSnackBar("Event edited successfully!"))
+        : ScaffoldMessenger.of(context)
+            .showSnackBar(hintSnackBar("Event created successfully!"));
+  }
   currently_selected_screen.notifyListeners();
-  Navigator.of(context).pop();
   is_awaiting_upload.value = false;
+  Navigator.of(context).pop();
 }
 
 class UploadEventDialog extends StatelessWidget {

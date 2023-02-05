@@ -113,23 +113,23 @@ Widget map_Widget_to_Screen(Screens screen) {
   }
 }
 
-AppBar mapScreenToAppBar(Screens screen, dbc.User? loggedinas) {
+AppBar mapScreenToAppBar(Screens screen, dbc.User? loggedinas, BuildContext context) {
   switch (screen) {
     case Screens.events:
       {
-        return cw.CalendarAppBar;
+        return cw.CalendarAppBar(context);
       }
     case Screens.favourites:
       {
-        return cw.FavouritesAppBar;
+        return cw.FavouritesAppBar(context);
       }
     case Screens.forums:
       {
-        return cw.GroupsAppBar;
+        return cw.GroupsAppBar(context);
       }
     case Screens.profile:
       {
-        return cw.ProfileAppBar(loggedinas);
+        return cw.ProfileAppBar(context);
       }
     default:
       {
@@ -146,7 +146,6 @@ class HomeScreen extends StatelessWidget {
       required this.loggedinas,
       this.startingscreen = Screens.events});
 
-  
   @override
   Widget build(BuildContext context) {
     currently_selected_screen.value = startingscreen;
@@ -159,7 +158,7 @@ class HomeScreen extends StatelessWidget {
               builder: ((context, screen, child) {
                 return Scaffold(
                   drawer: cw.NavBar(),
-                  appBar: mapScreenToAppBar(screen, currently_loggedin_as.value),
+                  appBar: mapScreenToAppBar(screen, currently_loggedin_as.value, context),
                   body: map_Widget_to_Screen(currently_selected_screen.value),
                   floatingActionButtonLocation:
                       FloatingActionButtonLocation.centerDocked,

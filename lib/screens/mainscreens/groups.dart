@@ -37,7 +37,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                     widget.widgets.value = snapshot.data ??
                         [
                           Text(
-                            "HALLO",
+                            "No Groups joined yet.",
                             style: TextStyle(color: Colors.white),
                           )
                         ];

@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, non_constant_identifier_names
 
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
@@ -21,34 +21,48 @@ SnackBar hintSnackBar(String alertMessage) {
       content: Text(alertMessage));
 }
 
-final CalendarAppBar = AppBar(
-    leading: const OpenSidebarButton(),
-    actions: [IconButton(onPressed: () {}, icon: Icon(Icons.filter_alt))],
-    title: const Text("Events"),
-    centerTitle: true);
+AppBar CalendarAppBar(BuildContext context) {
+  return AppBar(
+      leading: const OpenSidebarButton(),
+      actions: [
+        IconButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(hintSnackBar("Event Filters are not yet added."));
+            },
+            icon: Icon(Icons.filter_alt))
+      ],
+      title: const Text("Events"),
+      centerTitle: true);
+}
 
-final FavouritesAppBar = AppBar(
-  leading: const OpenSidebarButton(),
-  backgroundColor: cl.deep_black,
-  title: const Text("Favourites"),
-  centerTitle: true,
-);
+AppBar FavouritesAppBar(BuildContext context) {
+  return AppBar(
+    leading: const OpenSidebarButton(),
+    backgroundColor: cl.deep_black,
+    title: const Text("Favourites"),
+    centerTitle: true,
+  );
+}
 
 TabBar tabbar = TabBar(
   tabs: [Tab(text: "Groups"), Tab(text: "Chats")],
 );
 
-final GroupsAppBar = (AppBar(
-  leading: const OpenSidebarButton(),
-  elevation: 8,
-  backgroundColor: cl.deep_black,
-  title: DefaultTabController(
-      length: 2,
-      child: PreferredSize(preferredSize: tabbar.preferredSize, child: tabbar)),
-  centerTitle: true,
-));
+AppBar GroupsAppBar(BuildContext context) {
+  return AppBar(
+    leading: const OpenSidebarButton(),
+    elevation: 8,
+    backgroundColor: cl.deep_black,
+    title: DefaultTabController(
+        length: 2,
+        child:
+            PreferredSize(preferredSize: tabbar.preferredSize, child: tabbar)),
+    centerTitle: true,
+  );
+}
 
-AppBar ProfileAppBar(dbc.User? user) {
+AppBar ProfileAppBar(BuildContext context) {
+  dbc.User? user = currently_loggedin_as.value;
   return user == null
       ? AppBar(
           leading: const OpenSidebarButton(),

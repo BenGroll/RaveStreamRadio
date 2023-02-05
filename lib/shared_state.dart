@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 
 enum ServerBranches { public, test, develop }
-enum GlobalPermission {MANAGE_EVENTS,CHANGE_DEV_SETTINGS}
-const bool kIsWeb = bool.fromEnvironment('dart.library.js_util');
 
+enum GlobalPermission { MANAGE_EVENTS, CHANGE_DEV_SETTINGS }
+
+const bool kIsWeb = bool.fromEnvironment('dart.library.js_util');
+/*
 ValueNotifier<ServerBranches> selectedbranch = kIsWeb 
   ? ValueNotifier(ServerBranches.public) 
-  : ValueNotifier(ServerBranches.develop);
+  : ValueNotifier(ServerBranches.develop);*/
+
+ValueNotifier<ServerBranches> selectedbranch =
+    ValueNotifier(ServerBranches.public);
 
 Map<String, Widget> saved_pictures = {};
 List<dbc.Event> saved_events = [];

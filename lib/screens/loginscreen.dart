@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'package:beamer/beamer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/conv.dart';
@@ -96,27 +97,65 @@ class LoginScreen extends StatelessWidget {
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () async {
-                    dbc.User? tryUserData =
-                        await db.tryUserLogin(username ?? "", password ?? "");
-                    if (tryUserData == null) {
-                      // Throw error dialog. (choices : Retry, anonymous)
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) =>
-                              _showLoginFailedDialog(context));
+                    print("Button Pressed");
+                    if (!kIsWeb) {
+                      dbc.User? tryUserData =
+                          await db.tryUserLogin(username ?? "", password ?? "");
+
+                      if (tryUserData == null) {
+                        // Throw error dialog. (choices : Retry, anonymous)
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                _showLoginFailedDialog(context));
+                      } else {
+                        kIsWeb
+                            ? await files.writeLoginDataWeb(
+                                tryUserData.username, tryUserData.password)
+                            : await files.writeLoginDataMobile(
+                                username = tryUserData.username,
+                                password = tryUserData.password);
+                        currently_loggedin_as.value = tryUserData;
+                        Beamer.of(context).beamToNamed("/profile/");
+                        sleep(const Duration(seconds: 1));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            cw.hintSnackBar("Logged in as @$username"));
+                      }
                     } else {
-                      kIsWeb 
-                      ? await files.writeLoginDataWeb(tryUserData.username, tryUserData.password)
-                      : await files.writeLoginDataMobile(
-                          username = tryUserData.username,
-                          password = tryUserData.password);
-                      currently_loggedin_as.value = tryUserData;
-                      kIsWeb
-                          ? Beamer.of(context).beamToNamed("/profile/")
-                          : Navigator.of(context).pop();
-                      sleep(const Duration(seconds: 1));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          cw.hintSnackBar("Logged in as @$username"));
+                      print("Is On Web!");
+
+                      DocumentSnapshot doc = await db.db
+                          .doc("${branchPrefix}users/$username")
+                          .get();
+
+                      if (!doc.exists) {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                _showLoginFailedDialog(context));
+                      } else {
+                        print("User exists!");
+                        Map<String, dynamic>? docData =
+                            doc.data() as Map<String, dynamic>?;
+                        print(doc.data());
+                        if (docData == null) {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) =>
+                                  _showLoginFailedDialog(context));
+                        } else {
+                          dbc.User tryUserData = dbc.User.fromMap(docData);
+                          if (tryUserData.password == password) {
+                            currently_loggedin_as.value = tryUserData;
+                            Beamer.of(context).beamToNamed("/");
+                          } else {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) =>
+                                    _showLoginFailedDialog(context));
+                          }
+                        }
+                      }
                     }
                   },
                   child: Text("Login",
@@ -254,15 +293,17 @@ class CreateAccountScreen extends StatelessWidget {
                       currently_loggedin_as.value =
                           await tryUserLogin(username, password);
                       kIsWeb
-                      ? await files.writeLoginDataWeb(username, password)
-                      : await files.writeLoginDataMobile(
-                          username = username, password = password);
+                          ? await files.writeLoginDataWeb(username, password)
+                          : await files.writeLoginDataMobile(
+                              username = username, password = password);
                       kIsWeb
-                          ? Beamer.of(context).beamToNamed("/profile/")
+                          ? Beamer.of(context).beamToNamed("/profile")
                           : Navigator.of(context).pop();
-                      sleep(const Duration(seconds: 1));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          cw.hintSnackBar("User Created Successfully!"));
+                      if (!kIsWeb) {
+                        sleep(const Duration(seconds: 1));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            cw.hintSnackBar("User Created Successfully!"));
+                      }
                     }
                   },
                   child: Text("Create and Login",
@@ -327,7 +368,6 @@ Widget _showUsernameTakenDialog(BuildContext context, String? uname) {
 
 Widget _showLoginFailedDialog(BuildContext context) {
   return AlertDialog(
-    title: const Text("Username Taken"),
     content: const Text("Couldnt login using this data."),
     actions: [
       TextButton(

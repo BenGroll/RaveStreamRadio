@@ -36,7 +36,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   },
   "/profile": (context, state, data) =>
       const BeamPage(child: main.MainRoute(startingscreen: Screens.profile)),
-  "/users": (context, state, data) => const Text("No user provided"),
+  //"/users": (context, state, data) => const Text("No user provided"),
   "/users/:username": (context, state, data) {
     final username = state.pathParameters["username"];
     return BeamPage(

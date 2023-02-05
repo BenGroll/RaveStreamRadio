@@ -57,6 +57,14 @@ List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
   return outlist;
 }
 
+class DemoHost {
+  String uniqueid;
+  String? name;
+  String? logopath;
+  Map<String, Link>? links;
+  DemoHost({required this.uniqueid, this.name, this.logopath, this.links});
+}
+
 /// Template class for Events to avoid type and valueerrors
 ///
 /// If [title] isnt provided it will default to [hostreference]'s name
@@ -504,7 +512,11 @@ class User {
         pinned_groups.hashCode;
   }
 }
-
+/*
+class DemoHost {
+  
+}
+*/
 /*
   Demo Objects
 */
