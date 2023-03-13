@@ -11,7 +11,6 @@ import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/shared_state.dart';
 
-
 Screens map_Index_to_Screen(int index) {
   switch (index) {
     case 0:
@@ -74,7 +73,7 @@ String get FloatingActionButtonTooltip {
       }
     case Screens.forums:
       {
-        return "Add new Group";
+        return "Test button for dev";
       }
     case Screens.profile:
       {
@@ -86,7 +85,6 @@ String get FloatingActionButtonTooltip {
       }
   }
 }
-
 
 Widget map_Widget_to_Screen(Screens screen) {
   switch (screen) {
@@ -113,7 +111,8 @@ Widget map_Widget_to_Screen(Screens screen) {
   }
 }
 
-AppBar mapScreenToAppBar(Screens screen, dbc.User? loggedinas, BuildContext context) {
+AppBar mapScreenToAppBar(
+    Screens screen, dbc.User? loggedinas, BuildContext context) {
   switch (screen) {
     case Screens.events:
       {
@@ -145,7 +144,6 @@ class HomeScreen extends StatelessWidget {
       {super.key,
       required this.loggedinas,
       this.startingscreen = Screens.events});
-
   @override
   Widget build(BuildContext context) {
     currently_selected_screen.value = startingscreen;
@@ -158,29 +156,33 @@ class HomeScreen extends StatelessWidget {
               builder: ((context, screen, child) {
                 return Scaffold(
                   drawer: cw.NavBar(),
-                  appBar: mapScreenToAppBar(screen, currently_loggedin_as.value, context),
+                  appBar: mapScreenToAppBar(
+                      screen, currently_loggedin_as.value, context),
                   body: map_Widget_to_Screen(currently_selected_screen.value),
                   floatingActionButtonLocation:
                       FloatingActionButtonLocation.centerDocked,
-                  floatingActionButton: (screen == Screens.events || screen == Screens.forums) ? Tooltip(
-                    message: FloatingActionButtonTooltip,
-                    child: FloatingActionButton(
-                      backgroundColor: cl.deep_black,
-                      onPressed: () {
-                        if (currently_loggedin_as.value != null) {
-                          if (currently_selected_screen.value ==
-                              Screens.events) {
-                            Beamer.of(context).beamToNamed("/hostevent");
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              cw.hintSnackBar(
-                                  "Has to be logged in to create Event"));
-                        }
-                      },
-                      child: Icon(Icons.add),
-                    ),
-                  ) : null,
+                  floatingActionButton: (screen == Screens.events ||
+                          screen == Screens.forums)
+                      ? Tooltip(
+                          message: FloatingActionButtonTooltip,
+                          child: FloatingActionButton(
+                            backgroundColor: cl.deep_black,
+                            onPressed: () {
+                              if (currently_selected_screen.value ==
+                                  Screens.events) {
+                                if (currently_loggedin_as.value != null) {
+                                  Beamer.of(context).beamToNamed("/hostevent");
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      cw.hintSnackBar(
+                                          "Has to be logged in to create Event"));
+                                }
+                              }
+                            },
+                            child: Icon(Icons.add),
+                          ),
+                        )
+                      : null,
                   bottomNavigationBar: BottomAppBar(
                     shape: CircularNotchedRectangle(),
                     clipBehavior: Clip.antiAliasWithSaveLayer,

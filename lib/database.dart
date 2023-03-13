@@ -1,4 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
@@ -91,21 +97,21 @@ Future setTestDBScenario() async {
 /// Returns Failed attempt on Web until Filesystem alternative is worked out
 /// Only typesafe on web, doesnt work.
 Future<dbc.User?> tryUserLogin(String username, String password) async {
-  print("tryUserLogin with $username $password");
+  //print("tryUserLogin with $username $password");
   //if (kIsWeb && DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return dbc.demoUser;
   //if (kIsWeb && !DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return null;
   try {
-    print("Trying to login using username : $username, password: $password");
+    //print("Trying to login using username : $username, password: $password");
     if (username.isEmpty || password.isEmpty) {
       return null;
     }
-    print("${branchPrefix}users/$username");
+    //print("${branchPrefix}users/$username");
 
     DocumentSnapshot<Map<String, dynamic>> doc =
         await db.doc("${branchPrefix}users/$username").get();
     /*DocumentSnapshot<Map<String, dynamic>> doc =
         await db.doc("users/admin").get();*/
-    print("Doc: $doc");
+    //print("Doc: $doc");
     if (doc.data() == null) {
       return null;
     }
@@ -166,31 +172,102 @@ Future<int> getEventCount() async {
   return itemcount;
 }
 
-Future<List<dbc.Event>> getEvents(
-    int perpage, String? lastelemEventid, String orderbyfield) async {
-  getEventCount();
-  QuerySnapshot query = lastelemEventid != null
-      ? await db
-          .collection("${branchPrefix}events")
-          .orderBy(orderbyfield)
-          .where("end", isGreaterThanOrEqualTo: Timestamp.now())
-          .limit(perpage)
-          .startAfterDocument(
-              await db.doc("${branchPrefix}events/$lastelemEventid/").get())
-          .get()
-      : await db
-          .collection("${branchPrefix}events")
-          .orderBy(orderbyfield)
-          .where("end", isGreaterThanOrEqualTo: Timestamp.now())
-          .limit(perpage)
-          .get();
-  List<Map<String, dynamic>>? maplist = querySnapshotToMapList(query);
-  List<dbc.Event> events = [];
-  maplist.forEach((element) {
-    events.add(dbc.Event.fromMap(element));
-  });
+/// [lastelemEventid] is used as a cursor for paginating results. Leaving it empty means you are at page 0.
+///
+/// When set, [onlyAfter] filters to only show Events that end after the given Timestamp.
+/// This is an Inequality Field.
+///
+/// When set, [onlyBefore] filters to only show Events that begin before the given Timestamp.
+/// This is an Inequality Field.
+///
+/// When Set, [canGoByAge] filters to only show Events allowing people with given age entry.
+/// This is an Inequality Field.
+///
+/// Only one of the Inequality fields can be used. If more are set, none get set.
+///
+/// Set [orderbyField] to the name of the field you want to order by. Indexed Fields:
 
-  return events;
+class EventFilters {
+  String? lastelemEventid;
+  Timestamp? onlyAfter;
+  Timestamp? onlyBefore;
+  int? canGoByAge;
+  String orderbyField;
+  List<String>? byStatus;
+  bool fromDrafts;
+  EventFilters(
+      {this.lastelemEventid,
+      this.onlyAfter,
+      this.onlyBefore,
+      this.canGoByAge,
+      this.orderbyField = "end",
+      this.byStatus,
+      this.fromDrafts = false});
+}
+
+Future<List<dbc.Event>> getEvents(
+    [int? queryLimit, EventFilters? filters]) async {
+  try {
+    if (filters != null && filters.fromDrafts) {
+      if (currently_loggedin_as.value == null) return [];
+
+      dbc.User? user = currently_loggedin_as.value;
+      //List drafts = db.doc("${branchPrefix}users/${user.username}").get().then((value) => value.data()[""])
+      return [];
+    }
+    filters = filters ?? EventFilters();
+    // Setup Basic Query
+    Query query = db.collection("${branchPrefix}events");
+    // Set Pagination Cursor
+    if (filters.lastelemEventid != null) {
+      query = query.startAfterDocument(await db
+          .doc("${branchPrefix}events/${filters.lastelemEventid}")
+          .get());
+    }
+    // Set Inequality Fields (Managed in EventFilter's Constructor)
+    if (filters.onlyBefore == null) {
+      query = query.where("end",
+          isGreaterThanOrEqualTo:
+              filters.onlyAfter ?? Timestamp.now()); // Filter after Timestamp
+    }
+    if (filters.onlyBefore != null) {
+      query = query.where("end",
+          isLessThanOrEqualTo: filters.onlyBefore); // Filter before Timestamp
+    }
+    if (filters.canGoByAge != null) {
+      query = query.where("minAge",
+          isLessThanOrEqualTo: filters.canGoByAge); // Filter before Timestamp
+    } /*
+    query = query.where("lastChanged",
+        isLessThanOrEqualTo: Timestamp.now()); // Filter before Timestamp
+    */
+    // /> Inequality Fields
+    if (filters.byStatus != null) {
+      query =
+          query.where("status", whereIn: filters.byStatus); // Filter by Status
+    }
+    // Pagination Limit
+    if (queryLimit != null) {
+      query = query.limit(queryLimit);
+    }
+    //print(query.parameters);
+    // Query Documents from db
+    QuerySnapshot snapshot = await query.get();
+    List<Map<String, dynamic>>? maplist = querySnapshotToMapList(snapshot);
+    //print(snapshot.size);
+    List<dbc.Event> events = [];
+    maplist.forEach((element) {
+      events.add(dbc.Event.fromMap(element));
+    });
+    events.sort((a, b) => a
+        .toMap()[filters!.orderbyField]
+        .compareTo(b.toMap()[filters.orderbyField]));
+    //print(query.parameters);
+    return events;
+  } catch (e) {
+    print(e);
+    return [];
+  }
 }
 
 Future<Map<String, bool>?> getEventUserspecificData(
@@ -308,8 +385,14 @@ bool hasGroupPinned(dbc.Group group, dbc.User user) {
   return false;
 }
 
+/// Checks if currently loggedin user has a certain permission
+///
+/// Return false if user is not logged in
 bool doIHavePermission(GlobalPermission permit) {
   if (currently_loggedin_as.value == null) return false;
+  if (dbc
+      .dbPermissionsToGlobal(currently_loggedin_as.value!.permissions)
+      .contains(GlobalPermission.ADMIN)) return true;
   return dbc
       .dbPermissionsToGlobal(currently_loggedin_as.value!.permissions)
       .contains(permit);
@@ -319,6 +402,26 @@ Future<dbc.Event?> currentlyEditedEvent(String? eventid) async {
   return eventid == null ? null : getEvent(eventid);
 }
 
+bool hasPermissionToEditEventObject(dbc.Event event) {
+  if (currently_loggedin_as.value == null) {
+    return false;
+  }
+  if (doIHavePermission(GlobalPermission.MANAGE_EVENTS) &&
+      event.templateHostID != null &&
+      event.templateHostID!.isNotEmpty) {
+    return true;
+  }
+  if (currently_loggedin_as.value!.events
+      .contains("${branchPrefix}events/${event.eventid}")) {
+    return true;
+  }
+  if (event.hostreference != null &&
+      event.hostreference!.id == currently_loggedin_as.value!.username) {
+    return true;
+  }
+  return false;
+}
+
 Future<bool> hasPermissionToEditEvent(String eventID) async {
   if (currently_loggedin_as.value == null) {
     return false;
@@ -326,11 +429,165 @@ Future<bool> hasPermissionToEditEvent(String eventID) async {
   if (doIHavePermission(GlobalPermission.MANAGE_EVENTS)) {
     dbc.Event? event = await getEvent(eventID);
     if (event == null) return false;
-    if (event.exModHostname != null) {
+    if (event.templateHostID != null) {
       return true;
     }
   }
   dbc.Event? event = await getEvent(eventID);
   if (event == null) return false;
   return isEventHostedByUser(event, currently_loggedin_as.value);
+}
+
+Future<List<dbc.DemoHost>> getDemoHosts() async {
+  if (doIHavePermission(GlobalPermission.MANAGE_HOSTS) ||
+      doIHavePermission(GlobalPermission.MANAGE_EVENTS)) {
+    QuerySnapshot query =
+        await db.collection("demohosts").orderBy("name").get();
+    List<Map<String, dynamic>> queryMaps = querySnapshotToMapList(query);
+    List<dbc.DemoHost> hosts = [];
+    queryMaps.forEach((element) {
+      hosts.add(dbc.DemoHost.fromMap(element));
+    });
+    return hosts;
+  } else {
+    return [];
+  }
+}
+
+Future createCopyOfCollection(String collectionToCopyID,
+    String destinationCollectionID, BuildContext context) async {
+  CollectionReference collection = db.collection(collectionToCopyID);
+  int collectionSizeInDocuments =
+      await collection.count().get().then((value) => value.count);
+  QuerySnapshot collectionQuery = await collection.get();
+  ValueNotifier<int> doneFiles = ValueNotifier<int>(-1);
+  bool proceed = false;
+  await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Costs"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Document Reads: $collectionSizeInDocuments"),
+              Text("Document Writes: $collectionSizeInDocuments")
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  doneFiles.value = 0;
+                  proceed = true;
+                  Navigator.of(context).pop();
+                },
+                child: Text("Proceed")),
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("Cancel"))
+          ],
+        );
+      });
+  if (!proceed) return;
+  showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return ValueListenableBuilder(
+            valueListenable: doneFiles,
+            builder: (context, value, child) {
+              return AlertDialog(
+                content: Text("$value/$collectionSizeInDocuments done"),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        if (value == collectionSizeInDocuments) {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      child: Text("Finish!"))
+                ],
+              );
+            });
+      });
+  List<Map<String, dynamic>> collectionMap =
+      querySnapshotToMapList(collectionQuery, include_documentid: true); //####
+  collectionMap.forEach((element) async {
+    String? docid = element["documentidcarryover"];
+    if (element.containsKey("documentidcarryover"))
+      element.remove("documentidcarryover");
+    await db
+        .collection(destinationCollectionID)
+        .doc(element["uniqueDocID"])
+        .set(element);
+    doneFiles.value += 1;
+  });
+  return;
+}
+
+Future<Map<String, String>> getDocIDsFromCollectionAsList(
+    String collection) async {
+  CollectionReference colRef = db.collection(collection);
+  QuerySnapshot qSnap = await colRef.get();
+  Map<String, String> docIDs = {};
+  qSnap.docs.forEach((element) {
+    docIDs[element.id] = element["name"] ?? "No name";
+  });
+  return docIDs;
+}
+
+Future<Map<String, String>> getDemoHostIDs() async {
+  if (!doIHavePermission(GlobalPermission.MANAGE_HOSTS)) return {};
+  DocumentSnapshot indexesSnap = await db.doc("content/indexes").get();
+  if (indexesSnap.data() != null) {
+    return forceStringStringMapFromStringDynamic(
+            indexesSnap["templateHostIDs"]) ??
+        {};
+  }
+  return {};
+}
+/*
+Future createIndexesForEvents(
+    List<dbc.Event> events, BuildContext context) async {
+  if (events.isEmpty) return;
+  List<Future> callList = [];
+  Map<String, dynamic> exampleEventMap = events.first.toMap();
+  exampleEventMap.keys.forEach((attribute) async {
+    Map<String, dynamic> idToValueMap = {};
+    events.forEach((event) {
+      idToValueMap[event.eventid] = event.toMap()[attribute];
+    });
+    callList.add(db
+        .doc("${branchPrefix}events.indexes/${attribute}")
+        .set({"values": idToValueMap}));
+  });
+  await Future.wait(callList);
+  return Future.delayed(Duration.zero);
+}*/
+
+Future writeEventIndexes(String eventjsonstring) async {
+  Reference storageRef = FirebaseStorage.instance.ref();
+  Reference pathReference =
+      storageRef.child("indexes/${branchPrefix}eventsIndex.json");
+  UploadTask task = pathReference.putString(eventjsonstring);
+  return await task;
+}
+
+Future<String> readEventIndexesJson() async {
+  Reference storageRef = FirebaseStorage.instance.ref();
+  Reference pathReference =
+      storageRef.child("indexes/${branchPrefix}eventsIndex.json");
+  Uint8List? data = await pathReference.getData(100 * 1024 * 1024);
+  return String.fromCharCodes(data ?? Uint8List.fromList([0]));
+}
+
+List<dbc.Event> getEventListFromIndexes(String indexJsonString) {
+  Map<String, dynamic> indexMap = json.decode(indexJsonString);
+  List<dbc.Event> eventlist = [];
+  indexMap.keys.forEach((element) {
+    eventlist.add(dbc.Event.fromJson(json.encode(indexMap[element])));
+  });
+  return eventlist;
 }

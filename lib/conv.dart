@@ -47,12 +47,24 @@ List<DocumentReference> forceDocumentReferenceType(List<dynamic> inList) {
 
 /// Converts given [query] into a List<Map<String, dynamic>>
 /// Needet to work with data queried from Firestore
-List<Map<String, dynamic>> querySnapshotToMapList(QuerySnapshot query) {
+List<Map<String, dynamic>> querySnapshotToMapList(QuerySnapshot query,
+    {bool include_documentid = false}) {
   List<Map<String, dynamic>> documents = [];
   query.docs.forEach((element) {
-    documents.add(element.data() as Map<String, dynamic>);
+    Map<String, dynamic> datamap = element.data() as Map<String, dynamic>;
+    datamap.addAll({"uniqueDocID": element.id});
+    documents.add(datamap);
   });
   return documents;
+}
+
+Map<String, dynamic> stringDynamicMapFromDynamicDynamic(
+    Map<dynamic, dynamic> map) {
+  Map<String, dynamic> test = {};
+  map.entries.forEach((element) {
+    test[element.key.toString()] = map[element.key];
+  });
+  return test;
 }
 
 /// Takes a Map<String, dynamic>
@@ -60,7 +72,8 @@ List<Map<String, dynamic>> querySnapshotToMapList(QuerySnapshot query) {
 /// Returns Map<DocumentReference, String>?
 Map<DocumentReference<Object?>, String>?
     forceDocumentReferenceStringMapTypeFromStringDynamic(
-        Map<String, dynamic> input) {
+        Map<dynamic, dynamic> input) {
+  Map<String, dynamic> convMap = stringDynamicMapFromDynamicDynamic(input);
   Map<DocumentReference, String> outmap = {};
   input.forEach((key, value) {
     outmap[db.db.doc(key)] = value.toString();
@@ -184,7 +197,7 @@ bool isEventHostedByUser(dbc.Event event, dbc.User? user) {
   if (user == null) {
     return false;
   }
-  if (event.exModHostname != null &&
+  if (event.templateHostID != null &&
       db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)) {
     return true;
   }
@@ -205,3 +218,62 @@ Map<DocumentReference, dynamic>? mapStringDynamic2DocRefDynamic(
   return out;
 }
 
+String? getKeyMatchingValueFromMap(
+    Map<String, dynamic> searchMap, dynamic searchValue) {
+  if (!searchMap.containsValue(searchValue)) return null;
+  for (int i = 0; i < searchMap.length; i++) {
+    MapEntry entry = searchMap.entries.toList()[i];
+    if (entry.value == searchValue) {
+      return entry.key;
+    }
+  }
+  return null;
+}
+
+List<int> numberToArrayOfAllNumbersBelow(int number) {
+  List<int> intlist = [];
+  for (int i = 0; i < number; i++) {
+    intlist.add(i);
+  }
+  return intlist;
+}
+
+int getSizeInBytesForMap(Map<dynamic, dynamic> input) {
+  int size = 0;
+  input.entries.forEach((MapEntry element) {
+    String k = element.key as String;
+    String v = element.value as String;
+    size = size + k.length + v.length;
+  });
+  return size;
+}
+
+Map<String, dynamic> eventListToJsonCompatibleMap(List<dbc.Event> list) {
+  Map<String, dynamic> outMap = {};
+  list.forEach((element) {
+    outMap[element.eventid] = element.toJsonCompatibleMap();
+  });
+  return outMap;
+}
+
+String eventMapToJson(Map<String, dynamic> inMap) {
+  return json.encode(inMap);
+}
+
+List<dbc.Event> maplistToEventList(List<Map<String, dynamic>> mapList) {
+  List<dbc.Event> list = [];
+  mapList.forEach((element) {
+    list.add(dbc.Event.fromMap(element));
+  });
+  return list;
+}
+
+Map<String, dynamic> forceStringDynamicMapFromObject(Object input) {
+  try {
+    Map<String, dynamic> out = input as Map<String, dynamic>;
+    return out;
+  } catch (e) {
+    print(e);
+    return {};
+  }
+}

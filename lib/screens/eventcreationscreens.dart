@@ -1,19 +1,22 @@
 import 'dart:io';
-
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
+import 'package:ravestreamradioapp/screens/descriptioneditingscreen.dart';
 import 'package:ravestreamradioapp/screens/homescreen.dart';
-import 'package:ravestreamradioapp/commonwidgets.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
-enum Screen { general, description, links }
+const HOST_YOURSELF_ID = "Host as yourself.";
+
+enum Screen { general, description, links, media }
 
 const loader = CircularProgressIndicator(color: Colors.white);
 
@@ -26,24 +29,45 @@ bool is_overriding_existing_event = false;
 
 ValueNotifier<dbc.Event> currentEventData = ValueNotifier<dbc.Event>(dbc.Event(
     eventid: "", title: "", locationname: "", description: "", links: {}));
+//String? templateHostID;
 
 /// if it returns an empty list, the validate is without error.
 ///
 /// The List contains the seperate error messages
 Future<List<String>> validateUpload() async {
   dbc.Event toValidate = currentEventData.value;
+  bool eventIdEmpty = true;
   List<String> errormessages = [];
-  if (toValidate.exModHostname == null && toValidate.hostreference == null) {
+  if (toValidate.templateHostID == null && toValidate.hostreference == null) {
     errormessages.add("Event needs a host specified.");
+  }
+  if (toValidate.templateHostID == HOST_YOURSELF_ID) {
+    currentEventData.value.hostreference = db.db
+        .doc("${branchPrefix}users/${currently_loggedin_as.value!.username}");
+    toValidate.templateHostID = null;
   }
   if (validateEventIDFieldLight(currentEventData.value.eventid) != null) {
     errormessages
         .add(validateEventIDFieldLight(currentEventData.value.eventid)!);
+  } else {
+    eventIdEmpty = false;
+  }
+
+  if (toValidate.templateHostID != null) {
+    DocumentSnapshot hostDocRef =
+        await db.db.doc("templatehosts/${toValidate.templateHostID}").get();
+    if (!hostDocRef.exists) {
+      errormessages
+          .add("Templatehost ${toValidate.templateHostID} does not exist.");
+    }
   }
   if (is_overriding_existing_event) {
   } else {
-    if (await validateEventIDFieldDB(currentEventData.value.eventid) != null) {
-      errormessages.add("EventID is taken. Choose another one");
+    if (!eventIdEmpty) {
+      if (await validateEventIDFieldDB(currentEventData.value.eventid) !=
+          null) {
+        errormessages.add("EventID is taken. Choose another one");
+      }
     }
   }
   if (currentEventData.value.title == null ||
@@ -69,11 +93,17 @@ Widget mapScreenToWidget(Screen selection) {
       }
     case Screen.description:
       {
-        return const DescriptionEditingPage();
+        return DescriptionEditingPage(onChange: (String value) {
+          currentEventData.value.description = value;
+        });
       }
     case Screen.links:
       {
         return const LinkEditingScreen();
+      }
+    case Screen.media:
+      {
+        return const MediaEditingScreen();
       }
     default:
       return Container();
@@ -118,7 +148,7 @@ class EventCreationScreen extends StatelessWidget {
         eventid: "", title: "", locationname: "", description: "", links: {});
     // Add decision tree
     if (currently_loggedin_as.value == null) {
-      return const ErrorScreen(
+      return const cw.ErrorScreen(
           errormessage: "You have to be logged in to create or edit events.");
     } else {
       //String docref = "${branchPrefix}users/${currently_loggedin_as.value!.username}";
@@ -130,7 +160,7 @@ class EventCreationScreen extends StatelessWidget {
             db.doIHavePermission(GlobalPermission.MANAGE_EVENTS);
         // Open Create new event eventcreationscreen
         return DefaultTabController(
-          length: 3,
+          length: 4,
           child: ValueListenableBuilder(
               valueListenable: current_screen,
               builder: (context, screen, child) {
@@ -139,19 +169,21 @@ class EventCreationScreen extends StatelessWidget {
                     appBar: AppBar(
                       bottom: const TabBar(tabs: [
                         Tab(
-                          child: Text("1. General"),
+                          child: Text("General"),
                         ),
                         Tab(
-                          child: Text("2. Description"),
+                          child: Text("Desc."),
                         ),
                         Tab(
-                          child: Text("3. Links"),
+                          child: Text("Links"),
+                        ),
+                        Tab(
+                          child: Text("Media"),
                         ),
                       ]),
                       actions: [
                         TextButton(
                             onPressed: () async {
-                              print("HERE");
                               if (!block_upload) {
                                 block_upload = true;
                                 List<Widget> errorcontent =
@@ -163,7 +195,6 @@ class EventCreationScreen extends StatelessWidget {
                                       .toList();
                                 });
                                 block_upload = false;
-                                print(errorcontent);
                                 if (errorcontent.isEmpty) {
                                   showDialog(
                                       barrierDismissible: false,
@@ -171,7 +202,6 @@ class EventCreationScreen extends StatelessWidget {
                                       builder: (context) =>
                                           const UploadEventDialog());
                                 } else {
-                                  print("HERE2");
                                   showDialog(
                                     barrierDismissible: true,
                                     context: context,
@@ -188,8 +218,11 @@ class EventCreationScreen extends StatelessWidget {
                     body: TabBarView(
                       children: [
                         GeneralSettingsPage(),
-                        DescriptionEditingPage(),
-                        LinkEditingScreen()
+                        DescriptionEditingPage(onChange: (String value) {
+                          currentEventData.value.description = value;
+                        }),
+                        LinkEditingScreen(),
+                        MediaEditingScreen()
                       ],
                     ));
               }),
@@ -201,7 +234,7 @@ class EventCreationScreen extends StatelessWidget {
             builder: (context, canEditSnap) {
               if (canEditSnap.connectionState == ConnectionState.done) {
                 if (canEditSnap.data == null) {
-                  return ErrorScreen(
+                  return cw.ErrorScreen(
                       errormessage:
                           "Snapshot from 'db.hasPermissionToEditEvent' has no data.");
                 } else {
@@ -209,7 +242,7 @@ class EventCreationScreen extends StatelessWidget {
                     // User has permission to edit event
                     is_overriding_existing_event = true;
                     return DefaultTabController(
-                      length: 3,
+                      length: 4,
                       child: FutureBuilder(
                           future: db.getEvent(eventIDToBeEdited!),
                           builder: (context, existingEventDataSnap) {
@@ -274,7 +307,7 @@ class EventCreationScreen extends StatelessWidget {
                                           body: mapScreenToWidget(screen));
                                     });
                               } else {
-                                return ErrorScreen(
+                                return cw.ErrorScreen(
                                     errormessage:
                                         "Snapshot from 'db.getEvent' has no data or data is null.");
                               }
@@ -284,7 +317,7 @@ class EventCreationScreen extends StatelessWidget {
                           }),
                     );
                   } else {
-                    return ErrorScreen(
+                    return cw.ErrorScreen(
                         errormessage:
                             "You do not have the permission to edit event @$eventIDToBeEdited.\nIf you believe this is an error, please contact the host or the RaveStreamRadio team.");
                   }
@@ -321,52 +354,162 @@ class GeneralSettingsPage extends StatelessWidget {
                           vertical: MediaQuery.of(context).size.height / 100,
                           horizontal: MediaQuery.of(context).size.width / 50),
                       child: Column(children: [
-                        isOpenedByRSRTeamMember
+                        Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: const [
+                              Expanded(
+                                  child: Divider(
+                                      color:
+                                          Color.fromARGB(255, 179, 179, 179))),
+                              Text("Choose Host",
+                                  style: TextStyle(color: Colors.white)),
+                              Expanded(
+                                  child: Divider(
+                                      color:
+                                          Color.fromARGB(255, 179, 179, 179)))
+                            ]),
+                        !isOpenedByRSRTeamMember
                             ? SizedBox(height: 0)
-                            : TextFormField(
-                                initialValue:
-                                    currentEventData.value.exModHostname,
-                                onChanged: (value) async {
-                                  currentEventData.value.exModHostname = value;
+                            : FutureBuilder(
+                                future: db.getDemoHostIDs(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<Map<String, String>>
+                                        snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.done) {
+                                    List<String> sortedValuesList =
+                                        snapshot.data!.values.toList()..sort();
+                                    sortedValuesList.insert(
+                                        0, HOST_YOURSELF_ID);
+                                    return Theme(
+                                      data: ThemeData.dark(),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 6,
+                                            child: ValueListenableBuilder(
+                                                valueListenable:
+                                                    currentEventData,
+                                                builder: (context,
+                                                    eventDatacurrent, foo) {
+                                                  print(
+                                                      "NewBuild: ${currentEventData.value.templateHostID}");
+                                                  return DropdownSearch(
+                                                    selectedItem:
+                                                        eventDatacurrent
+                                                            .templateHostID,
+                                                    onChanged: (value) {
+                                                      currentEventData.value
+                                                              .templateHostID =
+                                                          getKeyMatchingValueFromMap(
+                                                              snapshot.data ??
+                                                                  {},
+                                                              value);
+                                                      /*templateHostID =
+                                                        getKeyMatchingValueFromMap(
+                                                            snapshot.data ?? {}, value);*/
+                                                      print(currentEventData
+                                                          .value
+                                                          .templateHostID);
+                                                    },
+                                                    popupProps: const PopupProps
+                                                            .menu(
+                                                        //showSelectedItems: true,
+                                                        showSearchBox: true,
+                                                        searchFieldProps:
+                                                            TextFieldProps(
+                                                                autofocus: true,
+                                                                decoration:
+                                                                    InputDecoration(
+                                                                        focusedBorder:
+                                                                            UnderlineInputBorder(
+                                                                          // This changes color of line between search field and results
+                                                                          borderSide:
+                                                                              BorderSide(color: Colors.white),
+                                                                        ),
+                                                                        focusColor:
+                                                                            Colors
+                                                                                .white,
+                                                                        hintText:
+                                                                            "Search..."))),
+                                                    items: sortedValuesList,
+                                                    dropdownButtonProps:
+                                                        const DropdownButtonProps(
+                                                            color:
+                                                                Colors.white),
+                                                    dropdownDecoratorProps:
+                                                        const DropDownDecoratorProps(
+                                                            baseStyle: TextStyle(
+                                                                color: Colors
+                                                                    .white),
+                                                            dropdownSearchDecoration:
+                                                                InputDecoration(
+                                                              /*helperText:
+                                                                  "Leave empty to host as yourself. Press the x to unselect.",*/
+                                                              hintText:
+                                                                  "No Host Chosen",
+                                                              labelStyle: TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                              enabledBorder:
+                                                                  UnderlineInputBorder(
+                                                                borderSide: BorderSide(
+                                                                    color: Colors
+                                                                        .white),
+                                                              ),
+                                                              disabledBorder:
+                                                                  UnderlineInputBorder(
+                                                                borderSide: BorderSide(
+                                                                    color: Colors
+                                                                        .white),
+                                                              ),
+                                                            )),
+                                                  );
+                                                }),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  } else {
+                                    return loader;
+                                  }
                                 },
-                                onFieldSubmitted: (value) async {
-                                  currentEventData.value.exModHostname = value;
-                                },
-                                onSaved: (newValue) async {
-                                  currentEventData.value.exModHostname =
-                                      newValue ?? "";
-                                },
-                                style: const TextStyle(color: Colors.white),
-                                cursorColor: Colors.white,
-                                decoration: const InputDecoration(
-                                  icon: Icon(Icons.perm_identity,
-                                      color: Colors.white),
-                                  labelText: "Hostname",
-                                  labelStyle:
-                                      const TextStyle(color: Colors.white),
-                                  hintText: "Enter Name of the host",
-                                  hintStyle:
-                                      const TextStyle(color: Colors.grey),
-                                ),
-                              ),
+                              ), // Continue Here After DropDownSearch
+
                         is_overriding_existing_event
-                            ? Text("EventID: ${currentEventData.value.eventid}")
+                            ? Text(
+                                "EventID: ${currentEventData.value.eventid}",
+                                style: TextStyle(color: Colors.white),
+                              )
                             : TextFormField(
                                 initialValue: currentEventData.value.eventid,
                                 onChanged: (value) async {
+                                  print(
+                                      "onCH tH: ${currentEventData.value.templateHostID}");
                                   eventidvalidator.value =
                                       validateEventIDFieldLight(value);
+                                  print(
+                                      "onCH tH2: ${currentEventData.value.templateHostID}");
                                   currentEventData.value.eventid = value;
                                 },
                                 onFieldSubmitted: (value) async {
+                                  print(
+                                      "onFS tH: ${currentEventData.value.templateHostID}");
                                   eventidvalidator.value =
                                       await validateEventIDFieldDB(value);
+                                  print(
+                                      "onFS tH2: ${currentEventData.value.templateHostID}");
                                   currentEventData.value.eventid = value;
                                 },
                                 onSaved: (newValue) async {
+                                  print(
+                                      "onS tH: ${currentEventData.value.templateHostID}");
                                   eventidvalidator.value =
                                       await validateEventIDFieldDB(
                                           newValue ?? "");
+                                  print(
+                                      "onS tH2: ${currentEventData.value.templateHostID}");
                                   currentEventData.value.eventid =
                                       newValue ?? "";
                                 },
@@ -386,10 +529,12 @@ class GeneralSettingsPage extends StatelessWidget {
                                       const TextStyle(color: Colors.grey),
                                 ),
                               ),
-                        Text(
-                          eventidvalidatedstring ?? "",
-                          style: const TextStyle(color: Colors.grey),
-                        )
+                        is_overriding_existing_event
+                            ? SizedBox(height: 0)
+                            : Text(
+                                eventidvalidatedstring ?? "",
+                                style: const TextStyle(color: Colors.grey),
+                              )
                       ]));
                 }),
             ValueListenableBuilder(
@@ -448,20 +593,18 @@ class GeneralSettingsPage extends StatelessWidget {
                                   children: [
                                     TextButton(
                                         onPressed: () async {
-                                          DateTime? picked_date =
-                                              await showDatePicker(
-                                                  context: context,
-                                                  initialDate: currentEventData
-                                                              .value.begin ==
-                                                          null
-                                                      ? DateTime.now()
-                                                      : currentEventData
-                                                          .value.begin!
-                                                          .toDate(),
-                                                  firstDate: DateTime.now(),
-                                                  lastDate: DateTime(
-                                                    DateTime.now().year + 20,
-                                                  ));
+                                          DateTime? initialDate;
+                                          if (currentEventData.value.begin !=
+                                              null) {
+                                            initialDate = DateTime
+                                                .fromMillisecondsSinceEpoch(
+                                                    currentEventData
+                                                        .value
+                                                        .begin!
+                                                        .millisecondsSinceEpoch);
+                                          }
+                                          DateTime? picked_date = await cw
+                                              .pick_date(context, initialDate);
                                           if (picked_date != null) {
                                             currentEventData.value.begin =
                                                 Timestamp.fromDate(picked_date);
@@ -475,18 +618,20 @@ class GeneralSettingsPage extends StatelessWidget {
                                         )),
                                     TextButton(
                                         onPressed: () async {
-                                          TimeOfDay? picked_time =
-                                              await showTimePicker(
-                                                  context: context,
-                                                  initialTime: currentEventData
-                                                              .value.begin ==
-                                                          null
-                                                      ? const TimeOfDay(
-                                                          hour: 0, minute: 0)
-                                                      : TimeOfDay.fromDateTime(
-                                                          currentEventData
-                                                              .value.begin!
-                                                              .toDate()));
+                                          TimeOfDay? initialTime;
+                                          if (currentEventData.value.begin !=
+                                              null) {
+                                            initialTime =
+                                                TimeOfDay.fromDateTime(DateTime
+                                                    .fromMillisecondsSinceEpoch(
+                                                        currentEventData
+                                                            .value
+                                                            .begin!
+                                                            .millisecondsSinceEpoch));
+                                          }
+
+                                          TimeOfDay? picked_time = await cw
+                                              .pick_time(context, initialTime);
                                           if (picked_time != null) {
                                             DateTime currentTime =
                                                 currentEventData.value.begin ==
@@ -531,20 +676,15 @@ class GeneralSettingsPage extends StatelessWidget {
                                   children: [
                                     TextButton(
                                         onPressed: () async {
+                                          DateTime? initialDate;
+                                          if (currentEventData.value.end !=
+                                              null) {
+                                            initialDate = DateTime.fromMillisecondsSinceEpoch(
+                                                currentEventData.value.end!.millisecondsSinceEpoch);
+                                          }
+
                                           DateTime? picked_date =
-                                              await showDatePicker(
-                                                  context: context,
-                                                  initialDate: currentEventData
-                                                              .value.end ==
-                                                          null
-                                                      ? DateTime.now()
-                                                      : currentEventData
-                                                          .value.end!
-                                                          .toDate(),
-                                                  firstDate: DateTime.now(),
-                                                  lastDate: DateTime(
-                                                      DateTime.now().year +
-                                                          20));
+                                              await cw.pick_date(context, initialDate);
                                           if (picked_date != null) {
                                             currentEventData.value.end =
                                                 Timestamp.fromDate(picked_date);
@@ -559,18 +699,16 @@ class GeneralSettingsPage extends StatelessWidget {
                                         )),
                                     TextButton(
                                         onPressed: () async {
-                                          TimeOfDay? picked_time =
-                                              await showTimePicker(
-                                                  context: context,
-                                                  initialTime: currentEventData
-                                                              .value.end ==
-                                                          null
-                                                      ? const TimeOfDay(
-                                                          hour: 0, minute: 0)
-                                                      : TimeOfDay.fromDateTime(
-                                                          currentEventData
-                                                              .value.end!
-                                                              .toDate()));
+                                          TimeOfDay initialTime =
+                                              TimeOfDay.fromDateTime(DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      currentEventData
+                                                          .value
+                                                          .begin!
+                                                          .millisecondsSinceEpoch));
+
+                                          TimeOfDay? picked_time = await cw
+                                              .pick_time(context, initialTime);
                                           if (picked_time != null) {
                                             DateTime currentTime =
                                                 currentEventData.value.end ==
@@ -600,8 +738,6 @@ class GeneralSettingsPage extends StatelessWidget {
                         ValueListenableBuilder(
                           valueListenable: currentEventData,
                           builder: (context, eventData, child) {
-                            print(eventData.begin);
-                            print(eventData.end);
                             return eventData.begin == null &&
                                     eventData.end == null
                                 ? Text(
@@ -649,32 +785,12 @@ class GeneralSettingsPage extends StatelessWidget {
   }
 }
 
-class DescriptionEditingPage extends StatelessWidget {
-  const DescriptionEditingPage({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      initialValue: currentEventData.value.description,
-      style: const TextStyle(color: Colors.white),
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      autofocus: true,
-      expands: true,
-      cursorColor: Colors.white,
-      onChanged: (value) {
-        currentEventData.value.description = value;
-      },
-    );
-  }
-}
-
 List<Widget> getLinkList(BuildContext context, List<dbc.Link> links) {
   List<Widget> linkso = [];
   links.forEach((element) {
     linkso.add(LinkListCard(link: element));
   });
   linkso.add(AddLinkButton());
-  print("linkwidgets: $linkso");
   return linkso;
 }
 
@@ -788,7 +904,6 @@ class LinkCreateDialog extends StatelessWidget {
               Navigator.of(context).pop();
               currentEventData.value.links = dbc.mapToLinkList(formerlist);
               currentEventData.notifyListeners();
-              print(currentEventData.value.links);
             },
             child: Text("Add link to event",
                 style: TextStyle(color: Colors.white)))
@@ -861,15 +976,18 @@ List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
 
 Future uploadEvent(dbc.Event event, BuildContext context) async {
   is_awaiting_upload.value = true;
+  if (event.templateHostID != null && event.templateHostID!.isNotEmpty) {
+    event.hostreference = null;
+  }
   await db.uploadEventToDatabase(event);
   await Future.delayed(Duration(seconds: 2));
   kIsWeb ? Beamer.of(context).popToNamed("/") : Navigator.of(context).pop();
   if (kIsWeb) {
     is_overriding_existing_event
         ? ScaffoldMessenger.of(context)
-            .showSnackBar(hintSnackBar("Event edited successfully!"))
+            .showSnackBar(cw.hintSnackBar("Event edited successfully!"))
         : ScaffoldMessenger.of(context)
-            .showSnackBar(hintSnackBar("Event created successfully!"));
+            .showSnackBar(cw.hintSnackBar("Event created successfully!"));
   }
   currently_selected_screen.notifyListeners();
   is_awaiting_upload.value = false;
@@ -936,6 +1054,77 @@ class UploadingErrorDialog extends StatelessWidget {
               children: errormessages,
             );
           }),
+    );
+  }
+}
+
+class MediaEditingScreen extends StatelessWidget {
+  const MediaEditingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width / 30,
+          vertical: MediaQuery.of(context).size.height / 40),
+      child: isOpenedByRSRTeamMember
+          ? Column(
+              children: [
+                const Text(
+                  "The Icon is the image shown in the calendar overview.",
+                  maxLines: 23,
+                  style: TextStyle(color: Colors.white),
+                ),
+                TextFormField(
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white),
+                  initialValue: currentEventData.value.icon,
+                  cursorColor: Colors.white,
+                  decoration: const InputDecoration(
+                    /*icon: Icon(
+                eventidvalidatedstring != null
+                  ? Icons.highlight_off
+                  : Icons.check_circle_outline,
+                color: Colors.white),*/
+                    labelText: "Location of Icon Image",
+                    labelStyle: TextStyle(color: Colors.white),
+                    hintText: "If left empty defaults to host's pfp.",
+                    hintStyle: TextStyle(color: Colors.grey),
+                  ),
+                  onChanged: (value) {
+                    currentEventData.value.icon = value.replaceAll(
+                        "gs://ravestreammobileapp.appspot.com/", "");
+                  },
+                ),
+                const Text(
+                  "The Flyer is the image shown when users click on your event in the calendar",
+                  maxLines: 23,
+                  style: TextStyle(color: Colors.white),
+                ),
+                TextFormField(
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white),
+                  initialValue: currentEventData.value.icon,
+                  cursorColor: Colors.white,
+                  decoration: const InputDecoration(
+                    /*icon: Icon(
+                eventidvalidatedstring != null
+                  ? Icons.highlight_off
+                  : Icons.check_circle_outline,
+                color: Colors.white),*/
+                    labelText: "Location of Flyer Image",
+                    labelStyle: TextStyle(color: Colors.white),
+                    hintText: "If left empty defaults to icon",
+                    hintStyle: TextStyle(color: Colors.grey),
+                  ),
+                  onChanged: (value) {
+                    currentEventData.value.flyer = value.replaceAll(
+                        "gs://ravestreammobileapp.appspot.com/", "");
+                  },
+                )
+              ],
+            )
+          : Placeholder(),
     );
   }
 }

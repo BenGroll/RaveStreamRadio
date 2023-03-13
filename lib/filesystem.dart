@@ -68,7 +68,11 @@ Future<File> writeLoginDataMobile(String username, String password) async {
 
 Future<Map> readLoginDataMobile() async {
   final file = await _logindatafile;
-  return json.decode(await file.readAsString());
+  if (file.existsSync()) {
+    return json.decode(await file.readAsString());
+  } else {
+    return {"username": "", "password": ""};
+  }
 }
 
 /// Not Working RN, Only typesafe
@@ -85,10 +89,13 @@ Future<UserSettings> readUserSettingsWeb() async {
 Future writeLoginDataWeb(String username, String password) async {
   return Future;
 }
+
 /// Not Working RN, Only typesafe
 /// Define if function should default to error or success with DEBUG_LOGIN_RETURN_TRUE_ON_WEB
 Future<Map> readLoginDataWeb() async {
-  return DEBUG_LOGIN_RETURN_TRUE_ON_WEB ? {"username": "demouser", "password": ""} : {"username": "", "password": ""};
+  return DEBUG_LOGIN_RETURN_TRUE_ON_WEB
+      ? {"username": "demouser", "password": ""}
+      : {"username": "", "password": ""};
 }
 
 Future<Widget?> getImage(String imagepath) async {
@@ -159,5 +166,14 @@ Future<Widget> getEventIcon(dbc.Event event) async {
         return hostProfilePic;
       }
     }
+  }
+}
+
+Future<Widget> getEventFlyer(dbc.Event event) async {
+  if (event.flyer != null) {
+    // Get Event's Own Icon
+    return await getImage(event.flyer ?? "") ?? errorWhiteImage;
+  } else {
+    return getEventIcon(event);
   }
 }

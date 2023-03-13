@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first, avoid_init_to_null
+// ignore_for_file: public_member_api_docs, sort_constructors_first, avoid_init_to_null, non_constant_identifier_names
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -49,20 +49,15 @@ List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
           case "CHANGE_DEV_SETTINGS":
             outlist.add(GlobalPermission.CHANGE_DEV_SETTINGS);
             break;
+          case "MANAGE_HOSTS":
+            outlist.add(GlobalPermission.MANAGE_HOSTS);
+            break;
           default:
         }
       }
     });
   }
   return outlist;
-}
-
-class DemoHost {
-  String uniqueid;
-  String? name;
-  String? logopath;
-  Map<String, Link>? links;
-  DemoHost({required this.uniqueid, this.name, this.logopath, this.links});
 }
 
 /// Template class for Events to avoid type and valueerrors
@@ -118,77 +113,88 @@ class Event {
   Timestamp? end;
   GeoPoint? location;
   String? locationname;
-  String? age;
+  int minAge;
   String? icon;
+  String? flyer;
   String? description;
   String? timetable;
   Map<String, String>? links;
   Map<DocumentReference, String>? guestlist;
   int savedcount;
-  String? exModHostname;
+  String? templateHostID;
+  String status;
+  Event({
+    this.title = null,
+    required this.eventid,
+    this.hostreference = null,
+    this.begin = null,
+    this.end = null,
+    this.location = null,
+    this.locationname,
+    this.minAge = 0,
+    this.icon = null,
+    this.flyer = null,
+    this.description,
+    this.timetable = null,
+    this.links = null,
+    this.guestlist,
+    this.savedcount = 0,
+    this.templateHostID,
+    this.status = "public",
+  });
 
-  Event(
-      {this.title = null,
-      required this.eventid,
-      this.hostreference = null,
-      this.begin = null,
-      this.end = null,
-      this.location = null,
-      this.locationname,
-      this.age = null,
-      this.icon = null,
-      this.description,
-      this.timetable = null,
-      this.links = null,
-      this.guestlist,
-      this.savedcount = 0,
-      this.exModHostname});
-
-  Event copyWith(
-      {String? title,
-      required String eventid,
-      dynamic host,
-      Timestamp? begin,
-      Timestamp? end,
-      GeoPoint? location,
-      String? locationname,
-      String? age,
-      String? icon,
-      String? description,
-      String? timetable,
-      Map<String, String>? links,
-      Map<DocumentReference, String>? guestlist,
-      int? savedcount,
-      String? exModHostname}) {
+  Event copyWith({
+    String? title,
+    required String eventid,
+    DocumentReference? hostreference,
+    Timestamp? begin,
+    Timestamp? end,
+    GeoPoint? location,
+    String? locationname,
+    int minAge = 0,
+    String? icon,
+    String? flyer,
+    String? description,
+    String? timetable,
+    Map<String, String>? links,
+    Map<DocumentReference, String>? guestlist,
+    int? savedcount,
+    String? templateHostID,
+    String status = "public",
+  }) {
     return Event(
-        title: title ?? this.title,
-        eventid: eventid,
-        hostreference: hostreference ?? hostreference,
-        begin: begin ?? this.begin,
-        end: end ?? this.end,
-        location: location ?? this.location,
-        locationname: locationname ?? this.locationname,
-        age: age ?? this.age,
-        icon: icon ?? this.icon,
-        description: description ?? this.description,
-        timetable: timetable ?? this.timetable,
-        links: links ?? this.links,
-        guestlist: guestlist ?? this.guestlist,
-        savedcount: savedcount ?? this.savedcount,
-        exModHostname: exModHostname ?? this.exModHostname);
+      title: title ?? this.title,
+      eventid: eventid,
+      hostreference: hostreference ?? hostreference,
+      begin: begin ?? this.begin,
+      end: end ?? this.end,
+      location: location ?? this.location,
+      locationname: locationname ?? this.locationname,
+      minAge: minAge,
+      icon: icon ?? this.icon,
+      flyer: flyer ?? this.flyer,
+      description: description ?? this.description,
+      timetable: timetable ?? this.timetable,
+      links: links ?? this.links,
+      guestlist: guestlist ?? this.guestlist,
+      savedcount: savedcount ?? this.savedcount,
+      templateHostID: templateHostID ?? this.templateHostID,
+      status: status,
+    );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'title': title,
       'eventid': eventid,
-      'hostreference': hostreference,
+      'hostreference': hostreference as DocumentReference?,
       'begin': begin,
       'end': end,
       'location': location,
       'locationname': locationname,
-      'age': age,
+      'minAge': minAge,
       'icon': icon,
+      'flyer': flyer,
       'description': description,
       'timetable': timetable,
       'links': links,
@@ -200,7 +206,8 @@ class Event {
             })
           : {},
       'savedcount': savedcount,
-      'exModHostname': exModHostname
+      'templateHostID': templateHostID,
+      'status': status
     };
   }
 
@@ -214,14 +221,17 @@ class Event {
           end: firebaseTimestampToTimeStamp(inputmap["end"]),
           location: inputmap["location"],
           locationname: inputmap["locationname"],
-          age: inputmap["age"],
+          minAge: inputmap["minAge"],
           icon: inputmap["icon"],
+          flyer: inputmap["flyer"],
           description: inputmap["description"],
           timetable: inputmap["timetable"],
           links: forceStringStringMapFromStringDynamic(inputmap["links"]),
           guestlist: forceDocumentReferenceStringMapTypeFromStringDynamic(
               inputmap["guestlist"]),
-          exModHostname: inputmap['exModHostname']);
+          templateHostID: inputmap['templateHostID'],
+          status:
+              inputmap.containsKey("status") ? inputmap["status"] : "public");
       return mapevent;
     } catch (e) {
       print(e);
@@ -229,13 +239,46 @@ class Event {
     }
   }
 
-  String toJson() => json.encode(toMap());
-  factory Event.fromJson(String source) =>
-      Event.fromMap(json.decode(source) as Map<String, dynamic>);
+  Map<String, dynamic> toJsonCompatibleMap() {
+    Map<String, dynamic> object = toMap();
+    if (object["hostreference"] != null) {
+      object["hostreference"] = object["hostreference"].path;
+    }
+    if (object["begin"] != null) {
+      object["begin"] =
+          DateTime.fromMillisecondsSinceEpoch(object["begin"].seconds)
+              .microsecondsSinceEpoch;
+    }
+    if (object["end"] != null) {
+      object["end"] = DateTime.fromMillisecondsSinceEpoch(object["end"].seconds)
+          .microsecondsSinceEpoch;
+    }
+    object["description"] = "DSC";
+    return object;
+  }
+
+  String toJson() {
+    return json.encode(toJsonCompatibleMap());
+  }
+
+  factory Event.fromJson(String source) {
+    Map<String, dynamic> map = json.decode(source);
+    if (map["hostreference"] != null) {
+      map["hostreference"] = db.doc(map["hostreference"]);
+    }
+    if (map["begin"] != null) {
+      map["begin"] = Timestamp.fromMillisecondsSinceEpoch(map["begin"]);
+    }
+    if (map["end"] != null) {
+      map["end"] = Timestamp.fromMillisecondsSinceEpoch(map["end"]);
+    }
+    map["description"] = "DSC";
+    return Event.fromMap(map);
+  }
 
   @override
   String toString() {
-    return 'Event(title: "$title", eventid: "$eventid", hostreference: "$hostreference", begin: "$begin", end: "$end", location: "$location", locationname: "$locationname", age: "$age", icon: "$icon", description: "${title /*description*/}", timetable: "$timetable", links: "$links", guestlist: "$guestlist", savedcount: "$savedcount", exModHostName: $exModHostname)';
+    return 'Event(title: "$title", eventid: "$eventid", hostreference: "$hostreference", begin: "$begin", end: "$end", location: "$location", locationname: "$locationname", minAge: "$minAge", icon: "$icon", description: "*", timetable: "$timetable", links: "$links", guestlist: "$guestlist", savedcount: "$savedcount", templateHostID: $templateHostID, status: $status)';
   }
 
   @override
@@ -248,14 +291,16 @@ class Event {
         other.end == end &&
         other.location == location &&
         other.locationname == locationname &&
-        other.age == age &&
+        other.minAge == minAge &&
         other.icon == icon &&
+        other.flyer == flyer &&
         other.description == description &&
         other.timetable == timetable &&
         mapEquals(other.links, links) &&
         mapEquals(other.guestlist, guestlist) &&
         other.savedcount == savedcount &&
-        other.exModHostname == exModHostname;
+        other.templateHostID == templateHostID &&
+        other.status == status;
   }
 
   @override
@@ -267,14 +312,16 @@ class Event {
         end.hashCode ^
         location.hashCode ^
         locationname.hashCode ^
-        age.hashCode ^
+        minAge.hashCode ^
         icon.hashCode ^
+        flyer.hashCode ^
         description.hashCode ^
         timetable.hashCode ^
         links.hashCode ^
         guestlist.hashCode ^
         savedcount.hashCode ^
-        exModHostname.hashCode;
+        templateHostID.hashCode ^
+        status.hashCode;
   }
 }
 
@@ -512,11 +559,40 @@ class User {
         pinned_groups.hashCode;
   }
 }
-/*
-class DemoHost {
-  
+
+class HostTags {
+  final bool? permit;
+  final String? category;
+  final bool? official_logo;
+  HostTags({this.permit, this.category, this.official_logo});
 }
-*/
+
+class DemoHost {
+  final HostTags tags;
+  final List<Link> links;
+  final String? logopath;
+  final String name;
+  final String id;
+  DemoHost(
+      {required this.tags,
+      required this.links,
+      required this.logopath,
+      required this.name,
+      required this.id});
+  factory DemoHost.fromMap(Map<String, dynamic> map) {
+    return DemoHost(
+        tags: HostTags(
+            permit: map.containsKey("genehmigung") ? map["genehmigung"] : null,
+            category: map.containsKey("kategorie") ? map["kategorie"] : null,
+            official_logo:
+                map.containsKey("offiziel_logo") ? map["offiziel_logo"] : null),
+        links: linkListFromMap(map.containsKey("links") ? map["links"] : {}),
+        logopath: map.containsKey("logopath") ? map["logopath"] : null,
+        name: map["name"],
+        id: map["id"]);
+  }
+}
+
 /*
   Demo Objects
 */

@@ -101,7 +101,6 @@ class LoginScreen extends StatelessWidget {
                     if (!kIsWeb) {
                       dbc.User? tryUserData =
                           await db.tryUserLogin(username ?? "", password ?? "");
-
                       if (tryUserData == null) {
                         // Throw error dialog. (choices : Retry, anonymous)
                         showDialog(
@@ -116,7 +115,7 @@ class LoginScreen extends StatelessWidget {
                                 username = tryUserData.username,
                                 password = tryUserData.password);
                         currently_loggedin_as.value = tryUserData;
-                        Beamer.of(context).beamToNamed("/profile/");
+                        Beamer.of(context).beamToNamed("/profile");
                         sleep(const Duration(seconds: 1));
                         ScaffoldMessenger.of(context).showSnackBar(
                             cw.hintSnackBar("Logged in as @$username"));
@@ -138,13 +137,15 @@ class LoginScreen extends StatelessWidget {
                         Map<String, dynamic>? docData =
                             doc.data() as Map<String, dynamic>?;
                         print(doc.data());
-                        if (docData == null) {
+                        if (doc.data() == null) {
                           showDialog(
                               context: context,
                               builder: (BuildContext context) =>
                                   _showLoginFailedDialog(context));
                         } else {
-                          dbc.User tryUserData = dbc.User.fromMap(docData);
+                          dbc.User tryUserData = dbc.User.fromMap(
+                              forceStringDynamicMapFromObject(
+                                  doc.data() ?? {}));
                           if (tryUserData.password == password) {
                             currently_loggedin_as.value = tryUserData;
                             Beamer.of(context).beamToNamed("/");

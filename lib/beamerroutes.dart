@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ravestreamradioapp/screens/aboutus.dart';
 import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/screens/loginscreen.dart';
+import 'package:ravestreamradioapp/screens/managecalendarscreen.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/eventoverviewpage.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
@@ -14,6 +15,8 @@ import 'package:beamer/beamer.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/groupoverviewpage.dart';
 import 'screens/privacypolicy.dart';
 import 'screens/imprint.dart';
+import 'package:ravestreamradioapp/screens/devsettingsscreen.dart';
+import 'package:ravestreamradioapp/screens/draftscreen.dart';
 
 Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   // Routes for web navigation
@@ -73,5 +76,8 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   "/createaccount": (context, state, data) => CreateAccountScreen(),
   "/policy": (context, state, data) => const PrivacyPolicy(),
   "/imprint": (context, state, data) => const ImPrint(),
-  "/social": (context, state, data) => const AboutUsPage()
+  "/social": (context, state, data) => const AboutUsPage(),
+  "/dev": (context, state, data) => const DevSettingsScreen(),
+  "/manage": (context, state, data) => ManageEventScreen(),
+  "/drafts": (context, state, data) => const DraftCalendar()
 };

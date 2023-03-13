@@ -168,7 +168,7 @@ class EventOverviewPage extends StatelessWidget {
                                                     Expanded(
                                                         flex: 3,
                                                         child: AspectRatio(
-                                                            aspectRatio: 1,
+                                                            aspectRatio: 2,
                                                             child: ClipRRect(
                                                                 borderRadius: BorderRadius.circular(
                                                                     MediaQuery.of(context)
@@ -177,7 +177,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                         30),
                                                                 child: FutureImageBuilder(
                                                                     futureImage:
-                                                                        getEventIcon(event.value ??
+                                                                        getEventFlyer(event.value ??
                                                                             dbc.demoEvent))))),
                                                   ]),
                                                   Padding(
@@ -289,7 +289,7 @@ class EventOverviewPage extends StatelessWidget {
                                                         )
                                                       : const SizedBox(
                                                           height: 0),
-                                                  event.value!.age != null
+                                                  event.value!.minAge != null
                                                       ? Row(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -360,7 +360,7 @@ class EventOverviewPage extends StatelessWidget {
                                                         )
                                                       : const SizedBox(
                                                           height: 0),
-                                                  event.value!.age != null
+                                                  event.value!.minAge != null
                                                       ? Row(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -392,7 +392,7 @@ class EventOverviewPage extends StatelessWidget {
                                                         )
                                                       : const SizedBox(
                                                           height: 0),
-                                                  event.value!.age != null
+                                                  event.value!.minAge != null
                                                       ? Padding(
                                                           padding:
                                                               const EdgeInsets
@@ -401,7 +401,7 @@ class EventOverviewPage extends StatelessWidget {
                                                               color: cl
                                                                   .nearly_black,
                                                               child: Text(
-                                                                  "Age: ${event.value!.age}",
+                                                                  "Minimum Age: ${event.value!.minAge}",
                                                                   style: const TextStyle(
                                                                       color: Colors
                                                                           .white))),

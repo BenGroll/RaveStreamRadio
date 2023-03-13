@@ -1,13 +1,3 @@
-/*
-Left-off-Marker
-To remember where I left of if I need to take a break;
-File: eventcreationscreen.dart
-
-Need to implement uploading/saving events.
-Command to (re)build android app bundle: flutter build appbundle
-                        build\app\outputs\bundle\release\app-release.aab Location of App bundle
-Command to deploy safely to hosting: firebase deploy --only hosting
-*/
 //TestChange
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routeInformationParser: BeamerParser(),
-      routerDelegate: routerDelegate,
+      routerDelegate: routerDelegate, 
       title: 'RaveStreamRadio',
       theme:
           ThemeData(primarySwatch: MaterialColor(0xFF000000, cl.blackmaterial)),

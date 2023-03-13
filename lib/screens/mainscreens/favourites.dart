@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
+import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
+import 'package:ravestreamradioapp/shared_state.dart';
 
 class Favourites extends StatefulWidget {
   final dbc.User? loggedinas;
@@ -14,8 +16,6 @@ class Favourites extends StatefulWidget {
 class _FavouritesState extends State<Favourites> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: cl.nearly_black,
-    );
+    return EventCalendar(loggedinas: currently_loggedin_as.value);
   }
 }

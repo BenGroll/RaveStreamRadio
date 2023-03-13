@@ -23,9 +23,13 @@ Future reloadEventPage() async {
   currently_selected_screen.notifyListeners();
 }
 
+enum CalendarMode { normal, drafts }
+
 class EventCalendar extends StatelessWidget {
   final dbc.User? loggedinas;
-  const EventCalendar({super.key, required this.loggedinas});
+  final CalendarMode mode;
+  const EventCalendar(
+      {super.key, required this.loggedinas, this.mode = CalendarMode.normal});
   @override
   Widget build(BuildContext context) {
     event_data = [];
@@ -51,10 +55,12 @@ class EventCalendar extends StatelessWidget {
                         return FutureBuilder(
                             future: db.getEvents(
                                 ITEMS_PER_PAGE_IN_EVENTSHOW,
-                                event_data!.isEmpty
-                                    ? null
-                                    : event_data!.last.eventid,
-                                "end"),
+                                db.EventFilters(
+                                  lastelemEventid: event_data!.isEmpty
+                                      ? null
+                                      : event_data!.last.eventid,
+                                  fromDrafts: mode == CalendarMode.drafts
+                                )),
                             builder: ((context, snapshot) {
                               if (snapshot.connectionState !=
                                   ConnectionState.done) {
@@ -110,17 +116,21 @@ class EventCalendar extends StatelessWidget {
                         shownitems.add(PageIndicator());
                         shownitems.add(SizedBox(
                             height: MediaQuery.of(context).size.height / 35));
-                            ScrollController cont = ScrollController();
+                        ScrollController cont = ScrollController();
                         return Scrollbar(
-                          controller: cont,
-                          isAlwaysShown: true,
-                          child: ListView(
                             controller: cont,
-                            children: shownitems));
+                            isAlwaysShown: true,
+                            child: ListView(
+                                controller: cont, children: shownitems));
                       }
                     }));
               }),
-        ));
+        ),
+        appBar: mode == CalendarMode.drafts ? AppBar(
+          title: Text("Your Drafts"),
+          centerTitle: true,
+        ) : null,
+        );
   }
 }
 
@@ -131,8 +141,6 @@ class CalendarEventCard extends StatelessWidget {
   }
   @override
   Widget build(BuildContext context) {
-    print(currently_loggedin_as.value);
-    print(isEventHostedByUser(event, currently_loggedin_as.value));
     ValueNotifier<bool> saved =
         ValueNotifier(db.isEventSaved(event, currently_loggedin_as.value));
     if (isEventHostedByUser(event, currently_loggedin_as.value)) {
@@ -233,6 +241,15 @@ class CalendarEventCard extends StatelessWidget {
   }
 }
 
+double getAspectRatioForEventCard(dbc.Event event) {
+  const double SINGLELINESIZE = 0.25;
+  const double CARDSIZEWOTEXTS = 2.4;
+  double finalaspect = CARDSIZEWOTEXTS;
+  if (event.minAge != 0) finalaspect -= SINGLELINESIZE;
+  if (event.locationname != null) finalaspect -= SINGLELINESIZE;
+  return finalaspect;
+}
+
 class _CalendarEventCardBody extends StatelessWidget {
   final dbc.Event event;
   const _CalendarEventCardBody({super.key, required this.event});
@@ -244,7 +261,7 @@ class _CalendarEventCardBody extends StatelessWidget {
           vertical: MediaQuery.of(context).size.height / 80,
           horizontal: MediaQuery.of(context).size.height / 120),
       child: AspectRatio(
-          aspectRatio: 2,
+          aspectRatio: getAspectRatioForEventCard(event),
           child: Card(
               elevation: 3,
               color: Colors.transparent,
@@ -318,7 +335,7 @@ class _CalendarEventCardBody extends StatelessWidget {
                                             const Text("by",
                                                 style: TextStyle(
                                                     color: Colors.white)),
-                                            event.exModHostname != null
+                                            event.templateHostID != null
                                                 ? Padding(
                                                     padding:
                                                         EdgeInsets.fromLTRB(
@@ -330,12 +347,29 @@ class _CalendarEventCardBody extends StatelessWidget {
                                                             0,
                                                             0,
                                                             0),
-                                                    child: Text(
-                                                      event.exModHostname ??
-                                                          "This should never display",
-                                                      style: const TextStyle(
-                                                          color: Colors.white),
-                                                    ),
+                                                    child: FutureBuilder(
+                                                        future:
+                                                            db.getDemoHostIDs(),
+                                                        builder: (context,
+                                                            snapshot) {
+                                                          if (snapshot
+                                                                  .connectionState ==
+                                                              ConnectionState
+                                                                  .done) {
+                                                            return Text(
+                                                              snapshot.data![event
+                                                                      .templateHostID] ??
+                                                                  "This should never display",
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white),
+                                                            );
+                                                          } else {
+                                                            return CircularProgressIndicator(
+                                                                color: Colors
+                                                                    .white);
+                                                          }
+                                                        }),
                                                   )
                                                 : (event.hostreference != null
                                                     ? linkbuttons
@@ -407,12 +441,13 @@ class _CalendarEventCardBody extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Text(
-                                event.age == null
-                                    ? ""
-                                    : "Age: ${event.age ?? ""}",
-                                style: const TextStyle(color: Colors.white),
-                              ),
+                              event.minAge != 0
+                                  ? Text(
+                                      "Minimum Age: ${event.minAge}",
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    )
+                                  : const SizedBox(height: 0),
                               Text(
                                 "Location: ${event.locationname ?? "Unknown"}",
                                 style: const TextStyle(color: Colors.white),
