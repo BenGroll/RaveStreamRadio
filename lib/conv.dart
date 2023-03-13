@@ -58,6 +58,10 @@ List<Map<String, dynamic>> querySnapshotToMapList(QuerySnapshot query,
   return documents;
 }
 
+
+/// Takes a Map<dynamic, dynamic>
+///
+/// Returns Map<String, dynamic>
 Map<String, dynamic> stringDynamicMapFromDynamicDynamic(
     Map<dynamic, dynamic> map) {
   Map<String, dynamic> test = {};
@@ -192,7 +196,7 @@ Future<String> getEventTitle(dbc.Event event) async {
   }
 }
 
-/// returns true if event with [eventid] is hosted by [user]
+/// returns true if [event] is hosted by [user]
 bool isEventHostedByUser(dbc.Event event, dbc.User? user) {
   if (user == null) {
     return false;
@@ -209,6 +213,9 @@ bool isEventHostedByUser(dbc.Event event, dbc.User? user) {
   return false;
 }
 
+/// Takes Map<String, dynamic>?
+///
+/// Returns Map<DocumentReference, dynamic>
 Map<DocumentReference, dynamic>? mapStringDynamic2DocRefDynamic(
     Map<String, dynamic> input) {
   Map<DocumentReference, dynamic> out = {};
@@ -218,6 +225,7 @@ Map<DocumentReference, dynamic>? mapStringDynamic2DocRefDynamic(
   return out;
 }
 
+/// Get key that matches value from a Map<String, dynamic>
 String? getKeyMatchingValueFromMap(
     Map<String, dynamic> searchMap, dynamic searchValue) {
   if (!searchMap.containsValue(searchValue)) return null;
@@ -230,6 +238,13 @@ String? getKeyMatchingValueFromMap(
   return null;
 }
 
+/// Creates an array of all numbers from 0 to n
+/// 
+/// Example:
+/// 
+/// numberToArrayOfAllNumbersBelow(10)
+/// 
+/// => [0,1,2,3,4,5,6,7,8,9]
 List<int> numberToArrayOfAllNumbersBelow(int number) {
   List<int> intlist = [];
   for (int i = 0; i < number; i++) {
@@ -238,6 +253,7 @@ List<int> numberToArrayOfAllNumbersBelow(int number) {
   return intlist;
 }
 
+/// Calculate Size in Bytes it takes to store [input]
 int getSizeInBytesForMap(Map<dynamic, dynamic> input) {
   int size = 0;
   input.entries.forEach((MapEntry element) {
@@ -248,6 +264,23 @@ int getSizeInBytesForMap(Map<dynamic, dynamic> input) {
   return size;
 }
 
+/// Turns a List<dbc.Event> into a Map, Structure: 
+/// 
+/// {
+/// 
+///   eventid: {
+/// 
+///               # Event Attributes
+/// 
+///            },
+/// 
+///   eventid2:{
+/// 
+///               # Event Attributes
+/// 
+///            }
+/// 
+/// }
 Map<String, dynamic> eventListToJsonCompatibleMap(List<dbc.Event> list) {
   Map<String, dynamic> outMap = {};
   list.forEach((element) {
@@ -256,10 +289,14 @@ Map<String, dynamic> eventListToJsonCompatibleMap(List<dbc.Event> list) {
   return outMap;
 }
 
+/// Takes map from eventListToJsonCompatibleMap
+/// 
+/// Returns the json encoded string
 String eventMapToJson(Map<String, dynamic> inMap) {
   return json.encode(inMap);
 }
 
+/// Takes Map<String, dynamic> and returns the List<dbc.Event>
 List<dbc.Event> maplistToEventList(List<Map<String, dynamic>> mapList) {
   List<dbc.Event> list = [];
   mapList.forEach((element) {
@@ -268,6 +305,9 @@ List<dbc.Event> maplistToEventList(List<Map<String, dynamic>> mapList) {
   return list;
 }
 
+/// Takes Object
+/// 
+/// Returns the Map<String, dynamic>
 Map<String, dynamic> forceStringDynamicMapFromObject(Object input) {
   try {
     Map<String, dynamic> out = input as Map<String, dynamic>;

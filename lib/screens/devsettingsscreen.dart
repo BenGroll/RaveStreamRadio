@@ -9,6 +9,8 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/payments.dart' as pay;
 
+
+/// Screen for developer level Actions and Informations
 class DevSettingsScreen extends StatelessWidget {
   const DevSettingsScreen({Key? key}) : super(key: key);
 
@@ -193,15 +195,27 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Read index file for Events")),
                   ElevatedButton(
                       onPressed: () async {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (BuildContext context) => pay.paypalInterface
-                            )
-                        );
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                pay.paypalInterface));
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Payment"));
                       },
-                      child: Text("Test Paypal Payment"))
+                      child: Text("Test Paypal Payment")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await db.getDemoHosts();
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Got Hosts"));
+                      },
+                      child: Text("Get Hosts")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await db.writeIDStoDemoHosts();
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Set Hosts"));
+                      },
+                      child: Text("Include IDs in HostDocs"))
                 ],
               ),
             ),

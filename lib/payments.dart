@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
 import 'shared_state.dart';
 
+/// Demotransactiondata
 const transactions = [
   {
     "amount": {
@@ -27,6 +28,7 @@ const transactions = [
   }
 ];
 
+/// Demo PaypalInterface
 UsePaypal paypalInterface = UsePaypal(
     sandboxMode: true,
     onSuccess: (Map params) {print("Success: $params");},

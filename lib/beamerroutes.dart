@@ -18,6 +18,7 @@ import 'screens/imprint.dart';
 import 'package:ravestreamradioapp/screens/devsettingsscreen.dart';
 import 'package:ravestreamradioapp/screens/draftscreen.dart';
 
+/// All named Routes are to be included here
 Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   // Routes for web navigation
   "/": (context, state, data) =>

@@ -20,6 +20,11 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:ravestreamradioapp/screens/managecalendarscreen.dart'
     as managescreen;
 
+/// Function to open date picker
+/// 
+/// Returns DateTime picked
+/// 
+/// If return = null, user canceled the picking
 Future<DateTime?> pick_date(BuildContext context, DateTime? initialDate) async {
   await showDatePicker(
       context: context,
@@ -30,6 +35,11 @@ Future<DateTime?> pick_date(BuildContext context, DateTime? initialDate) async {
       ));
 }
 
+/// Function to open time picker
+/// 
+/// Returns TimeOfDay picked
+/// 
+/// If return = null, user canceled the picking
 Future<TimeOfDay?> pick_time(
     BuildContext context, TimeOfDay? initialTime) async {
   return await showTimePicker(
@@ -37,6 +47,7 @@ Future<TimeOfDay?> pick_time(
 }
 
 /// Custom Snackbar used to notify User
+/// 
 /// Fixed to the bottom of scaffold body
 SnackBar hintSnackBar(String alertMessage) {
   return SnackBar(
@@ -45,6 +56,7 @@ SnackBar hintSnackBar(String alertMessage) {
       content: Text(alertMessage));
 }
 
+/// AppBar for the Calendar homescreen
 AppBar CalendarAppBar(BuildContext context) {
   return AppBar(
       leading: const OpenSidebarButton(),
@@ -60,6 +72,7 @@ AppBar CalendarAppBar(BuildContext context) {
       centerTitle: true);
 }
 
+/// AppBar for the Calendar homescreen
 AppBar FavouritesAppBar(BuildContext context) {
   return AppBar(
     leading: const OpenSidebarButton(),
@@ -69,10 +82,12 @@ AppBar FavouritesAppBar(BuildContext context) {
   );
 }
 
+/// TabBar for the Social Tab of the homescreens
 TabBar tabbar = TabBar(
   tabs: [Tab(text: "Groups"), Tab(text: "Chats")],
 );
 
+/// AppBar for the Groups homescreen
 AppBar GroupsAppBar(BuildContext context) {
   return AppBar(
     leading: const OpenSidebarButton(),
@@ -86,6 +101,7 @@ AppBar GroupsAppBar(BuildContext context) {
   );
 }
 
+/// AppBar for the Profile homescreen
 AppBar ProfileAppBar(BuildContext context) {
   dbc.User? user = currently_loggedin_as.value;
   return user == null
@@ -130,6 +146,7 @@ class FutureImageBuilder extends StatelessWidget {
   }
 }
 
+/// Button that opens HomeScreen Drawer
 class OpenSidebarButton extends StatelessWidget {
   const OpenSidebarButton({super.key});
   @override
@@ -143,6 +160,7 @@ class OpenSidebarButton extends StatelessWidget {
   }
 }
 
+/// SideBar for the homescreen
 class NavBar extends StatelessWidget {
   const NavBar({super.key});
   @override
@@ -246,6 +264,7 @@ class NavBar extends StatelessWidget {
   }
 }
 
+/// Default Screen to display Errors
 class ErrorScreen extends StatelessWidget {
   final String errormessage;
   final int? errorcode;
@@ -272,8 +291,10 @@ class ErrorScreen extends StatelessWidget {
   }
 }
 
+/// EventList notifier
 ValueNotifier<List<Map<String, dynamic>>> eventListNOT = ValueNotifier([]);
 
+/// Table to edit and view all Event data
 class EventTable extends StatelessWidget {
   ValueNotifier<bool> editTable = ValueNotifier<bool>(false);
   EventTable({super.key});

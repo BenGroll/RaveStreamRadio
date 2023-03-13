@@ -3,6 +3,7 @@ import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' show db;
 
+/// Privacy Policy Screen
 class PrivacyPolicy extends StatelessWidget {
   const PrivacyPolicy({super.key});
 

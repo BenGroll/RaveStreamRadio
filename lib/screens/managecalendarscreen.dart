@@ -7,8 +7,10 @@ import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:beamer/beamer.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
+/// Screens in Management Tab 
 enum ManagementScreens { Events, Hosts, Media }
 
+/// Selected Screen in Management tab
 ValueNotifier<ManagementScreens> selectedManagementScreen =
     ValueNotifier<ManagementScreens>(ManagementScreens.Events);
 
@@ -34,6 +36,7 @@ Widget mapScreenToManagementScreen(
   }
 }
 
+/// Screen "Events" in Management Tab
 class EventScreen extends StatelessWidget {
   const EventScreen({super.key});
   @override
@@ -42,6 +45,7 @@ class EventScreen extends StatelessWidget {
   }
 }
 
+/// Screen "Hosts" in Management Tab
 class HostScreens extends StatelessWidget {
   const HostScreens({Key? key}) : super(key: key);
   @override
@@ -50,9 +54,9 @@ class HostScreens extends StatelessWidget {
   }
 }
 
+/// Screen "Media" in  Management Tab
 class MediaScreen extends StatelessWidget {
   const MediaScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return const Placeholder();
@@ -61,6 +65,7 @@ class MediaScreen extends StatelessWidget {
 
 final scaffoldKey = GlobalKey<ScaffoldState>();
 
+/// Maps currently selected Screen to body of the scaffold
 class ManageEventScreen extends StatelessWidget {
   ManageEventScreen({super.key});
   @override

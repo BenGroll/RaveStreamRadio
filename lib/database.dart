@@ -1,8 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +14,9 @@ import 'testdbscenario.dart';
 
 var db = FirebaseFirestore.instance;
 
-/// adds dbc.demoUser to database of current branch
+/// Adds dbc.demoUser to database of current branch
+/// 
+/// (Deprecated)
 Future addTestUser() async {
   await db
       .collection("${branchPrefix}users")
@@ -28,7 +28,9 @@ Future addTestUser() async {
   return Future.delayed(Duration.zero);
 }
 
-/// adds dbc.demoEvent to database of current branch
+/// Adds dbc.demoEvent to database of current branch
+/// 
+/// (Deprecated)
 Future addTestEvent() async {
   /*print(
       "demoEvent guestlist Runtime Type: ${dbc.demoEvent.guestlist.runtimeType}");*/
@@ -43,6 +45,8 @@ Future addTestEvent() async {
 }
 
 /// adds dbc.demoGroup to database of current branch
+/// 
+/// (Deprecated)
 Future addTestGroup() async {
   await db
       .collection("${branchPrefix}groups")
@@ -55,6 +59,8 @@ Future addTestGroup() async {
 }
 
 /// Uploads event to database
+/// 
+/// Also adds it to the events list of the host automatically
 Future uploadEventToDatabase(dbc.Event event) async {
   await db
       .collection("${branchPrefix}events")
@@ -76,6 +82,8 @@ Future uploadEventToDatabase(dbc.Event event) async {
 }
 
 /// Adds demoevents, demousers and demogroups to current branch.
+/// 
+/// Testscenario is in lib\testdbscenario.dart
 Future setTestDBScenario() async {
   testuserlist.forEach((element) async {
     await db
@@ -150,6 +158,7 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
   }
 }
 
+/// Fetch User from database
 Future<dbc.User?> getUser(String username) async {
   DocumentSnapshot userdoc =
       await db.doc("${branchPrefix}users/$username").get();
@@ -187,6 +196,11 @@ Future<int> getEventCount() async {
 ///
 /// Set [orderbyField] to the name of the field you want to order by. Indexed Fields:
 
+
+/// Class that contains all possible event filters
+/// 
+/// [lastelemEventid] is for paginating query results
+/// 
 class EventFilters {
   String? lastelemEventid;
   Timestamp? onlyAfter;
@@ -205,6 +219,11 @@ class EventFilters {
       this.fromDrafts = false});
 }
 
+/// General Query to get List of Events
+/// 
+/// Query filters can be specified by the [filters] parameter
+/// 
+/// Query size can be specified by the [queryLimit] param
 Future<List<dbc.Event>> getEvents(
     [int? queryLimit, EventFilters? filters]) async {
   try {
@@ -269,7 +288,7 @@ Future<List<dbc.Event>> getEvents(
     return [];
   }
 }
-
+/// Gets info from 
 Future<Map<String, bool>?> getEventUserspecificData(
     dbc.Event event, dbc.User? currentuser) async {
   Map<String, bool> data = {
@@ -290,6 +309,7 @@ Future<Map<String, bool>?> getEventUserspecificData(
   return data;
 }
 
+/// Returns true if [user] has the [event] saved
 bool isEventSaved(dbc.Event event, dbc.User? user) {
   if (user == null) {
     return false;
@@ -302,23 +322,22 @@ bool isEventSaved(dbc.Event event, dbc.User? user) {
   return false;
 }
 
+/// Add [event] to [user]'s saved events list
+/// 
+/// Returns whether the event was saved before
 Future<bool> saveEventToUserReturnWasSaved(
     dbc.Event event, dbc.User? user) async {
   if (user == null) {
     return false;
   }
-
   Map<String, bool>? event_userspecific_data =
       await getEventUserspecificData(event, user);
-
   List<DocumentReference> saved_events = user.saved_events;
-
   if (event_userspecific_data!["user_has_saved"] ?? false) {
     saved_events.remove(db.doc("${branchPrefix}events/${event.eventid}"));
   } else {
     saved_events.add(db.doc("${branchPrefix}events/${event.eventid}"));
   }
-
   DocumentSnapshot usersnap =
       await db.doc("${branchPrefix}users/${user.username}").get();
   if (usersnap.data() == null) {
@@ -330,7 +349,6 @@ Future<bool> saveEventToUserReturnWasSaved(
     return false;
   }
   dbc.User updatedUserData = dbc.User.fromMap(updatedData);
-
   updatedUserData.saved_events = saved_events;
   db
       .doc("${branchPrefix}users/${updatedUserData.username}")
@@ -342,6 +360,7 @@ Future<bool> saveEventToUserReturnWasSaved(
   return event_userspecific_data["user_has_saved"] ?? false;
 }
 
+/// Gets event from database
 Future<dbc.Event?> getEvent(String eventid) async {
   for (int i = 0; i < saved_events.length; i++) {
     if (saved_events[i].eventid == eventid) return saved_events[i];
@@ -353,6 +372,7 @@ Future<dbc.Event?> getEvent(String eventid) async {
   return null;
 }
 
+/// Returns a list of groups the given [username] has joined
 Future<List<dbc.Group>> showJoinedGroupsForUser(String username) async {
   dbc.User? user = await getUser(username);
   if (user == null) return [];
@@ -376,6 +396,7 @@ bool userIsAdminOfGroup(dbc.User user, String groupid) {
 }
 */
 
+/// Returns whether [user] has given group pinned or not
 bool hasGroupPinned(dbc.Group group, dbc.User user) {
   for (int i = 0; i < user.pinned_groups.length; i++) {
     if (user.pinned_groups[i].id == group.groupid) {
@@ -402,6 +423,7 @@ Future<dbc.Event?> currentlyEditedEvent(String? eventid) async {
   return eventid == null ? null : getEvent(eventid);
 }
 
+/// Returns if currently loggedin user has permission to edit given [event]
 bool hasPermissionToEditEventObject(dbc.Event event) {
   if (currently_loggedin_as.value == null) {
     return false;
@@ -422,6 +444,7 @@ bool hasPermissionToEditEventObject(dbc.Event event) {
   return false;
 }
 
+/// Return if currently logged in user has permission to edit event 
 Future<bool> hasPermissionToEditEvent(String eventID) async {
   if (currently_loggedin_as.value == null) {
     return false;
@@ -438,15 +461,16 @@ Future<bool> hasPermissionToEditEvent(String eventID) async {
   return isEventHostedByUser(event, currently_loggedin_as.value);
 }
 
-Future<List<dbc.DemoHost>> getDemoHosts() async {
+/// Get list of Hosts presaved by the calendar team
+Future<List<dbc.Host>> getDemoHosts() async {
   if (doIHavePermission(GlobalPermission.MANAGE_HOSTS) ||
       doIHavePermission(GlobalPermission.MANAGE_EVENTS)) {
     QuerySnapshot query =
         await db.collection("demohosts").orderBy("name").get();
     List<Map<String, dynamic>> queryMaps = querySnapshotToMapList(query);
-    List<dbc.DemoHost> hosts = [];
+    List<dbc.Host> hosts = [];
     queryMaps.forEach((element) {
-      hosts.add(dbc.DemoHost.fromMap(element));
+      hosts.add(dbc.Host.fromMap(element));
     });
     return hosts;
   } else {
@@ -454,6 +478,26 @@ Future<List<dbc.DemoHost>> getDemoHosts() async {
   }
 }
 
+/// Include Document IDS as parameter in every Demohosts document
+Future writeIDStoDemoHosts() async {
+  if (doIHavePermission(GlobalPermission.MANAGE_HOSTS) ||
+      doIHavePermission(GlobalPermission.MANAGE_EVENTS)) {
+    List<DocumentSnapshot> docs =
+        await db.collection("demohosts").get().then((value) => value.docs);
+    List<Future> calllist = [];
+    docs.forEach((DocumentSnapshot element) {
+      calllist.add(db
+          .collection("demohosts")
+          .doc(element.id)
+          .update({"id": element.id}));
+    });
+    await Future.wait(calllist);
+    return;
+  }
+  return;
+}
+
+/// Copy a collection
 Future createCopyOfCollection(String collectionToCopyID,
     String destinationCollectionID, BuildContext context) async {
   CollectionReference collection = db.collection(collectionToCopyID);
@@ -527,6 +571,7 @@ Future createCopyOfCollection(String collectionToCopyID,
   return;
 }
 
+/// Get list of all documentIDS from a collection
 Future<Map<String, String>> getDocIDsFromCollectionAsList(
     String collection) async {
   CollectionReference colRef = db.collection(collection);
@@ -538,6 +583,7 @@ Future<Map<String, String>> getDocIDsFromCollectionAsList(
   return docIDs;
 }
 
+/// Get demohost Ids
 Future<Map<String, String>> getDemoHostIDs() async {
   if (!doIHavePermission(GlobalPermission.MANAGE_HOSTS)) return {};
   DocumentSnapshot indexesSnap = await db.doc("content/indexes").get();
@@ -567,6 +613,7 @@ Future createIndexesForEvents(
   return Future.delayed(Duration.zero);
 }*/
 
+/// Write the database events to the index.json
 Future writeEventIndexes(String eventjsonstring) async {
   Reference storageRef = FirebaseStorage.instance.ref();
   Reference pathReference =
@@ -575,6 +622,7 @@ Future writeEventIndexes(String eventjsonstring) async {
   return await task;
 }
 
+/// Read the index.json
 Future<String> readEventIndexesJson() async {
   Reference storageRef = FirebaseStorage.instance.ref();
   Reference pathReference =
@@ -583,6 +631,7 @@ Future<String> readEventIndexesJson() async {
   return String.fromCharCodes(data ?? Uint8List.fromList([0]));
 }
 
+/// Read the event list from a index.json in String format
 List<dbc.Event> getEventListFromIndexes(String indexJsonString) {
   Map<String, dynamic> indexMap = json.decode(indexJsonString);
   List<dbc.Event> eventlist = [];

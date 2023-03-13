@@ -14,10 +14,13 @@ import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 
+/// What text to show in the dropdown to host as yourself
 const HOST_YOURSELF_ID = "Host as yourself.";
 
+/// Screens
 enum Screen { general, description, links, media }
 
+/// Loading Animation
 const loader = CircularProgressIndicator(color: Colors.white);
 
 bool isOpenedByRSRTeamMember = false;
@@ -77,6 +80,9 @@ Future<List<String>> validateUpload() async {
   return errormessages;
 }
 
+/// Takes List<dbc.Link>
+/// 
+/// Returns {title : url} map
 Map<String, String> linkListToDBMap(List<dbc.Link> list) {
   Map<String, String> outmap = {};
   list.forEach((element) {
@@ -902,7 +908,7 @@ class LinkCreateDialog extends StatelessWidget {
                   dbc.linkListFromMap(currentEventData.value.links ?? {});
               formerlist.add(dbc.Link(title: label, url: url));
               Navigator.of(context).pop();
-              currentEventData.value.links = dbc.mapToLinkList(formerlist);
+              currentEventData.value.links = dbc.mapFromLinkList(formerlist);
               currentEventData.notifyListeners();
             },
             child: Text("Add link to event",
@@ -953,7 +959,7 @@ class LinkEditDialog extends StatelessWidget {
                   dbc.linkListFromMap(currentEventData.value.links ?? {});
               Navigator.of(context).pop();
               currentEventData.value.links =
-                  dbc.mapToLinkList(editLinkInList(formerlist, link));
+                  dbc.mapFromLinkList(editLinkInList(formerlist, link));
             },
             child: Text("Save changes to Link",
                 style: TextStyle(color: Colors.white)))

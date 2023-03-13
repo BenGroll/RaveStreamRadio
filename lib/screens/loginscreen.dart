@@ -189,6 +189,7 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
+/// Screen to create a new Account
 class CreateAccountScreen extends StatelessWidget {
   CreateAccountScreen({super.key});
   String username = "";
@@ -337,6 +338,7 @@ class CreateAccountScreen extends StatelessWidget {
   }
 }
 
+/// Shows the dialog to tell the user the username they chose is already taken
 Widget _showUsernameTakenDialog(BuildContext context, String? uname) {
   return AlertDialog(
     title: const Text("Username Taken"),
@@ -367,6 +369,7 @@ Widget _showUsernameTakenDialog(BuildContext context, String? uname) {
   );
 }
 
+/// Show Dialog with wrong login credentials
 Widget _showLoginFailedDialog(BuildContext context) {
   return AlertDialog(
     content: const Text("Couldnt login using this data."),

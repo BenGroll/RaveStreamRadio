@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// InitialRoute
 class MainRoute extends StatelessWidget {
   final Screens startingscreen;
   const MainRoute({this.startingscreen = Screens.events});

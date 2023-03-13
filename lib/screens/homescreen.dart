@@ -61,6 +61,7 @@ int map_Screen_to_Index(Screens screen) {
   }
 }
 
+/// Controls the tooltip that gets shown when holding down on the FloatingButton
 String get FloatingActionButtonTooltip {
   switch (currently_selected_screen.value) {
     case Screens.events:
@@ -137,6 +138,7 @@ AppBar mapScreenToAppBar(
   }
 }
 
+/// HomeScreen Manager
 class HomeScreen extends StatelessWidget {
   dbc.User? loggedinas;
   final Screens startingscreen;

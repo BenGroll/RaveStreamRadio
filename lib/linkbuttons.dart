@@ -9,6 +9,8 @@ import 'package:ravestreamradioapp/screens/overviewpages/eventoverviewpage.dart'
 import 'package:url_launcher/url_launcher.dart';
 import 'shared_state.dart';
 
+
+/// Tests if the document contains a user, a group or event, and returns the corresponding linkbutton
 Widget buildLinkButtonFromRef(DocumentReference? doc, TextStyle labelstyle) {
   if (doc == null) {
     return Text(" Unknown Link", style: labelstyle);
@@ -25,6 +27,7 @@ Widget buildLinkButtonFromRef(DocumentReference? doc, TextStyle labelstyle) {
   return Text("Not a linkable entry.");
 }
 
+/// Button that shows username and links to User-Overviewpage 
 class UsernameLinkButton extends StatelessWidget {
   final DocumentReference target;
   final TextStyle style;
@@ -47,6 +50,7 @@ class UsernameLinkButton extends StatelessWidget {
   }
 }
 
+/// Button that shows GroupID and links to Group-Overviewpage 
 class GroupLinkButton extends StatelessWidget {
   final DocumentReference target;
   final TextStyle style;
@@ -67,6 +71,7 @@ class GroupLinkButton extends StatelessWidget {
   }
 }
 
+/// Button that shows eventid and links to Event-Overviewpage 
 class EventLinkButton extends StatelessWidget {
   final DocumentReference target;
   final TextStyle style;
@@ -89,6 +94,10 @@ class EventLinkButton extends StatelessWidget {
   }
 }
 
+/// Button that contains an url.
+/// 
+/// If link corresponds to an installed app, opens App.
+/// Else opens link in external Browser 
 Widget UrlLinkButton(String url, String label, TextStyle style) {
   return TextButton(
       onPressed: () async {

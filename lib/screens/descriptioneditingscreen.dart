@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+/// Page to edit description (Richtext)
 class DescriptionEditingPage extends StatelessWidget {
   String initialValue;
   late String currentValue;

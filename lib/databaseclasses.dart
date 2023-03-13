@@ -5,8 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/database.dart' show db;
 import 'package:ravestreamradioapp/conv.dart';
+import 'package:ravestreamradioapp/screens/managecalendarscreen.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 
+/// DataClass for Link (Pair of Title and url)
 class Link {
   String title;
   String url;
@@ -17,15 +19,19 @@ class Link {
   }
 }
 
-List<Link> linkListFromMap(Map<String, String> map) {
-  List<Link> outmap = [];
-  map.keys.forEach((element) {
-    outmap.add(Link(title: element, url: map[element]!));
-  });
-  return outmap;
-}
+/// Creates List<Link> from {"title" : "url"} maps
+  List<Link> linkListFromMap(Map<String, String> map) {
+    List<Link> outmap = [];
+    map.keys.forEach((element) {
+      outmap.add(Link(title: element, url: map[element]!));
+    });
+    return outmap;
+  }
 
-Map<String, String> mapToLinkList(List<Link> linklist) {
+/// Reverse of linkListFromMap
+/// 
+/// Creates {"title" : url} map from List<Link>
+Map<String, String> mapFromLinkList(List<Link> linklist) {
   Map<String, String> outmap = {};
   linklist.forEach((element) {
     outmap[element.title] = element.url;
@@ -33,6 +39,7 @@ Map<String, String> mapToLinkList(List<Link> linklist) {
   return outmap;
 }
 
+/// Converts a list of db User permissions to list of GlobalPermission objects
 List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
   List<GlobalPermission> outlist = [];
   if (permits.contains("ADMIN")) {
@@ -97,13 +104,13 @@ List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
 ///
 /// [savedcount] corresponds to the amount of users which saved this event to their favourites
 ///
-/// [exModHostname] (externally moderated Hostname override)
+/// [templateHostID] (externally moderated Hostname override)
 ///
-/// [exModHostname] is used to implement the option to add events to the calendar as a ravestream member.
+/// [templateHostID] is used to implement the option to add events to the calendar as a ravestream member.
 ///
-/// If [exModHostname] is null, it will default to load event to be hostet by a Host themselves.
+/// If [templateHostID] is null, it will default to load event to be hostet by a Host themselves.
 ///
-/// If [exModHostname] is not null, it will be modifyable by ravestream members, and the value given will be displayed instead of the linkbutton that normally links to the host
+/// If [templateHostID] is not null, it will be modifyable by ravestream members, and the value given will be displayed instead of the linkbutton that normally links to the host
 ///
 class Event {
   String? title;
@@ -416,7 +423,7 @@ class Group {
   }
 }
 
-/// Template class for Users to avoid type and valueerrors
+/// Template class for Users
 class User {
   String username;
   String? alias;
@@ -559,44 +566,140 @@ class User {
         pinned_groups.hashCode;
   }
 }
-
+/*
 class HostTags {
   final bool? permit;
   final String? category;
   final bool? official_logo;
   HostTags({this.permit, this.category, this.official_logo});
+}*/
+
+/// Enum of possible Categories a host can be ordered into
+enum HostCategory { collective, festival, host, location, eventseries, label }
+
+/// Safely get permit from object. 
+bool? getPermit(Map<String, dynamic> host) {
+  if (host.containsKey("permit")) {
+    return host["permit"];
+  }
+  if (host.containsKey("genehmigung")) {
+    Map<String, dynamic> map = host;
+    host["permit"] = host["genemigung"] == "ja";
+    host.remove("genehmigung");
+    db.collection("demohosts").doc(map["id"]).set(host);
+    return host["permit"];
+  }
+  return null;
 }
 
-class DemoHost {
-  final HostTags tags;
-  final List<Link> links;
+/// Safely get 'official_logo' field from host 
+bool? getOfficialLogo(Map<String, dynamic> host) {
+  if (host.containsKey("official_logo")) {
+    return host["official_logo"];
+  }
+  if (host.containsKey("offiziel_logo")) {
+    Map<String, dynamic> map = host;
+    host["official_logo"] = host["offiziel_logo"] == "ja";
+    host.remove("offiziel_logo");
+    db.collection("demohosts").doc(map["id"]).set(host);
+    return host["offiziel_logo"] == "ja";
+  }
+  return null;
+}
+
+/// Safely get category from Host
+HostCategory? getCategory(Map<String, dynamic> host) {
+  if (host.containsKey("category")) {
+    if (host["category"] == "collective") return HostCategory.collective;
+    if (host["category"] == "host") return HostCategory.host;
+    if (host["category"] == "eventseries") return HostCategory.eventseries;
+    if (host["category"] == "label") return HostCategory.label;
+    if (host["category"] == "festival") return HostCategory.festival;
+    if (host["category"] == "location") return HostCategory.location;
+  }
+  if (host.containsKey("kategorie")) {
+    print("Kat: ${host["kategorie"]}");
+    String kat = host["kategorie"];
+    if (kat == "Kollektiv") {
+      Map<String, dynamic> data = host;
+      data["category"] = "collective";
+      data.remove("kategorie");
+      db.collection("demohosts").doc(host["id"]).set(data);
+      return HostCategory.collective;
+    }
+    if (kat == "Veranstalter") {
+      Map<String, dynamic> data = host;
+      data["category"] = "host";
+      data.remove("kategorie");
+      db.collection("demohosts").doc(host["id"]).set(data);
+      return HostCategory.host;
+    }
+    if (kat == "Party-Reihe") {
+      Map<String, dynamic> data = host;
+      data["category"] = "eventseries";
+      data.remove("kategorie");
+      db.collection("demohosts").doc(host["id"]).set(data);
+      return HostCategory.host;
+    }
+    if (kat == "Label") {
+      Map<String, dynamic> data = host;
+      data["category"] = "label";
+      data.remove("kategorie");
+      db.collection("demohosts").doc(host["id"]).set(data);
+      return HostCategory.host;
+    }
+    if (kat == "Festival") {
+      Map<String, dynamic> data = host;
+      data["category"] = "festival";
+      data.remove("kategorie");
+      db.collection("demohosts").doc(host["id"]).set(data);
+      return HostCategory.host;
+    }
+    if (kat == "Location") {
+      Map<String, dynamic> data = host;
+      data["category"] = "location";
+      data.remove("Location");
+      db.collection("demohosts").doc(host["id"]).set(data);
+      return HostCategory.host;
+    }
+    print(kat);
+    return null;
+  }
+  return null;
+}
+
+class Host {
+  final List<Link>? links;
   final String? logopath;
   final String name;
   final String id;
-  DemoHost(
-      {required this.tags,
-      required this.links,
-      required this.logopath,
+  final HostCategory? category;
+  final bool? permit;
+  final bool? official_logo;
+  Host(
+      {
+      this.links,
+      this.logopath,
       required this.name,
-      required this.id});
-  factory DemoHost.fromMap(Map<String, dynamic> map) {
-    return DemoHost(
-        tags: HostTags(
-            permit: map.containsKey("genehmigung") ? map["genehmigung"] : null,
-            category: map.containsKey("kategorie") ? map["kategorie"] : null,
-            official_logo:
-                map.containsKey("offiziel_logo") ? map["offiziel_logo"] : null),
-        links: linkListFromMap(map.containsKey("links") ? map["links"] : {}),
+      required this.id,
+      this.category,
+      this.permit,
+      this.official_logo});
+  factory Host.fromMap(Map<String, dynamic> map) {
+    return Host(
+        permit: getPermit(map),
+        category: getCategory(map),
+        official_logo: getOfficialLogo(map),
+        links: linkListFromMap(map.containsKey("links")
+            ? forceStringStringMapFromStringDynamic(map["links"]) ?? {}
+            : {} as Map<String, String>),
         logopath: map.containsKey("logopath") ? map["logopath"] : null,
         name: map["name"],
         id: map["id"]);
   }
 }
 
-/*
-  Demo Objects
-*/
-
+// Demo Objects
 User demoUser = User(username: "demo", password: "demo");
 Group demoGroup = Group(
     groupid: "demo",

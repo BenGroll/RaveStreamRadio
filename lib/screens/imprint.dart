@@ -3,6 +3,7 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/database.dart' show db;
 
+/// The Imprint Screen
 class ImPrint extends StatelessWidget {
   const ImPrint({super.key});
 

@@ -12,53 +12,53 @@ import 'colors.dart' as cl;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'shared_state.dart' as shs;
 
-UserSettings defaultusersettings = UserSettings(lang: "en");
 
+/// Error Image with white logo and transparent background.
 const errorWhiteImage =
     Image(image: AssetImage("graphics/image_not_found_white_on_trans.png"));
+
+/// Error Image with black logo and transparent.
 const errorBlackImage =
     Image(image: AssetImage("graphics/image_not_found_black_on_trans.png"));
 
+/// Firebase Storage-Space Instance
 FirebaseStorage firebasestorage = FirebaseStorage.instance;
 
-class UserSettings {
-  String lang = "en";
-  UserSettings({required this.lang});
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{"lang": lang};
-  }
-
-  factory UserSettings.fromMap(Map<String, dynamic> map) {
-    return UserSettings(lang: map["lang"] as String);
-  }
-}
-
+/// Path to application directory in the devices storage
 Future<String> get _localPath async {
   final directory = await getApplicationDocumentsDirectory();
   return directory.path;
 }
 
+/// Reference to the file where the usersettings are being saved
 Future<File> get _usersettingsfile async {
   final path = await _localPath;
   return File('$path/usersettings.dart');
 }
 
+/// Reference to the file where the login-credentials are saved.
+/// 
+/// To be replaced with Hash
 Future<File> get _logindatafile async {
   final path = await _localPath;
   return File('$path/logindata.dart');
 }
 
+/// Write usersettings to the devices long-term storage to allow remembering them
 Future<File> writeUserSettingsMobile(UserSettings usersettingsobject) async {
   final file = await _usersettingsfile;
   return file.writeAsString(json.encode(usersettingsobject.toMap()));
 }
 
+/// Read USer Settings from the devices long-term storage
 Future<UserSettings> readUserSettingsMobile() async {
   final file = await _usersettingsfile;
   return UserSettings.fromMap(json.decode(await file.readAsString()));
 }
 
+/// Write login credentials to the devices long-term storage to allow remembering them
+/// 
+/// To be replaced with Hash
 Future<File> writeLoginDataMobile(String username, String password) async {
   final file = await _logindatafile;
   String datatowrite =
@@ -66,6 +66,8 @@ Future<File> writeLoginDataMobile(String username, String password) async {
   return file.writeAsString(datatowrite);
 }
 
+
+/// Read login credentials to the devices long-term storage to allow remembering them 
 Future<Map> readLoginDataMobile() async {
   final file = await _logindatafile;
   if (file.existsSync()) {
@@ -98,6 +100,9 @@ Future<Map> readLoginDataWeb() async {
       : {"username": "", "password": ""};
 }
 
+/// Get Image from the Google Cloud storage.
+/// 
+/// Returns error image if file doesnt exists, so nullsafe
 Future<Widget?> getImage(String imagepath) async {
   if (imagepath.isEmpty) {
     return null;
@@ -131,6 +136,13 @@ Future<Widget?> getImage(String imagepath) async {
   }
 }
 
+/// get Icon of Event.
+/// 
+/// If event has no specified Icon, instead returns profile picture of the host.
+/// 
+/// If host has no specified Picture either, displays common Event Image
+/// 
+/// Common Image path: graphics\DefaultEventTemplate.jpg
 Future<Widget> getEventIcon(dbc.Event event) async {
   if (event.icon != null) {
     // Get Event's Own Icon
@@ -169,6 +181,9 @@ Future<Widget> getEventIcon(dbc.Event event) async {
   }
 }
 
+/// Gets Flyer of Event
+/// 
+/// If the event has no specified Flyer, the Icon gets returned instead.
 Future<Widget> getEventFlyer(dbc.Event event) async {
   if (event.flyer != null) {
     // Get Event's Own Icon
