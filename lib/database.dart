@@ -15,7 +15,7 @@ import 'testdbscenario.dart';
 var db = FirebaseFirestore.instance;
 
 /// Adds dbc.demoUser to database of current branch
-/// 
+///
 /// (Deprecated)
 Future addTestUser() async {
   await db
@@ -29,7 +29,7 @@ Future addTestUser() async {
 }
 
 /// Adds dbc.demoEvent to database of current branch
-/// 
+///
 /// (Deprecated)
 Future addTestEvent() async {
   /*print(
@@ -45,7 +45,7 @@ Future addTestEvent() async {
 }
 
 /// adds dbc.demoGroup to database of current branch
-/// 
+///
 /// (Deprecated)
 Future addTestGroup() async {
   await db
@@ -59,7 +59,7 @@ Future addTestGroup() async {
 }
 
 /// Uploads event to database
-/// 
+///
 /// Also adds it to the events list of the host automatically
 Future uploadEventToDatabase(dbc.Event event) async {
   await db
@@ -82,7 +82,7 @@ Future uploadEventToDatabase(dbc.Event event) async {
 }
 
 /// Adds demoevents, demousers and demogroups to current branch.
-/// 
+///
 /// Testscenario is in lib\testdbscenario.dart
 Future setTestDBScenario() async {
   testuserlist.forEach((element) async {
@@ -196,11 +196,10 @@ Future<int> getEventCount() async {
 ///
 /// Set [orderbyField] to the name of the field you want to order by. Indexed Fields:
 
-
 /// Class that contains all possible event filters
-/// 
+///
 /// [lastelemEventid] is for paginating query results
-/// 
+///
 class EventFilters {
   String? lastelemEventid;
   Timestamp? onlyAfter;
@@ -220,9 +219,9 @@ class EventFilters {
 }
 
 /// General Query to get List of Events
-/// 
+///
 /// Query filters can be specified by the [filters] parameter
-/// 
+///
 /// Query size can be specified by the [queryLimit] param
 Future<List<dbc.Event>> getEvents(
     [int? queryLimit, EventFilters? filters]) async {
@@ -288,7 +287,8 @@ Future<List<dbc.Event>> getEvents(
     return [];
   }
 }
-/// Gets info from 
+
+/// Gets info from
 Future<Map<String, bool>?> getEventUserspecificData(
     dbc.Event event, dbc.User? currentuser) async {
   Map<String, bool> data = {
@@ -323,7 +323,7 @@ bool isEventSaved(dbc.Event event, dbc.User? user) {
 }
 
 /// Add [event] to [user]'s saved events list
-/// 
+///
 /// Returns whether the event was saved before
 Future<bool> saveEventToUserReturnWasSaved(
     dbc.Event event, dbc.User? user) async {
@@ -444,7 +444,7 @@ bool hasPermissionToEditEventObject(dbc.Event event) {
   return false;
 }
 
-/// Return if currently logged in user has permission to edit event 
+/// Return if currently logged in user has permission to edit event
 Future<bool> hasPermissionToEditEvent(String eventID) async {
   if (currently_loggedin_as.value == null) {
     return false;
@@ -639,4 +639,44 @@ List<dbc.Event> getEventListFromIndexes(String indexJsonString) {
     eventlist.add(dbc.Event.fromJson(json.encode(indexMap[element])));
   });
   return eventlist;
+}
+
+Future<int> getFiledReportCount() async {
+  int itemcount = await db
+      .collection("${branchPrefix}reports")
+      .where("state", isEqualTo: "filed")
+      .count()
+      .get()
+      .then((value) => value.count);
+  return itemcount;
+}
+
+Future<int> getPendingReportCount() async {
+  int itemcount = await db
+      .collection("${branchPrefix}reports")
+      .where("state", isEqualTo: "pending")
+      .count()
+      .get()
+      .then((value) => value.count);
+  return itemcount;
+}
+
+Future<Map<String, int>> getOpenReportsCount() async {
+  Map<String, int> values = {
+    "filed": await getFiledReportCount(),
+    "pending": await getPendingReportCount()
+  };
+  return values;
+}
+
+Future<List<dbc.Report>> getAllReports() async {
+  List<dbc.Report> reports = [];
+  QuerySnapshot snap = await db.collection("${branchPrefix}reports").get();
+  snap.docs.forEach((element) {
+    Map<String, dynamic> map =
+        forceStringDynamicMapFromObject(element.data() ?? {});
+    map["id"] = element.id;
+    reports.add(dbc.Report.fromMap(map));
+  });
+  return reports;
 }

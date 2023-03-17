@@ -131,20 +131,6 @@ List<TextSpan> stringToTextSpanList(String mlinestring) {
   return returnlist;
 }
 
-/// The prefix used to access the different branches of firestore database
-String get branchPrefix {
-  if (selectedbranch.value == ServerBranches.develop) {
-    return "dev.";
-  }
-  if (selectedbranch.value == ServerBranches.public) {
-    return "";
-  }
-  if (selectedbranch.value == ServerBranches.test) {
-    return "test.";
-  } else {
-    throw Exception("Prefix for selected Branch not set.");
-  }
-}
 
 /// Returns a String of random characters with length len
 String getRandString(int len) {

@@ -71,6 +71,7 @@ class EventOverviewPage extends StatelessWidget {
                                               centerTitle: true,
                                               title: Text(event.value!.eventid, maxLines: 2),
                                               actions: [
+                                                ReportButton(target: "${branchPrefix}events/$eventid"),
                                                 currently_loggedin_as.value ==
                                                         null
                                                     ? const SizedBox()

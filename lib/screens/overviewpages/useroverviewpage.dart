@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/conv.dart';
+import 'package:ravestreamradioapp/shared_state.dart';
 
 class UserOverviewPage extends StatelessWidget {
   final String username;
@@ -22,7 +24,11 @@ class UserOverviewPage extends StatelessWidget {
                 backgroundColor: cl.nearly_black,
                   appBar: AppBar(
                     centerTitle: true,
-                    title: Text("User: ${snapshot.data!.id}")),
+                    title: Text("User: ${snapshot.data!.id}"),
+                    actions: [
+                      ReportButton(target: "${branchPrefix}users/$username")
+                    ],
+                    ),
                   body: const Center(
                     child: Text("TBA", style: TextStyle(color: Colors.white),)),
 

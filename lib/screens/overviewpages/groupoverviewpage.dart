@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/colors.dart' as cl;
@@ -24,7 +25,11 @@ class GroupOverviewPage extends StatelessWidget {
                 backgroundColor: cl.nearly_black,
                 appBar: AppBar(
                     centerTitle: true,
-                    title: Text("Group: ${snapshot.data!.id}")),
+                    title: Text("Group: ${snapshot.data!.id}"),
+                    actions: [
+                      ReportButton(target: "${branchPrefix}groups/$groupid")
+                    ],
+                    ),
                 body: const Center(
                     child: Text(
                   "TBA",

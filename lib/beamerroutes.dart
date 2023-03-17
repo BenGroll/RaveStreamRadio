@@ -6,7 +6,9 @@ import 'package:ravestreamradioapp/screens/managecalendarscreen.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/eventoverviewpage.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
+import 'package:ravestreamradioapp/screens/overviewpages/reportoverviewpage.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/useroverviewpage.dart';
+import 'package:ravestreamradioapp/screens/reportmanagementscreen.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/main.dart' as main;
 import 'package:flutter/material.dart';
@@ -28,8 +30,9 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
       const BeamPage(child: main.MainRoute(startingscreen: Screens.favourites)),
   "/groups": (context, state, data) =>
       const BeamPage(child: main.MainRoute(startingscreen: Screens.forums)),
-  "/groups/:groupid": (context, state, data) {
-    final groupid = state.pathParameters["groupid"];
+  "/groups/:groupidPOPTO": (context, state, data) {
+    final groupid = state.pathParameters["groupidPOPTO"]?.split("@")[0];
+    final popto = state.pathParameters["groupidPOPTO"]?.split("@")[1];
     return BeamPage(
         key: ValueKey("Group - $groupid"),
         //type: BeamPageType.scaleTransition,
@@ -46,6 +49,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
     return BeamPage(
         key: ValueKey("User - $username"),
         //type: BeamPageType.scaleTransition,
+        //keepQueryOnPop: true,
         title: "@$username",
         child: username == null
             ? const Text("Empty Userid")
@@ -67,12 +71,16 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
     final eventid = state.pathParameters["eventid"]!;
     return BeamPage(
         key: ValueKey("EditEvent - $eventid"),
-        popToNamed: "/events",
+        //popToNamed: "/events",
         type: BeamPageType.scaleTransition,
         child: eventid.isEmpty
-          ? const Text("Event not found")
-          : EventCreationScreen(eventIDToBeEdited: eventid)
-        );
+            ? const Text("Event not found")
+            : WillPopScope(
+                onWillPop: () async {
+                  Beamer.of(context).beamBack();
+                  return false;
+                },
+                child: EventCreationScreen(eventIDToBeEdited: eventid)));
   },
   "/createaccount": (context, state, data) => CreateAccountScreen(),
   "/policy": (context, state, data) => const PrivacyPolicy(),
@@ -80,5 +88,16 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   "/social": (context, state, data) => const AboutUsPage(),
   "/dev": (context, state, data) => const DevSettingsScreen(),
   "/manage": (context, state, data) => ManageEventScreen(),
-  "/drafts": (context, state, data) => const DraftCalendar()
+  "/drafts": (context, state, data) => const DraftCalendar(),
+  "/moderate": (context, state, data) => ReportManagementScreen(),
+  "/report/:reportid": (context, state, data) {
+    final reportid = state.pathParameters["reportid"];
+    return BeamPage(
+        key: ValueKey("Report - $reportid"),
+        //type: BeamPageType.scaleTransition,
+        popToNamed: "/moderate",
+        child: reportid == null
+            ? Text("Report not Found")
+            : SingleReportScreen(reportid: reportid));
+  }
 };

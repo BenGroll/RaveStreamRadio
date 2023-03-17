@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/conv.dart';
@@ -8,7 +9,8 @@ import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/payments.dart' as pay;
-
+import 'package:ravestreamradioapp/chatting.dart';
+import 'package:ravestreamradioapp/testdbscenario.dart';
 
 /// Screen for developer level Actions and Informations
 class DevSettingsScreen extends StatelessWidget {
@@ -215,7 +217,14 @@ class DevSettingsScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Set Hosts"));
                       },
-                      child: Text("Include IDs in HostDocs"))
+                      child: Text("Include IDs in HostDocs")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(Chat.fromMap(testchat));
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Json Test"));
+                      },
+                      child: Text("Chat to json test"))
                 ],
               ),
             ),

@@ -3,13 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/database.dart' as db;
+import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:ravestreamradioapp/chatting.dart';
 
-List<dbc.User> testuserlist = [
-  dbc.User(
-    username: "admin",
-    password: "Admin"
-  )
-];
+List<dbc.User> testuserlist = [dbc.User(username: "admin", password: "Admin")];
 List<dbc.Group> testgrouplist = [
   dbc.Group(
       groupid: "bavarianfetish",
@@ -70,7 +67,7 @@ List<dbc.Event> testeventlist = [
     icon: "famuehletesticon.jpg",
     description:
         "Es ist angerichtet. 🍜\nHeiß und fettig. Unser Programm steht für dieses Jahr und freuen uns darauf, es euch servieren zu dürfen. Der Aufbau beginnt in wenigen Tagen und bis dahin wurschtln wir noch ein wenig rum.\nDanke schon mal an alle Beteiligten, die das Fest wieder zu dem machen was es wird. DANKE!\Klein, fein, bunt, wild, laut, entspannt, einzigartig und natürlich famühlier wird's einfach wieder. 🤤\nWir freuen uns unendlich auf euch. 😘\nTickets: DM auf Insta",
-    links: { "instagram": "https://www.instagram.com/famuehle/"},
+    links: {"instagram": "https://www.instagram.com/famuehle/"},
   ),
   dbc.Event(
       eventid: "kinkyinsiderssession2",
@@ -87,16 +84,21 @@ List<dbc.Event> testeventlist = [
         "Google Docs":
             "https://docs.google.com/forms/d/e/1FAIpQLSeHu9cNOz_nbeo0-i3C-2R3tpnhB2GLM_GcIjCnROjZse-oLgviewform"
       },
-      hostreference: db.db.doc("${branchPrefix}groups/kinkyinsiders")), 
+      hostreference: db.db.doc("${branchPrefix}groups/kinkyinsiders")),
   dbc.Event(
-    eventid: "shameless",
-    title: "Shameless",
-    begin: Timestamp.fromDate(DateTime.now().add(Duration(days: 370))),
-    end: Timestamp.fromDate(DateTime.now().add(Duration(days: 371))),
-    locationname: "Pandora Club München",
-    minAge: 18,
-    icon: "bavarianfetishicon.jpg",
-    description: "Shameless - der Name ist Programm!\nEine glamouröse Location, treibend Bässe, großartige Dj´s, Videoprojektionen,\nTänzer und Shows verschmelzen zu einem traumhaften sinnlichen Schauspiel.\nSei was Du willst, fühle Dich frei und erlebe was Dir gefällt.\nEin respektvoller Umgang mit deinen Mitmenschen ist die Voraussetzung für deine Anwesenheit.\nLGBT wird bei uns gelebt.\nDRESSCODE:\nFetish Styles, Steam Punk, sexy Leder oder Latex Outfits, Uniformen, Burlesque,\nSuicide Girl ,Kinky Fantasy, Cyber Gothic, Drag Queen, versautes Einhorn .etc.\nDeiner Fantasy sind keine Grenzen gesetzt.\nDa der Dresscode ist ein maßgeblich Bestandteil unserer Atmosphäre ist,\naber am Ende entscheidet aber immer deine Attitude (nicht ein Kleidungsstück)\nBei uns gilt ein absolutes Photoverbot\nBitte lasst eure Handys in der Garderobe\nWillkommen in unseren Wohnzimmer der Sinne,\nwillkommen auf der Shameless!\n► neue Glamour Location im WERK 3 am Ostbahnhof\n► best electronic music for kinky people \n► special Acts & Guests \n► GoGos and Shows\n► Special Visuals and Lightshows\n► Bodypainting\n► Candy Girl´s\n► Überraschungen\nLineup: \nBavarian Allstars :\nCarl Cock , BISHOP , ANDREW CLARK",
-    hostreference: db.db.doc("${branchPrefix}groups/bavarianfetish")
-    ),
+      eventid: "shameless",
+      title: "Shameless",
+      begin: Timestamp.fromDate(DateTime.now().add(Duration(days: 370))),
+      end: Timestamp.fromDate(DateTime.now().add(Duration(days: 371))),
+      locationname: "Pandora Club München",
+      minAge: 18,
+      icon: "bavarianfetishicon.jpg",
+      description:
+          "Shameless - der Name ist Programm!\nEine glamouröse Location, treibend Bässe, großartige Dj´s, Videoprojektionen,\nTänzer und Shows verschmelzen zu einem traumhaften sinnlichen Schauspiel.\nSei was Du willst, fühle Dich frei und erlebe was Dir gefällt.\nEin respektvoller Umgang mit deinen Mitmenschen ist die Voraussetzung für deine Anwesenheit.\nLGBT wird bei uns gelebt.\nDRESSCODE:\nFetish Styles, Steam Punk, sexy Leder oder Latex Outfits, Uniformen, Burlesque,\nSuicide Girl ,Kinky Fantasy, Cyber Gothic, Drag Queen, versautes Einhorn .etc.\nDeiner Fantasy sind keine Grenzen gesetzt.\nDa der Dresscode ist ein maßgeblich Bestandteil unserer Atmosphäre ist,\naber am Ende entscheidet aber immer deine Attitude (nicht ein Kleidungsstück)\nBei uns gilt ein absolutes Photoverbot\nBitte lasst eure Handys in der Garderobe\nWillkommen in unseren Wohnzimmer der Sinne,\nwillkommen auf der Shameless!\n► neue Glamour Location im WERK 3 am Ostbahnhof\n► best electronic music for kinky people \n► special Acts & Guests \n► GoGos and Shows\n► Special Visuals and Lightshows\n► Bodypainting\n► Candy Girl´s\n► Überraschungen\nLineup: \nBavarian Allstars :\nCarl Cock , BISHOP , ANDREW CLARK",
+      hostreference: db.db.doc("${branchPrefix}groups/bavarianfetish")),
 ];
+
+Map testchat = Chat(
+  members: [],
+  messages: [Message(sender: "dev.users/admin", sentAt: Timestamp.now())]
+  ).toMap();

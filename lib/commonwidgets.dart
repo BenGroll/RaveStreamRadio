@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names, use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -21,9 +23,9 @@ import 'package:ravestreamradioapp/screens/managecalendarscreen.dart'
     as managescreen;
 
 /// Function to open date picker
-/// 
+///
 /// Returns DateTime picked
-/// 
+///
 /// If return = null, user canceled the picking
 Future<DateTime?> pick_date(BuildContext context, DateTime? initialDate) async {
   await showDatePicker(
@@ -36,9 +38,9 @@ Future<DateTime?> pick_date(BuildContext context, DateTime? initialDate) async {
 }
 
 /// Function to open time picker
-/// 
+///
 /// Returns TimeOfDay picked
-/// 
+///
 /// If return = null, user canceled the picking
 Future<TimeOfDay?> pick_time(
     BuildContext context, TimeOfDay? initialTime) async {
@@ -47,7 +49,7 @@ Future<TimeOfDay?> pick_time(
 }
 
 /// Custom Snackbar used to notify User
-/// 
+///
 /// Fixed to the bottom of scaffold body
 SnackBar hintSnackBar(String alertMessage) {
   return SnackBar(
@@ -190,23 +192,69 @@ class NavBar extends StatelessWidget {
           Expanded(
             child: SizedBox(),
           ),
-          ListTile(
-            onTap: () {
-              Beamer.of(context).beamToNamed("/manage");
-            },
-            title: Text(
-                maxLines: 2,
-                "Manage Calendar",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: MediaQuery.of(context).size.height / 40)),
-            subtitle: Text(
-              '"MANAGE_EVENTS" permission needed.',
-              style: TextStyle(
-                  color: cl.greynothighlight,
-                  fontSize: MediaQuery.of(context).size.height / 80),
-            ),
-          ),
+          db.doIHavePermission(GlobalPermission.MODERATE) ||
+                  db.doIHavePermission(GlobalPermission.MODERATE)
+              ? FutureBuilder(
+                  future: db.getOpenReportsCount(),
+                  builder: (context, repCount) {
+                    if (repCount.connectionState == ConnectionState.done) {
+                      return ListTile(
+                        onTap: () {
+                          Beamer.of(context).beamToNamed("/moderate");
+                        },
+                        title: Text(
+                            maxLines: 2,
+                            "View Reports",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize:
+                                    MediaQuery.of(context).size.height / 40)),
+                        subtitle: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${repCount.data?['filed']} filed Report(s)',
+                              style: TextStyle(
+                                  color: cl.greynothighlight,
+                                  fontSize:
+                                      MediaQuery.of(context).size.height / 80),
+                            ),
+                            Text(
+                              '${repCount.data?['pending']} pending Repor(ts)',
+                              style: TextStyle(
+                                  color: cl.greynothighlight,
+                                  fontSize:
+                                      MediaQuery.of(context).size.height / 80),
+                            )
+                          ],
+                        ),
+                      );
+                    } else {
+                      return CircularProgressIndicator();
+                    }
+                  })
+              : SizedBox(),
+          db.doIHavePermission(GlobalPermission.MANAGE_HOSTS) ||
+                  db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)
+              ? ListTile(
+                  onTap: () {
+                    Beamer.of(context).beamToNamed("/manage");
+                  },
+                  title: Text(
+                      maxLines: 2,
+                      "Manage Calendar",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: MediaQuery.of(context).size.height / 40)),
+                  subtitle: Text(
+                    '"MANAGE_EVENTS" permission needed.',
+                    style: TextStyle(
+                        color: cl.greynothighlight,
+                        fontSize: MediaQuery.of(context).size.height / 80),
+                  ),
+                )
+              : SizedBox(),
           db.doIHavePermission(GlobalPermission.CHANGE_DEV_SETTINGS)
               ? ListTile(
                   onTap: () {
@@ -323,7 +371,8 @@ class EventTable extends StatelessWidget {
               }),
           IconButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => LoginScreen()));
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) => LoginScreen()));
               },
               icon: Icon(Icons.login))
         ],
@@ -514,10 +563,10 @@ class EventTable extends StatelessWidget {
               (Set<MaterialState> states) {
             // Even rows will have a grey color.
             if (allowed_to_edit) {
-              return Color.fromARGB(255, 116, 116, 116).withOpacity(
-                  0.2);
+              return Color.fromARGB(255, 116, 116, 116).withOpacity(0.2);
             } else {
-              return cl.deep_black; // Use default value for other states and odd rows.
+              return cl
+                  .deep_black; // Use default value for other states and odd rows.
             }
           }),
           cells: event.keys.map((String key) {
@@ -531,11 +580,10 @@ class EventTable extends StatelessWidget {
                   buildLinkButtonFromRef(
                       event[key], TextStyle(color: Colors.white)),
                   showEditIcon: editing && allowed_to_edit,
-                  onTap: !db.hasPermissionToEditEventObject(dbc.Event.fromMap(event)) ? null :  () {
-
-                  }
-                  );
-                  
+                  onTap: !db.hasPermissionToEditEventObject(
+                          dbc.Event.fromMap(event))
+                      ? null
+                      : () {});
             } else if (event[key] is Timestamp) {
               return DataCell(
                   Text(
@@ -543,48 +591,53 @@ class EventTable extends StatelessWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   showEditIcon: editing && allowed_to_edit,
-                  onTap: !db.hasPermissionToEditEventObject(dbc.Event.fromMap(event)) ? null : () async {
-                DateTime? initialDate;
-                if (event[key] != null) {
-                  initialDate = DateTime.fromMillisecondsSinceEpoch(
-                      event[key].millisecondsSinceEpoch);
-                }
-                DateTime? newDate = await pick_date(context, initialDate);
-                TimeOfDay? newTime;
-                if (initialDate == null) {
-                  newTime = TimeOfDay.now();
-                } else {
-                  newTime = await pick_time(
-                      context, TimeOfDay.fromDateTime(initialDate));
-                }
-                int? foundEventIndex =
-                    eventListNOT.value.whereIsEqual("eventid", eventid);
-                if (foundEventIndex != null) {
-                  if (newDate != null) {
-                    if (newTime == null) {
-                      eventListNOT.value[foundEventIndex][key] =
-                          Timestamp.fromDate(newDate);
-                    } else {
-                      return;
-                    }
-                    await db.db
-                        .doc("${branchPrefix}events/$eventid")
-                        .update({"$key": Timestamp.fromDate(newDate)});
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(hintSnackBar("$key Changed."));
-                  } else {
-                    DateTime newFinalDateTime = DateTime(
-                      newDate!.year,
-                      newDate.month,
-                      newDate.day,
-                      newTime?.hour ?? newDate.hour,
-                      newTime?.minute ?? newDate.minute,
-                    );
-                    eventListNOT.value[foundEventIndex][key] =
-                        Timestamp.fromDate(newFinalDateTime);
-                  }
-                }
-              });
+                  onTap: !db.hasPermissionToEditEventObject(
+                          dbc.Event.fromMap(event))
+                      ? null
+                      : () async {
+                          DateTime? initialDate;
+                          if (event[key] != null) {
+                            initialDate = DateTime.fromMillisecondsSinceEpoch(
+                                event[key].millisecondsSinceEpoch);
+                          }
+                          DateTime? newDate =
+                              await pick_date(context, initialDate);
+                          TimeOfDay? newTime;
+                          if (initialDate == null) {
+                            newTime = TimeOfDay.now();
+                          } else {
+                            newTime = await pick_time(
+                                context, TimeOfDay.fromDateTime(initialDate));
+                          }
+                          int? foundEventIndex = eventListNOT.value
+                              .whereIsEqual("eventid", eventid);
+                          if (foundEventIndex != null) {
+                            if (newDate != null) {
+                              if (newTime == null) {
+                                eventListNOT.value[foundEventIndex][key] =
+                                    Timestamp.fromDate(newDate);
+                              } else {
+                                return;
+                              }
+                              await db.db
+                                  .doc("${branchPrefix}events/$eventid")
+                                  .update(
+                                      {"$key": Timestamp.fromDate(newDate)});
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(hintSnackBar("$key Changed."));
+                            } else {
+                              DateTime newFinalDateTime = DateTime(
+                                newDate!.year,
+                                newDate.month,
+                                newDate.day,
+                                newTime?.hour ?? newDate.hour,
+                                newTime?.minute ?? newDate.minute,
+                              );
+                              eventListNOT.value[foundEventIndex][key] =
+                                  Timestamp.fromDate(newFinalDateTime);
+                            }
+                          }
+                        });
             } else if (event[key] is Map) {
               return DataCell(
                   Text(
@@ -592,77 +645,91 @@ class EventTable extends StatelessWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   showEditIcon: editing && allowed_to_edit,
-                  onTap: db.hasPermissionToEditEventObject(dbc.Event.fromMap(event)) ? () {} : null
-                  );
+                  onTap: db.hasPermissionToEditEventObject(
+                          dbc.Event.fromMap(event))
+                      ? () {}
+                      : null);
             } else if (key == "eventid") {
               return DataCell(
-                Text(
-                  event[key].toString(),
-                  style: TextStyle(color: Colors.white),
-                ),
-                onTap: db.hasPermissionToEditEventObject(dbc.Event.fromMap(event)) ? null :  () {}
-              );
+                  Text(
+                    event[key].toString(),
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onTap: db.hasPermissionToEditEventObject(
+                          dbc.Event.fromMap(event))
+                      ? null
+                      : () {});
             } else if (key == "description") {
               return DataCell(
                 TextButton(
-                    onPressed: !db.hasPermissionToEditEventObject(dbc.Event.fromMap(event)) ? null :  () async {
-                      //print(eventid);
-                      String description = await db
-                          .getEvent(eventid)
-                          .then((value) => value?.description ?? "");
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (BuildContext context) => WillPopScope(
-                                onWillPop: () async {
-                                  int? foundEventIndex = eventListNOT.value
-                                      .whereIsEqual("eventid", eventid);
-                                  bool close = false;
-                                  await showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text("Save Changes?"),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () async {
-                                                  await db.db
-                                                      .doc(
-                                                          "${branchPrefix}events/$eventid")
-                                                      .update({
-                                                    "description": description
-                                                  });
+                    onPressed: !db.hasPermissionToEditEventObject(
+                            dbc.Event.fromMap(event))
+                        ? null
+                        : () async {
+                            //print(eventid);
+                            String description = await db
+                                .getEvent(eventid)
+                                .then((value) => value?.description ?? "");
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) => WillPopScope(
+                                      onWillPop: () async {
+                                        int? foundEventIndex = eventListNOT
+                                            .value
+                                            .whereIsEqual("eventid", eventid);
+                                        bool close = false;
+                                        await showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return AlertDialog(
+                                                title: Text("Save Changes?"),
+                                                actions: [
+                                                  TextButton(
+                                                      onPressed: () async {
+                                                        await db.db
+                                                            .doc(
+                                                                "${branchPrefix}events/$eventid")
+                                                            .update({
+                                                          "description":
+                                                              description
+                                                        });
 
-                                                  Navigator.of(context).pop();
-                                                  close = true;
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(hintSnackBar(
-                                                          "Description Changed."));
-                                                },
-                                                child: Text("Yes")),
-                                            TextButton(
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                  Navigator.of(context).pop();
-                                                  close = false;
-                                                },
-                                                child: Text("Cancel"))
-                                          ],
-                                        );
-                                      });
-                                  return close;
-                                },
-                                child: Scaffold(
-                                    backgroundColor: Colors.black,
-                                    appBar: AppBar(
-                                      title: Text("Edit Description"),
-                                    ),
-                                    body: DescriptionEditingPage(
-                                      initialValue: description,
-                                      onChange: (value) {
-                                        description = value;
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        close = true;
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                                hintSnackBar(
+                                                                    "Description Changed."));
+                                                      },
+                                                      child: Text("Yes")),
+                                                  TextButton(
+                                                      onPressed: () {
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        Navigator.of(context)
+                                                            .pop();
+                                                        close = false;
+                                                      },
+                                                      child: Text("Cancel"))
+                                                ],
+                                              );
+                                            });
+                                        return close;
                                       },
-                                    )),
-                              )));
-                    },
+                                      child: Scaffold(
+                                          backgroundColor: Colors.black,
+                                          appBar: AppBar(
+                                            title: Text("Edit Description"),
+                                          ),
+                                          body: DescriptionEditingPage(
+                                            initialValue: description,
+                                            onChange: (value) {
+                                              description = value;
+                                            },
+                                          )),
+                                    )));
+                          },
                     child: Row(
                       children: [
                         Text("Show Description",
@@ -681,9 +748,80 @@ class EventTable extends StatelessWidget {
                   style: TextStyle(color: Colors.white),
                 ),
                 showEditIcon: editing && allowed_to_edit,
-                onTap: db.hasPermissionToEditEventObject(dbc.Event.fromMap(event)) ? () {} : null
-                );
+                onTap:
+                    db.hasPermissionToEditEventObject(dbc.Event.fromMap(event))
+                        ? () {}
+                        : null);
           }).toList());
     }).toList();
+  }
+}
+
+class ReportButton extends StatelessWidget {
+  final String target;
+  const ReportButton({super.key, required this.target});
+
+  @override
+  Widget build(BuildContext context) {
+    return currently_loggedin_as.value == null
+        ? Container()
+        : IconButton(
+            onPressed: () {
+              String desc = "";
+              showModalBottomSheet(
+                  backgroundColor: cl.deep_black,
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextFormField(
+                            onChanged: (value) {
+                              desc = value;
+                            },
+                            minLines: 5,
+                            maxLines: 2000,
+                            decoration: InputDecoration(
+                                labelText: "Tell us more about this report...",
+                                labelStyle: TextStyle(color: Colors.white),
+                                enabledBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.white))),
+                            style: TextStyle(color: Colors.white),
+                            cursorColor: Colors.white,
+                            showCursor: true,
+                          ),
+                        ),
+                        TextButton(
+                            onPressed: () async {
+                              DocumentReference newRep = await db.db
+                                  .collection("${branchPrefix}reports")
+                                  .add({
+                                "description": desc,
+                                "issuer": db.db.doc(
+                                    "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
+                                "target": target,
+                                "timestamp": Timestamp.now(),
+                                "state": "pending"
+                              });
+                              await newRep.update({"id": newRep.id});
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  hintSnackBar("Report was sent!"));
+                              Navigator.of(context).pop();
+                            },
+                            child: Text(
+                              "Report",
+                              style: TextStyle(color: Colors.white),
+                            ))
+                      ],
+                    );
+                  });
+            },
+            icon: Icon(
+              Icons.report_outlined,
+              color: Colors.white,
+            ));
   }
 }

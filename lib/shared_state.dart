@@ -15,7 +15,8 @@ enum GlobalPermission {
   ADMIN,
   MANAGE_EVENTS,
   MANAGE_HOSTS,
-  CHANGE_DEV_SETTINGS
+  CHANGE_DEV_SETTINGS,
+  MODERATE
 }
 
 /// Enum of different statuses events can have.
@@ -86,3 +87,18 @@ ValueNotifier<dbc.User?> currently_loggedin_as = ValueNotifier<dbc.User?>(null);
 
 /// Defines how many events are shown per page 
 int ITEMS_PER_PAGE_IN_EVENTSHOW = 10;
+
+/// The prefix used to access the different branches of firestore database
+String get branchPrefix {
+  if (selectedbranch.value == ServerBranches.develop) {
+    return "dev.";
+  }
+  if (selectedbranch.value == ServerBranches.public) {
+    return "";
+  }
+  if (selectedbranch.value == ServerBranches.test) {
+    return "test.";
+  } else {
+    throw Exception("Prefix for selected Branch not set.");
+  }
+}

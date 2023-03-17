@@ -20,16 +20,16 @@ class Link {
 }
 
 /// Creates List<Link> from {"title" : "url"} maps
-  List<Link> linkListFromMap(Map<String, String> map) {
-    List<Link> outmap = [];
-    map.keys.forEach((element) {
-      outmap.add(Link(title: element, url: map[element]!));
-    });
-    return outmap;
-  }
+List<Link> linkListFromMap(Map<String, String> map) {
+  List<Link> outmap = [];
+  map.keys.forEach((element) {
+    outmap.add(Link(title: element, url: map[element]!));
+  });
+  return outmap;
+}
 
 /// Reverse of linkListFromMap
-/// 
+///
 /// Creates {"title" : url} map from List<Link>
 Map<String, String> mapFromLinkList(List<Link> linklist) {
   Map<String, String> outmap = {};
@@ -577,7 +577,7 @@ class HostTags {
 /// Enum of possible Categories a host can be ordered into
 enum HostCategory { collective, festival, host, location, eventseries, label }
 
-/// Safely get permit from object. 
+/// Safely get permit from object.
 bool? getPermit(Map<String, dynamic> host) {
   if (host.containsKey("permit")) {
     return host["permit"];
@@ -592,7 +592,7 @@ bool? getPermit(Map<String, dynamic> host) {
   return null;
 }
 
-/// Safely get 'official_logo' field from host 
+/// Safely get 'official_logo' field from host
 bool? getOfficialLogo(Map<String, dynamic> host) {
   if (host.containsKey("official_logo")) {
     return host["official_logo"];
@@ -677,8 +677,7 @@ class Host {
   final bool? permit;
   final bool? official_logo;
   Host(
-      {
-      this.links,
+      {this.links,
       this.logopath,
       required this.name,
       required this.id,
@@ -696,6 +695,46 @@ class Host {
         logopath: map.containsKey("logopath") ? map["logopath"] : null,
         name: map["name"],
         id: map["id"]);
+  }
+}
+
+enum ReportState { filed, pending, completed }
+
+ReportState mapRepState(String state) {
+  if (state == "filed") return ReportState.filed;
+  if (state == "pending") return ReportState.pending;
+  if (state == "completed") return ReportState.completed;
+  return ReportState.filed;
+}
+
+class Report {
+  final String? id;
+  final Timestamp? timestamp;
+  final DocumentReference? issuer;
+  final DocumentReference? target;
+  final String? description;
+  final ReportState state;
+  final Timestamp? finishedat;
+  final DocumentReference? finishedby;
+  Report(
+      {required this.id,
+      required this.timestamp,
+      this.issuer,
+      this.target,
+      this.description,
+      this.state = ReportState.pending,
+      this.finishedat,
+      this.finishedby});
+  factory Report.fromMap(Map<String, dynamic> map) {
+    return Report(
+        id: map["id"],
+        timestamp: map["timestamp"],
+        issuer: map["issuer"],
+        target: map["target"] != null ? db.doc(map["target"]) : null,
+        state: mapRepState(map["state"]),
+        description: map["description"],
+        finishedat: map["finishedat"],
+        finishedby: map["finishedby"]);
   }
 }
 

@@ -39,7 +39,7 @@ class UsernameLinkButton extends StatelessWidget {
     return TextButton(
         onPressed: () {
           kIsWeb
-              ? Beamer.of(context).beamToNamed("/users/${target.id}")
+              ? Beamer.of(context).beamToNamed("/users/${target.id}@events")
               : Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => UserOverviewPage(username: target.id)));
         },
@@ -60,6 +60,7 @@ class GroupLinkButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
         onPressed: () {
+          kIsWeb ? Beamer.of(context).beamToNamed("/groups/${target.id}") : 
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) =>
                   GroupOverviewPage(groupid: "${target.id}")));
