@@ -1,16 +1,19 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart';
+import 'package:ravestreamradioapp/screens/chatwindow.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/payments.dart' as pay;
 import 'package:ravestreamradioapp/chatting.dart';
 import 'package:ravestreamradioapp/testdbscenario.dart';
+import 'package:ravestreamradioapp/realtimedb.dart' as rtdb;
 
 /// Screen for developer level Actions and Informations
 class DevSettingsScreen extends StatelessWidget {
@@ -29,8 +32,7 @@ class DevSettingsScreen extends StatelessWidget {
             ),
             body: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
+              child: ListView(
                 children: [
                   ValueListenableBuilder(
                       valueListenable: selectedbranch,
@@ -220,11 +222,37 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Include IDs in HostDocs")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(Chat.fromMap(testchat));
+                        await uploadChatToDB(Chat.fromMap(testchat));
                         ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("Json Test"));
+                            .showSnackBar(hintSnackBar("Json Write Test"));
                       },
-                      child: Text("Chat to json test"))
+                      child: Text("write Chat to json test")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(await readChatFromDB(testchat["id"])
+                            .then((value) => value.toMap()));
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Json Read Test"));
+                      },
+                      child: Text("read Chat from json test")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        Chat chat = Chat.fromMap(testchat);
+                        print(chat.members);
+                        rtdb.setChatData(chat);
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("RealtimeDB Test"));
+                      },
+                      child: Text("RealtimeDB Test")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                ChatWindow(id: "TZTrs5BngHYohRGsm4w2")));
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Chat Test"));
+                      },
+                      child: Text("Chat Test")),
                 ],
               ),
             ),

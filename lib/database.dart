@@ -680,3 +680,4 @@ Future<List<dbc.Report>> getAllReports() async {
   });
   return reports;
 }
+

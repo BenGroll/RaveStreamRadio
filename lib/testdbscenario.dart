@@ -98,7 +98,11 @@ List<dbc.Event> testeventlist = [
       hostreference: db.db.doc("${branchPrefix}groups/bavarianfetish")),
 ];
 
-Map testchat = Chat(
-  members: [],
-  messages: [Message(sender: "dev.users/admin", sentAt: Timestamp.now())]
+Map<String, dynamic> testchat = Chat(
+  members: [db.db.doc("dev.users/admin"), db.db.doc("dev.users/addmin")],
+  messages: [
+    Message(sender: "dev.users/admin", sentAt: Timestamp.now(), content: "Hallo Welt!"),
+    Message(sender: "dev.users/addmin", sentAt: Timestamp.now(), content: "Hallo Zurück!"),
+            ],
+    id: "TZTrs5BngHYohRGsm4w2"
   ).toMap();

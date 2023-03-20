@@ -58,7 +58,6 @@ List<Map<String, dynamic>> querySnapshotToMapList(QuerySnapshot query,
   return documents;
 }
 
-
 /// Takes a Map<dynamic, dynamic>
 ///
 /// Returns Map<String, dynamic>
@@ -130,7 +129,6 @@ List<TextSpan> stringToTextSpanList(String mlinestring) {
   });
   return returnlist;
 }
-
 
 /// Returns a String of random characters with length len
 String getRandString(int len) {
@@ -225,11 +223,11 @@ String? getKeyMatchingValueFromMap(
 }
 
 /// Creates an array of all numbers from 0 to n
-/// 
+///
 /// Example:
-/// 
+///
 /// numberToArrayOfAllNumbersBelow(10)
-/// 
+///
 /// => [0,1,2,3,4,5,6,7,8,9]
 List<int> numberToArrayOfAllNumbersBelow(int number) {
   List<int> intlist = [];
@@ -250,22 +248,22 @@ int getSizeInBytesForMap(Map<dynamic, dynamic> input) {
   return size;
 }
 
-/// Turns a List<dbc.Event> into a Map, Structure: 
-/// 
+/// Turns a List<dbc.Event> into a Map, Structure:
+///
 /// {
-/// 
+///
 ///   eventid: {
-/// 
+///
 ///               # Event Attributes
-/// 
+///
 ///            },
-/// 
+///
 ///   eventid2:{
-/// 
+///
 ///               # Event Attributes
-/// 
+///
 ///            }
-/// 
+///
 /// }
 Map<String, dynamic> eventListToJsonCompatibleMap(List<dbc.Event> list) {
   Map<String, dynamic> outMap = {};
@@ -276,7 +274,7 @@ Map<String, dynamic> eventListToJsonCompatibleMap(List<dbc.Event> list) {
 }
 
 /// Takes map from eventListToJsonCompatibleMap
-/// 
+///
 /// Returns the json encoded string
 String eventMapToJson(Map<String, dynamic> inMap) {
   return json.encode(inMap);
@@ -292,7 +290,7 @@ List<dbc.Event> maplistToEventList(List<Map<String, dynamic>> mapList) {
 }
 
 /// Takes Object
-/// 
+///
 /// Returns the Map<String, dynamic>
 Map<String, dynamic> forceStringDynamicMapFromObject(Object input) {
   try {
@@ -302,4 +300,18 @@ Map<String, dynamic> forceStringDynamicMapFromObject(Object input) {
     print(e);
     return {};
   }
+}
+
+List<Map<String, dynamic>> forceListMapStringDynamicTypeToList(
+    List<dynamic> list) {
+  List<Map<String, dynamic>> out = [];
+  list.forEach((element) {
+    list.add(element as Map<String, dynamic>);
+  });
+  return out;
+}
+
+List<DocumentReference> forceDocumentReferenceFromStringList(
+    List<String> list) {
+  return list.map((e) => db.db.doc(e)).toList();
 }

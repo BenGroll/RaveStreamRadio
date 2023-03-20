@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
+import 'package:ravestreamradioapp/database.dart' as db;
 
 /// Extension to Capitalize or TitleCase a String
 extension StringCasingExtension on String {
@@ -46,14 +47,14 @@ extension MapComparator on Map {
 }
 
 /// Find the index of the map where one common key matches specific value
-/// 
+///
 /// Example:
 ///
 ///
 /// List<Map> input = [{"id": 2, "name": "Foo"}, {"id" : 2, "name": "Bar"}]
-/// 
+///
 /// print(input.whereIsEqual("id", 2));
-/// 
+///
 /// ==> 0
 extension MapListFindByKey on List<Map> {
   int? whereIsEqual(String key, dynamic value) {
@@ -65,3 +66,14 @@ extension MapListFindByKey on List<Map> {
     return null;
   }
 }
+
+extension Stringify on List<DocumentReference> {
+  List<String> paths() {
+    return map((e) => e.path).toList();
+  }
+
+  List<String> ids() {
+    return map((e) => e.id).toList();
+  }
+}
+
