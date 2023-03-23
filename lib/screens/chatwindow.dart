@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/realtimedb.dart' as rtdb;
@@ -6,12 +7,22 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 
+final ScrollController _controller = ScrollController();
+void _scrollDown() {
+  _controller.animateTo(
+    _controller.position.maxScrollExtent,
+    duration: Duration(milliseconds: 500),
+    curve: Curves.fastOutSlowIn,
+  );
+}
+
 class MessageCard extends StatelessWidget {
   Message message;
   bool sentItMyself;
   bool isGroupChat;
   MessageCard(
-      {required this.message,
+      {super.key,
+      required this.message,
       required this.sentItMyself,
       this.isGroupChat = false});
   @override
@@ -46,7 +57,7 @@ class MessageCard extends StatelessWidget {
 class MessageElement extends StatelessWidget {
   Message message;
   bool isGroupChat;
-  MessageElement({required this.message, required this.isGroupChat});
+  MessageElement({super.key, required this.message, required this.isGroupChat});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +76,10 @@ class MessageElement extends StatelessWidget {
                   isGroupChat: isGroupChat)
             ]
           : [
-              MessageCard(message: message, sentItMyself: sentItMyself, isGroupChat: isGroupChat),
+              MessageCard(
+                  message: message,
+                  sentItMyself: sentItMyself,
+                  isGroupChat: isGroupChat),
               Expanded(child: SizedBox(), flex: 1)
             ],
     );
@@ -74,7 +88,9 @@ class MessageElement extends StatelessWidget {
 
 class ChatWindow extends StatelessWidget {
   final String id;
-  const ChatWindow({required this.id});
+  String currentlyCuedupMessage = "";
+  ValueNotifier<bool> rebuildToggle = ValueNotifier<bool>(true);
+  ChatWindow({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
@@ -82,18 +98,21 @@ class ChatWindow extends StatelessWidget {
     return StreamBuilder(
         stream: rtdb.listenToChat(id),
         builder: (BuildContext context, AsyncSnapshot snap) {
-          print(snap.connectionState);
           if (snap.connectionState == ConnectionState.active) {
             Chat chat = Chat.fromDBSnapshot(snap.data.snapshot.value);
-            List<MessageElement> messagecards =
-                chat.messages.map((e) => MessageElement(message: e, isGroupChat: chat.members.length > 2)).toList();
+            List<MessageElement> messagecards = chat.messages
+                .map((e) => MessageElement(
+                    message: e, isGroupChat: chat.members.length > 2))
+                .toList();
             return Scaffold(
               backgroundColor: cl.deep_black,
               appBar: AppBar(
-                title: Text(chat.members.length > 2 ? chat.id : chat.members[0].id),
+                title: Text(
+                    chat.members.length > 2 ? chat.id : chat.members[0].id),
                 backgroundColor: cl.deep_black,
               ),
               body: ListView.separated(
+                controller: _controller,
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 separatorBuilder: (BuildContext context, int index) {
                   return SizedBox(
@@ -104,6 +123,66 @@ class ChatWindow extends StatelessWidget {
                   return messagecards[index];
                 },
               ),
+              bottomNavigationBar: Padding(
+                  padding: MediaQuery.of(context).viewInsets,
+                  child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: BottomAppBar(
+                        color: Colors.transparent,
+                        child: Card(
+                          color: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(color: cl.greynothighlight),
+                            borderRadius: BorderRadius.circular(
+                                MediaQuery.of(context).size.height / 50),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                  child: ValueListenableBuilder(
+                                      valueListenable: rebuildToggle,
+                                      builder: (context, snapshot, foo) {
+                                        return TextFormField(
+                                          initialValue: "",
+                                          onChanged: (value) {
+                                            currentlyCuedupMessage = value;
+                                          },
+                                          style: TextStyle(color: Colors.white),
+                                          decoration: InputDecoration(
+                                            hintText: "Send Message...",
+                                            hintStyle:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        );
+                                      }),
+                                ),
+                              ),
+                              Expanded(
+                                  child: IconButton(
+                                      onPressed: () async {
+                                        currently_loggedin_as.value!.path;
+                                        Timestamp sentAt = Timestamp.now();
+                                        Message newMessage = Message(
+                                            sender: currently_loggedin_as
+                                                .value!.path,
+                                            sentAt: Timestamp.now(),
+                                            content: currentlyCuedupMessage);
+                                        rebuildToggle.value =
+                                            !rebuildToggle.value;
+                                        await rtdb.addMessageToChat(
+                                            newMessage, chat);
+                                        _scrollDown();
+                                      },
+                                      icon: Icon(Icons.send,
+                                          color: Colors.white)))
+                            ],
+                          ),
+                        ),
+                      ))),
             );
           } else {
             return CircularProgressIndicator(

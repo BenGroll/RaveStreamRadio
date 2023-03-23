@@ -287,7 +287,9 @@ class CreateAccountScreen extends StatelessWidget {
                           username: username,
                           password: password,
                           alias: alias,
-                          description: description);
+                          description: description,
+                          path: "${branchPrefix}users/$username"
+                          );
 
                       await db.db
                           .doc("${branchPrefix}users/$username")

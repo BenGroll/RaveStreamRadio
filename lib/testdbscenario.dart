@@ -6,7 +6,9 @@ import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/chatting.dart';
 
-List<dbc.User> testuserlist = [dbc.User(username: "admin", password: "Admin")];
+List<dbc.User> testuserlist = [
+  dbc.User(username: "admin", password: "Admin", path: "${branchPrefix}users/admin")
+];
 List<dbc.Group> testgrouplist = [
   dbc.Group(
       groupid: "bavarianfetish",
@@ -98,11 +100,17 @@ List<dbc.Event> testeventlist = [
       hostreference: db.db.doc("${branchPrefix}groups/bavarianfetish")),
 ];
 
-Map<String, dynamic> testchat = Chat(
-  members: [db.db.doc("dev.users/admin"), db.db.doc("dev.users/addmin")],
-  messages: [
-    Message(sender: "dev.users/admin", sentAt: Timestamp.now(), content: "Hallo Welt!"),
-    Message(sender: "dev.users/addmin", sentAt: Timestamp.now(), content: "Hallo Zurück!"),
-            ],
-    id: "TZTrs5BngHYohRGsm4w2"
-  ).toMap();
+Map<String, dynamic> testchat = Chat(members: [
+  db.db.doc("dev.users/admin"),
+  db.db.doc("dev.users/addmin")
+], messages: [
+  Message(
+      sender: "dev.users/admin",
+      sentAt: Timestamp.now(),
+      content: "Hallo Welt!"),
+  Message(
+      sender: "dev.users/addmin",
+      sentAt: Timestamp.now(),
+      content: "Hallo Zurück!"),
+], id: "TZTrs5BngHYohRGsm4w2")
+    .toMap();

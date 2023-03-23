@@ -431,6 +431,7 @@ class User {
   String? description;
   String? mail;
   String? profile_picture;
+  String path;
   List<String> permissions;
   List<DocumentReference> events;
   List<DocumentReference> joined_groups;
@@ -439,19 +440,22 @@ class User {
   List<DocumentReference> close_friends;
   List<DocumentReference> pinned_groups;
   User(
-      {required this.username,
+      {
+        required this.username,
       this.alias,
       required this.password,
       this.description,
       this.mail,
       this.profile_picture,
+      required this.path,
       this.permissions = const <String>[],
       this.events = const <DocumentReference>[],
       this.joined_groups = const <DocumentReference>[],
       this.saved_events = const <DocumentReference>[],
       this.followed_groups = const <DocumentReference>[],
       this.close_friends = const <DocumentReference>[],
-      this.pinned_groups = const <DocumentReference>[]});
+      this.pinned_groups = const <DocumentReference>[],
+      });
   User copyWith({
     String? username,
     String? alias,
@@ -459,6 +463,7 @@ class User {
     String? description,
     String? mail,
     String? profile_picture,
+    String? path,
     List<String>? permissions,
     List<DocumentReference>? events,
     List<DocumentReference>? joined_groups,
@@ -480,7 +485,9 @@ class User {
         followed_groups: followed_groups ?? this.followed_groups,
         close_friends: close_friends ?? this.close_friends,
         pinned_groups: pinned_groups ?? this.pinned_groups,
-        permissions: permissions ?? this.permissions);
+        permissions: permissions ?? this.permissions,
+        path: path ?? this.username
+        );
   }
 
   Map<String, dynamic> toMap() {
@@ -491,6 +498,7 @@ class User {
       'description': description,
       'mail': mail,
       'profile_picture': profile_picture,
+      'path': path,
       'events': events.map((x) => x).toList(),
       'joined_groups': joined_groups.map((x) => x).toList(),
       'saved_events': saved_events.map((x) => x).toList(),
@@ -510,6 +518,7 @@ class User {
       description: map['description'] as String?,
       mail: map['mail'] as String?,
       profile_picture: map['profile_picture'] as String?,
+      path: map["path"] as String,
       permissions: forceStringType(map['permissions']),
       events: forceDocumentReferenceType(map['events']),
       joined_groups: forceDocumentReferenceType(map['joined_groups']),
@@ -527,19 +536,19 @@ class User {
 
   @override
   String toString() {
-    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups)';
+    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups)';
   }
 
   @override
   bool operator ==(covariant User other) {
     if (identical(this, other)) return true;
-
     return other.username == username &&
         other.alias == alias &&
         other.password == password &&
         other.description == description &&
         other.mail == mail &&
         other.profile_picture == profile_picture &&
+        other.path == path &&
         listEquals(other.permissions, permissions) &&
         listEquals(other.events, events) &&
         listEquals(other.joined_groups, joined_groups) &&
@@ -558,6 +567,7 @@ class User {
         mail.hashCode ^
         profile_picture.hashCode ^
         permissions.hashCode ^
+        path.hashCode ^
         events.hashCode ^
         joined_groups.hashCode ^
         saved_events.hashCode ^
@@ -566,14 +576,6 @@ class User {
         pinned_groups.hashCode;
   }
 }
-/*
-class HostTags {
-  final bool? permit;
-  final String? category;
-  final bool? official_logo;
-  HostTags({this.permit, this.category, this.official_logo});
-}*/
-
 /// Enum of possible Categories a host can be ordered into
 enum HostCategory { collective, festival, host, location, eventseries, label }
 
@@ -739,7 +741,7 @@ class Report {
 }
 
 // Demo Objects
-User demoUser = User(username: "demo", password: "demo");
+User demoUser = User(username: "demo", password: "demo", path: "dev.users/demo");
 Group demoGroup = Group(
     groupid: "demo",
     members_roles: {db.doc("${branchPrefix}/groups/demo"): "Founder"});

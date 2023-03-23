@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/chatting.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -16,4 +18,11 @@ Stream listenToChat(String ID) {
 Future setChatData(Chat chat) async {
   DatabaseReference ref = rtdb.ref("root/Chats/${chat.id}");
   ref.set(chat.toMap());
+}
+
+Future addMessageToChat(Message message, Chat chat) async {
+  DatabaseReference ref = rtdb.ref("root/Chats/${chat.id}");
+  chat.messages.add(message);
+  await ref.set(chat.toMap());
+  return;
 }
