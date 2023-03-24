@@ -4,6 +4,7 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/filesystem.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
+import 'package:ravestreamradioapp/screens/chats.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/groupoverviewpage.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
@@ -20,21 +21,32 @@ class GroupsScreen extends StatefulWidget {
 class _GroupsScreenState extends State<GroupsScreen> {
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: cl.nearly_black,
         body: Padding(
           padding: const EdgeInsets.all(0),
-          child: RefreshIndicator(
+          child: GroupListBuilder(parent: widget)
+        ),
+        endDrawer: const ChatsDrawer(),
+    );
+  }
+}
+
+class GroupListBuilder extends StatelessWidget {
+  GroupsScreen parent;
+  GroupListBuilder({super.key, required this.parent});
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
             onRefresh: () async {
-              widget.widgets.value = await buildGroupTiles();
+              parent.widgets.value = await buildGroupTiles();
             },
             child: FutureBuilder(
                 future: buildGroupTiles(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
-                    widget.widgets.value = snapshot.data ??
+                    parent.widgets.value = snapshot.data ??
                         [
                           Text(
                             "No Groups joined yet.",
@@ -42,7 +54,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                           )
                         ];
                     return ValueListenableBuilder(
-                        valueListenable: widget.widgets,
+                        valueListenable: parent.widgets,
                         builder: (context, widgetlist, foo) {
                           return ListView(
                             children: widgetlist,
@@ -57,12 +69,10 @@ class _GroupsScreenState extends State<GroupsScreen> {
                     );
                   }
                 }),
-          ),
-        ),
-      ),
-    );
+          );
   }
 }
+
 
 Future<List<Widget>> buildGroupTiles() async {
   if (currently_loggedin_as.value == null) {
@@ -131,4 +141,35 @@ class GroupEntry extends StatelessWidget {
       tileColor: cl.deep_black,
     );
   }
+}
+
+
+Future<List<Widget>> buildChatTiles() async {
+  if (currently_loggedin_as.value == null) {
+    return [Text("Has to be logged in to view Chats")];
+  }
+  List<dbc.Group> groups =
+      await db.showJoinedGroupsForUser(currently_loggedin_as.value!.username);
+  if (groups.isEmpty)
+    return [
+      Text(
+        "You haven't joined any groups yet.",
+        style: TextStyle(color: Colors.white),
+      )
+    ];
+  List<Widget> tiles = [];
+  groups.forEach((element) {
+    if (db.hasGroupPinned(
+        element, currently_loggedin_as.value ?? dbc.demoUser)) {
+      tiles.add(GroupEntry(group: element));
+    }
+  });
+  groups.forEach((element) {
+    if (!db.hasGroupPinned(
+        element, currently_loggedin_as.value ?? dbc.demoUser)) {
+      tiles.add(GroupEntry(group: element));
+    }
+  });
+
+  return tiles;
 }

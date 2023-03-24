@@ -85,9 +85,6 @@ AppBar FavouritesAppBar(BuildContext context) {
 }
 
 /// TabBar for the Social Tab of the homescreens
-TabBar tabbar = TabBar(
-  tabs: [Tab(text: "Groups"), Tab(text: "Chats")],
-);
 
 /// AppBar for the Groups homescreen
 AppBar GroupsAppBar(BuildContext context) {
@@ -95,11 +92,11 @@ AppBar GroupsAppBar(BuildContext context) {
     leading: const OpenSidebarButton(),
     elevation: 8,
     backgroundColor: cl.deep_black,
-    title: DefaultTabController(
-        length: 2,
-        child:
-            PreferredSize(preferredSize: tabbar.preferredSize, child: tabbar)),
+    title: Text("Groups", style: TextStyle(color: Colors.white)),
     centerTitle: true,
+    actions: const [
+      OpenChatButton()
+    ],
   );
 }
 
@@ -159,6 +156,19 @@ class OpenSidebarButton extends StatelessWidget {
         },
         child: Image(
             image: AssetImage("graphics/ravestreamlogo_white_on_trans.png")));
+  }
+}
+
+/// Button that opens HomeScreen Drawer
+class OpenChatButton extends StatelessWidget {
+  const OpenChatButton({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+        onPressed: () {
+          Scaffold.of(context).openEndDrawer();
+        },
+        icon: Icon(Icons.question_answer));
   }
 }
 

@@ -137,15 +137,15 @@ class LoginScreen extends StatelessWidget {
                         Map<String, dynamic>? docData =
                             doc.data() as Map<String, dynamic>?;
                         print(doc.data());
-                        if (doc.data() == null) {
-                          showDialog(
+                        if (docData == null) {
+                          await showDialog(
                               context: context,
                               builder: (BuildContext context) =>
                                   _showLoginFailedDialog(context));
                         } else {
                           dbc.User tryUserData = dbc.User.fromMap(
-                              forceStringDynamicMapFromObject(
-                                  doc.data() ?? {}));
+                              forceStringDynamicMapFromObject(docData));
+                          print("Constructed User");
                           if (tryUserData.password == password) {
                             currently_loggedin_as.value = tryUserData;
                             Beamer.of(context).beamToNamed("/");
@@ -288,8 +288,7 @@ class CreateAccountScreen extends StatelessWidget {
                           password: password,
                           alias: alias,
                           description: description,
-                          path: "${branchPrefix}users/$username"
-                          );
+                          path: "${branchPrefix}users/$username");
 
                       await db.db
                           .doc("${branchPrefix}users/$username")

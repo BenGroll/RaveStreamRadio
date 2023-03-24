@@ -7,6 +7,8 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 
+
+/// Borrowed from https://stackoverflow.com/users/6618622/copsonroad
 final ScrollController _controller = ScrollController();
 void _scrollDown() {
   _controller.animateTo(
@@ -147,6 +149,7 @@ class ChatWindow extends StatelessWidget {
                                       valueListenable: rebuildToggle,
                                       builder: (context, snapshot, foo) {
                                         return TextFormField(
+                                          onTap: () => _scrollDown(),
                                           initialValue: "",
                                           onChanged: (value) {
                                             currentlyCuedupMessage = value;

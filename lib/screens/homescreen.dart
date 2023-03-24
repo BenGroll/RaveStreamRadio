@@ -10,6 +10,7 @@ import 'package:ravestreamradioapp/screens/mainscreens/profile.dart';
 import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:ravestreamradioapp/screens/chats.dart';
 
 Screens map_Index_to_Screen(int index) {
   switch (index) {
@@ -158,6 +159,7 @@ class HomeScreen extends StatelessWidget {
               builder: ((context, screen, child) {
                 return Scaffold(
                   drawer: cw.NavBar(),
+                  endDrawer: currently_selected_screen.value == Screens.forums ? ChatsDrawer() : null,
                   appBar: mapScreenToAppBar(
                       screen, currently_loggedin_as.value, context),
                   body: map_Widget_to_Screen(currently_selected_screen.value),

@@ -15,6 +15,11 @@ Stream listenToChat(String ID) {
   return stream;
 }
 
+Future<Chat> getChat_rtdb(String ID) async {
+  DataSnapshot snap = await rtdb.ref("root/Chats/$ID").get();
+  return Chat.fromDBSnapshot(snap.value as Map);
+}
+
 Future setChatData(Chat chat) async {
   DatabaseReference ref = rtdb.ref("root/Chats/${chat.id}");
   ref.set(chat.toMap());

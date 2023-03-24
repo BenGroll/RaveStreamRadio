@@ -433,29 +433,30 @@ class User {
   String? profile_picture;
   String path;
   List<String> permissions;
+  List<String> chats;
   List<DocumentReference> events;
   List<DocumentReference> joined_groups;
   List<DocumentReference> saved_events;
   List<DocumentReference> followed_groups;
   List<DocumentReference> close_friends;
   List<DocumentReference> pinned_groups;
-  User(
-      {
-        required this.username,
-      this.alias,
-      required this.password,
-      this.description,
-      this.mail,
-      this.profile_picture,
-      required this.path,
-      this.permissions = const <String>[],
-      this.events = const <DocumentReference>[],
-      this.joined_groups = const <DocumentReference>[],
-      this.saved_events = const <DocumentReference>[],
-      this.followed_groups = const <DocumentReference>[],
-      this.close_friends = const <DocumentReference>[],
-      this.pinned_groups = const <DocumentReference>[],
-      });
+  User({
+    required this.username,
+    this.alias,
+    required this.password,
+    this.description,
+    this.mail,
+    this.profile_picture,
+    required this.path,
+    this.permissions = const <String>[],
+    this.chats = const <String>[],
+    this.events = const <DocumentReference>[],
+    this.joined_groups = const <DocumentReference>[],
+    this.saved_events = const <DocumentReference>[],
+    this.followed_groups = const <DocumentReference>[],
+    this.close_friends = const <DocumentReference>[],
+    this.pinned_groups = const <DocumentReference>[],
+  });
   User copyWith({
     String? username,
     String? alias,
@@ -465,6 +466,7 @@ class User {
     String? profile_picture,
     String? path,
     List<String>? permissions,
+    List<String>? chats,
     List<DocumentReference>? events,
     List<DocumentReference>? joined_groups,
     List<DocumentReference>? saved_events,
@@ -479,6 +481,7 @@ class User {
         description: description ?? this.description,
         mail: mail ?? this.mail,
         profile_picture: profile_picture ?? this.profile_picture,
+        chats: chats ?? this.chats,
         events: events ?? this.events,
         joined_groups: joined_groups ?? this.joined_groups,
         saved_events: saved_events ?? this.saved_events,
@@ -486,8 +489,7 @@ class User {
         close_friends: close_friends ?? this.close_friends,
         pinned_groups: pinned_groups ?? this.pinned_groups,
         permissions: permissions ?? this.permissions,
-        path: path ?? this.username
-        );
+        path: path ?? this.username);
   }
 
   Map<String, dynamic> toMap() {
@@ -500,6 +502,7 @@ class User {
       'profile_picture': profile_picture,
       'path': path,
       'events': events.map((x) => x).toList(),
+      'chats': chats,
       'joined_groups': joined_groups.map((x) => x).toList(),
       'saved_events': saved_events.map((x) => x).toList(),
       'followed_groups': followed_groups.map((x) => x).toList(),
@@ -520,6 +523,7 @@ class User {
       profile_picture: map['profile_picture'] as String?,
       path: map["path"] as String,
       permissions: forceStringType(map['permissions']),
+      chats: forceStringType(map['chats']),
       events: forceDocumentReferenceType(map['events']),
       joined_groups: forceDocumentReferenceType(map['joined_groups']),
       saved_events: forceDocumentReferenceType(map['saved_events']),
@@ -536,7 +540,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups)';
+    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, chats: $chats, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups)';
   }
 
   @override
@@ -549,6 +553,7 @@ class User {
         other.mail == mail &&
         other.profile_picture == profile_picture &&
         other.path == path &&
+        other.chats == chats &&
         listEquals(other.permissions, permissions) &&
         listEquals(other.events, events) &&
         listEquals(other.joined_groups, joined_groups) &&
@@ -567,6 +572,7 @@ class User {
         mail.hashCode ^
         profile_picture.hashCode ^
         permissions.hashCode ^
+        chats.hashCode ^
         path.hashCode ^
         events.hashCode ^
         joined_groups.hashCode ^
@@ -576,6 +582,7 @@ class User {
         pinned_groups.hashCode;
   }
 }
+
 /// Enum of possible Categories a host can be ordered into
 enum HostCategory { collective, festival, host, location, eventseries, label }
 
@@ -664,7 +671,6 @@ HostCategory? getCategory(Map<String, dynamic> host) {
       db.collection("demohosts").doc(host["id"]).set(data);
       return HostCategory.host;
     }
-    print(kat);
     return null;
   }
   return null;
@@ -741,7 +747,8 @@ class Report {
 }
 
 // Demo Objects
-User demoUser = User(username: "demo", password: "demo", path: "dev.users/demo");
+User demoUser =
+    User(username: "demo", password: "demo", path: "dev.users/demo");
 Group demoGroup = Group(
     groupid: "demo",
     members_roles: {db.doc("${branchPrefix}/groups/demo"): "Founder"});
