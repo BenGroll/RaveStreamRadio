@@ -77,3 +77,75 @@ extension Stringify on List<DocumentReference> {
   }
 }
 
+extension Queriefy on List<dbc.Event> {
+  List<dbc.Event> whereIsEqual(String name, dynamic value) {
+    List<dbc.Event> outL = [];
+    forEach((dbc.Event element) {
+      Map mapElem = element.toMap();
+      if (mapElem.keys.contains(name) &&
+          mapElem[name] == value) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
+
+  List<dbc.Event> whereIsGreaterThan(String name, dynamic value) {
+    List<dbc.Event> outL = [];
+    forEach((dbc.Event element) {
+      Map mapElem = element.toMap();
+      if (mapElem.keys.contains(name) &&
+          mapElem[name] > value) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
+
+  List<dbc.Event> whereIsSmallerThan(String name, dynamic value) {
+    List<dbc.Event> outL = [];
+    forEach((dbc.Event element) {
+      Map mapElem = element.toMap();
+      if (mapElem.keys.contains(name) &&
+          mapElem[name] < value) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
+
+  List<dbc.Event> whereIsGreaterThanOrEqualTo(String name, dynamic value) {
+    List<dbc.Event> outL = [];
+    forEach((dbc.Event element) {
+      Map mapElem = element.toMap();
+      if (mapElem.keys.contains(name) &&
+          mapElem[name] >= value) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
+
+  List<dbc.Event> whereIsLessThanOrEqualTo(String name, dynamic value) {
+    List<dbc.Event> outL = [];
+    forEach((dbc.Event element) {
+      Map mapElem = element.toMap();
+      if (mapElem.keys.contains(name) &&
+          mapElem[name] <= value) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
+
+  List<dbc.Event> whereIsInValues(String name, List<dynamic> values) {
+    List<dbc.Event> outL = [];
+    forEach((dbc.Event element) {
+      Map mapElem = element.toMap();
+      if (mapElem.keys.contains(name) && values.contains(mapElem[name])) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
+}

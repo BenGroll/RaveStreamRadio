@@ -11,6 +11,7 @@ import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'testdbscenario.dart';
+import 'package:ravestreamradioapp/extensions.dart' show Queriefy;
 
 var db = FirebaseFirestore.instance;
 
@@ -212,12 +213,14 @@ class EventFilters {
       {this.lastelemEventid,
       this.onlyAfter,
       this.onlyBefore,
-      this.canGoByAge,
+      this.canGoByAge = 18,
       this.orderbyField = "end",
       this.byStatus,
       this.fromDrafts = false});
 }
 
+/// Deprecated (use readEventsFromIndexFile instead)
+///
 /// General Query to get List of Events
 ///
 /// Query filters can be specified by the [filters] parameter
@@ -225,12 +228,13 @@ class EventFilters {
 /// Query size can be specified by the [queryLimit] param
 Future<List<dbc.Event>> getEvents(
     [int? queryLimit, EventFilters? filters]) async {
+  if (filters != null && filters.fromDrafts)
+    return readEventsFromIndexFile(filters);
   try {
     if (filters != null && filters.fromDrafts) {
       if (currently_loggedin_as.value == null) return [];
 
       dbc.User? user = currently_loggedin_as.value;
-      //List drafts = db.doc("${branchPrefix}users/${user.username}").get().then((value) => value.data()[""])
       return [];
     }
     filters = filters ?? EventFilters();
@@ -286,6 +290,31 @@ Future<List<dbc.Event>> getEvents(
     print(e);
     return [];
   }
+}
+
+Future<List<dbc.Event>> readEventsFromIndexFile(EventFilters filters,
+    [int? queryLimit]) async {
+  String eventIndexesJson = await readEventIndexesJson();
+  List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson);
+  if (filters.onlyAfter != null) {
+    eventList =
+        eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
+  }
+  if (filters.onlyBefore != null) {
+    eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
+  }
+  if (filters.byStatus != null) {
+    eventList.whereIsInValues("status", filters.byStatus ?? []);
+  }
+  if (filters.canGoByAge != null) {
+    eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
+  }
+  eventList.sort(
+    (a, b) {
+      return a.end!.compareTo(b.end ?? b.begin ?? Timestamp.now());
+    }
+  );
+  return eventList;
 }
 
 /// Gets info from
@@ -680,4 +709,3 @@ Future<List<dbc.Report>> getAllReports() async {
   });
   return reports;
 }
-

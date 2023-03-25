@@ -53,14 +53,13 @@ class EventCalendar extends StatelessWidget {
                       if (event_data!.length >=
                           current_page.value * ITEMS_PER_PAGE_IN_EVENTSHOW) {
                         return FutureBuilder(
-                            future: db.getEvents(
-                                ITEMS_PER_PAGE_IN_EVENTSHOW,
-                                db.EventFilters(
-                                  lastelemEventid: event_data!.isEmpty
-                                      ? null
-                                      : event_data!.last.eventid,
-                                  fromDrafts: mode == CalendarMode.drafts
-                                )),
+                            future: db.readEventsFromIndexFile(
+                              db.EventFilters(
+                                
+                              ),
+                              ITEMS_PER_PAGE_IN_EVENTSHOW
+                            ),
+                              
                             builder: ((context, snapshot) {
                               if (snapshot.connectionState !=
                                   ConnectionState.done) {

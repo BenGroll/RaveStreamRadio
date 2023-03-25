@@ -81,7 +81,7 @@ Future<List<String>> validateUpload() async {
 }
 
 /// Takes List<dbc.Link>
-/// 
+///
 /// Returns {title : url} map
 Map<String, String> linkListToDBMap(List<dbc.Link> list) {
   Map<String, String> outmap = {};
@@ -685,12 +685,14 @@ class GeneralSettingsPage extends StatelessWidget {
                                           DateTime? initialDate;
                                           if (currentEventData.value.end !=
                                               null) {
-                                            initialDate = DateTime.fromMillisecondsSinceEpoch(
-                                                currentEventData.value.end!.millisecondsSinceEpoch);
+                                            initialDate = DateTime
+                                                .fromMillisecondsSinceEpoch(
+                                                    currentEventData.value.end!
+                                                        .millisecondsSinceEpoch);
                                           }
 
-                                          DateTime? picked_date =
-                                              await cw.pick_date(context, initialDate);
+                                          DateTime? picked_date = await cw
+                                              .pick_date(context, initialDate);
                                           if (picked_date != null) {
                                             currentEventData.value.end =
                                                 Timestamp.fromDate(picked_date);
@@ -1028,7 +1030,11 @@ class UploadEventDialog extends StatelessWidget {
                       },
                     ),
                     TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          dbc.Event newEventData = currentEventData.value;
+                          newEventData.status = EventStatus.draft.name;
+                          uploadEvent(newEventData, context);
+                        },
                         child: Text("Save(TBA)",
                             style: TextStyle(color: Colors.white))),
                     TextButton(

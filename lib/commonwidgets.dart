@@ -814,7 +814,7 @@ class ReportButton extends StatelessWidget {
                                     "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
                                 "target": target,
                                 "timestamp": Timestamp.now(),
-                                "state": "pending"
+                                "state": "filed"
                               });
                               await newRep.update({"id": newRep.id});
                               ScaffoldMessenger.of(context).showSnackBar(
