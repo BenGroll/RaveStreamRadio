@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/conv.dart';
@@ -23,113 +25,237 @@ Future reloadEventPage() async {
   currently_selected_screen.notifyListeners();
 }
 
+class EventFilterBottomSheet extends StatelessWidget {
+  ValueNotifier<db.EventFilters> filters;
+  EventFilterBottomSheet({super.key, required this.filters});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: cl.nearly_black,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: null,
+        title: Text("Filters", style: TextStyle(color: Colors.white)),
+        actions: [IconButton(onPressed: () {}, icon: Icon(Icons.undo))],
+      ),
+      body: ValueListenableBuilder(
+          valueListenable: filters,
+          builder: (context, enabledFilters, foo) {
+            print(enabledFilters);
+            return ListView(
+              children: [
+                ListTile(
+                  dense: false,
+                  title: Text("Only After:",
+                      style: TextStyle(color: Colors.white)),
+                  trailing:
+                      IconButton(onPressed: () {}, icon: Icon(Icons.undo)),
+                ),
+                ListTile(
+                  dense: true,
+                  title: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ElevatedButton(
+                            onPressed: () {},
+                            child: Text(
+                                filters.value.onlyAfter == null
+                                    ? "Select onlyAfter"
+                                    : timestamp2readablestamp(
+                                        filters.value.onlyAfter),
+                                style: TextStyle(color: Colors.white)))
+                      ],
+                    ),
+                  ),
+                ),
+                ListTile(
+                  dense: false,
+                  title: Text("Only Before:",
+                      style: TextStyle(color: Colors.white)),
+                  trailing:
+                      IconButton(onPressed: () {}, icon: Icon(Icons.undo)),
+                ),
+                ListTile(
+                  dense: true,
+                  title: Text("Select Only Before",
+                      style: TextStyle(color: Colors.white)),
+                ),
+                ListTile(
+                  dense: false,
+                  title:
+                      Text("Can go with this Age:", style: TextStyle(color: Colors.white)),
+                  trailing:
+                      IconButton(onPressed: () {
+                        filters.value.canGoByAge = 18;
+                            filters.notifyListeners();
+                      }, icon: Icon(Icons.undo)),
+                ),
+                ListTile(
+                  dense: true,
+                  title: Row(
+                    children: [
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (enabledFilters.canGoByAge != null &&
+                                          enabledFilters.canGoByAge! < 18)
+                                      ? cl.deep_black
+                                      : cl.greynothighlight),
+                          onPressed: () {
+                            filters.value.canGoByAge = 17;
+                            filters.notifyListeners();
+                          },
+                          child: Text("U18")),
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (enabledFilters.canGoByAge != null &&
+                                          enabledFilters.canGoByAge! >= 18 && enabledFilters.canGoByAge! < 21)
+                                      ? cl.deep_black
+                                      : cl.greynothighlight),
+                          onPressed: () {
+                            filters.value.canGoByAge = 18;
+                            filters.notifyListeners();
+                          },
+                          child: Text("18+")),
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (enabledFilters.canGoByAge != null &&
+                                          enabledFilters.canGoByAge! >= 21)
+                                      ? cl.deep_black
+                                      : cl.greynothighlight),
+                          onPressed: () {
+                            filters.value.canGoByAge = 21;
+                            filters.notifyListeners();
+                          },
+                          child: Text("21+"))
+                    ],
+                  ),
+                ),
+                db.doIHavePermission(GlobalPermission.MODERATE) ? 
+                ListTile(
+                  dense: false,
+                  title: Text("Status:", style: TextStyle(color: Colors.white)),
+                  trailing:
+                      IconButton(onPressed: () {}, icon: Icon(Icons.undo)),
+                ) : const SizedBox(height: 0),
+                db.doIHavePermission(GlobalPermission.MODERATE) ?
+                ListTile(
+                  dense: true,
+                  title: Row(
+                    children: [
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (enabledFilters.byStatus != null &&
+                                          enabledFilters.byStatus!.contains("public"))
+                                      ? cl.deep_black
+                                      : cl.greynothighlight),
+                          onPressed: () {
+                            filters.value.byStatus.contains("public") ? filters.value.byStatus.remove("public") : filters.value.byStatus.add("public");
+                            filters.notifyListeners();
+                          },
+                          child: Text("Public")),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  ( enabledFilters.byStatus.contains("friendlist"))
+                                      ? cl.deep_black
+                                      : cl.greynothighlight),
+                          onPressed: () {
+                            filters.value.byStatus.contains("friendlist") ? filters.value.byStatus.remove("friendlist") : filters.value.byStatus.add("friendlist");
+                            filters.notifyListeners();
+                          },
+                          child: Text("Friendlist")),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (
+                                    enabledFilters.byStatus.contains("frozen"))
+                                      ? cl.deep_black
+                                      : cl.greynothighlight),
+                          onPressed: () {
+                            filters.value.byStatus.contains("frozen") ? filters.value.byStatus.remove("frozen") : filters.value.byStatus.add("frozen");
+                            filters.notifyListeners();
+                          },
+                          child: Text("Frozen")),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (
+                                          enabledFilters.byStatus.contains("draft"))
+                                      ? cl.deep_black
+                                      : cl.greynothighlight),
+                          onPressed: () {
+                            filters.value.byStatus.contains("draft") ? filters.value.byStatus.remove("draft") : filters.value.byStatus.add("draft");
+                            filters.notifyListeners();
+                          },
+                          child: Text("Drafts")),
+                    ],
+                  )
+                ) : const SizedBox(height: 0),
+              ],
+            );
+          }),
+    );
+  }
+}
+
 enum CalendarMode { normal, drafts }
 
 class EventCalendar extends StatelessWidget {
   final dbc.User? loggedinas;
   final CalendarMode mode;
-  const EventCalendar(
+  EventCalendar(
       {super.key, required this.loggedinas, this.mode = CalendarMode.normal});
   @override
   Widget build(BuildContext context) {
+      ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(byStatus: mode == CalendarMode.normal ? ["public"] : ["draft"]));
     event_data = [];
     totalelements = 0;
     current_page.value = 0;
-    return Scaffold(
+    GlobalKey<ScaffoldState> scaffkey = GlobalKey<ScaffoldState>();
+    Scaffold scaff = Scaffold(
         drawer: cw.NavBar(),
         backgroundColor: cl.nearly_black,
         body: RefreshIndicator(
-          backgroundColor: cl.deep_black,
-          color: Colors.white,
-          onRefresh: () => Future.delayed(Duration(seconds: 1))
-              .then((value) => reloadEventPage()),
-          child: FutureBuilder(
-              future: db.getEventCount(),
-              builder: (context, snapshot) {
-                totalelements = snapshot.data ?? 0;
-                return ValueListenableBuilder(
-                    valueListenable: current_page,
-                    builder: ((context, value, child) {
-                      if (event_data!.length >=
-                          current_page.value * ITEMS_PER_PAGE_IN_EVENTSHOW) {
-                        return FutureBuilder(
-                            future: db.readEventsFromIndexFile(
-                              db.EventFilters(
-                                
-                              ),
-                              ITEMS_PER_PAGE_IN_EVENTSHOW
-                            ),
-                              
-                            builder: ((context, snapshot) {
-                              if (snapshot.connectionState !=
-                                  ConnectionState.done) {
-                                //Loading Indicator
-                                return const CircularProgressIndicator();
-                              } else {
-                                snapshot.data?.forEach((element) {
-                                  event_data!.add(element);
-                                });
-                                List<dbc.Event> shownevents = [];
-                                for (int i = (current_page.value) *
-                                        ITEMS_PER_PAGE_IN_EVENTSHOW;
-                                    i <
-                                        (current_page.value + 1) *
-                                            ITEMS_PER_PAGE_IN_EVENTSHOW;
-                                    i++) {
-                                  if (i < event_data!.length) {
-                                    shownevents.add(event_data![i]);
-                                  }
-                                }
-                                List<Widget> shownitems = [];
-                                shownevents.forEach((element) {
-                                  CalendarEventCard calcard =
-                                      CalendarEventCard(element);
-                                  shownitems.add(calcard);
-                                });
-                                totalelements > ITEMS_PER_PAGE_IN_EVENTSHOW
-                                    ? shownitems.add(PageIndicator())
-                                    : null;
-                                shownitems.add(SizedBox(
-                                    height: MediaQuery.of(context).size.height /
-                                        35));
-                                return ListView(children: shownitems);
-                              }
-                            }));
-                      } else {
-                        //Load List with old data
-                        List<dbc.Event> shownevents = [];
-                        for (int i = (current_page.value) *
-                                ITEMS_PER_PAGE_IN_EVENTSHOW;
-                            i <
-                                (current_page.value + 1) *
-                                    ITEMS_PER_PAGE_IN_EVENTSHOW;
-                            i++) {
-                          if (i < event_data!.length) {
-                            shownevents.add(event_data![i]);
-                          }
+            backgroundColor: cl.deep_black,
+            color: Colors.white,
+            onRefresh: () => Future.delayed(Duration(seconds: 1))
+                .then((value) => reloadEventPage()),
+            child: ValueListenableBuilder(
+                valueListenable: current_page,
+                builder: ((context, value, child) {
+                  return FutureBuilder(
+                      future: db.fetchEventsFromIndexFile(),
+                      builder: ((context, snapshot) {
+                        if (snapshot.connectionState != ConnectionState.done) {
+                          return CircularProgressIndicator();
+                        } else {
+                          return ValueListenableBuilder(
+                              valueListenable: filters,
+                              builder: (BuildContext context,
+                                  db.EventFilters filters, foo) {
+                                List<dbc.Event> events = snapshot.data ?? [];
+                                return ListView(
+                                  children: db
+                                      .queriefyEventList(events, filters)
+                                      .map((e) => CalendarEventCard(e))
+                                      .toList(),
+                                );
+                              });
                         }
-                        List<Widget> shownitems = [];
-                        for (int i = 0; i < shownevents.length; i++) {
-                          shownitems.add(CalendarEventCard(shownevents[i]));
-                        }
-                        shownitems.add(PageIndicator());
-                        shownitems.add(SizedBox(
-                            height: MediaQuery.of(context).size.height / 35));
-                        ScrollController cont = ScrollController();
-                        return Scrollbar(
-                            controller: cont,
-                            isAlwaysShown: true,
-                            child: ListView(
-                                controller: cont, children: shownitems));
-                      }
-                    }));
-              }),
-        ),
-        appBar: mode == CalendarMode.drafts ? AppBar(
-          title: Text("Your Drafts"),
-          centerTitle: true,
-        ) : null,
-        );
+                      }));
+                }))),
+        appBar: CalendarAppBar(
+          context,
+          filters,
+          title: mode == CalendarMode.drafts ? "Your Drafts" : "Events",
+        ));
+    return scaff;
   }
 }
 

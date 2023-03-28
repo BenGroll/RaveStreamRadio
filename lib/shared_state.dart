@@ -107,4 +107,3 @@ String get branchPrefix {
     throw Exception("Prefix for selected Branch not set.");
   }
 }
-

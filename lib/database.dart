@@ -170,6 +170,8 @@ Future<dbc.User?> getUser(String username) async {
   }
 }
 
+
+
 /// Returns total count of Events ending after today
 /// TBA Get event count from given query, not only default query
 Future<int> getEventCount() async {
@@ -181,6 +183,45 @@ Future<int> getEventCount() async {
       .then((value) => value.count);
   return itemcount;
 }
+
+
+
+
+/// Deprecated (use readEventsFromIndexFile instead)
+///
+/// General Query to get List of Events
+///
+/// Query filters can be specified by the [filters] parameter
+///
+/// Query size can be specified by the [queryLimit] param
+Future<List<dbc.Event>> getEvents() async {
+      if (currently_loggedin_as.value == null) return [];
+    Query query = db.collection("${branchPrefix}events");
+    QuerySnapshot snapshot = await query.get();
+    List<Map<String, dynamic>>? maplist = querySnapshotToMapList(snapshot);
+    List<dbc.Event> events = [];
+    maplist.forEach((element) {
+      events.add(dbc.Event.fromMap(element));
+    });
+    return events;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /// [lastelemEventid] is used as a cursor for paginating results. Leaving it empty means you are at page 0.
 ///
@@ -195,125 +236,96 @@ Future<int> getEventCount() async {
 ///
 /// Only one of the Inequality fields can be used. If more are set, none get set.
 ///
-/// Set [orderbyField] to the name of the field you want to order by. Indexed Fields:
-
+/// Set [orderbyField] to the name of the field you want to order by.
+///
 /// Class that contains all possible event filters
 ///
 /// [lastelemEventid] is for paginating query results
 ///
+/// Provide a List<Array>[byStatus] to only include Events with a status in this array. Leaving this empty includes Events of all stati
 class EventFilters {
   String? lastelemEventid;
   Timestamp? onlyAfter;
   Timestamp? onlyBefore;
   int? canGoByAge;
   String orderbyField;
-  List<String>? byStatus;
-  bool fromDrafts;
+  List<String> byStatus;
+  bool onlyHostedByMe;
   EventFilters(
+
+      /// Not used yet in readEventsFromIndexFile
       {this.lastelemEventid,
       this.onlyAfter,
       this.onlyBefore,
       this.canGoByAge = 18,
       this.orderbyField = "end",
-      this.byStatus,
-      this.fromDrafts = false});
-}
+      required this.byStatus,
+      this.onlyHostedByMe = false});
 
-/// Deprecated (use readEventsFromIndexFile instead)
-///
-/// General Query to get List of Events
-///
-/// Query filters can be specified by the [filters] parameter
-///
-/// Query size can be specified by the [queryLimit] param
-Future<List<dbc.Event>> getEvents(
-    [int? queryLimit, EventFilters? filters]) async {
-  if (filters != null && filters.fromDrafts)
-    return readEventsFromIndexFile(filters);
-  try {
-    if (filters != null && filters.fromDrafts) {
-      if (currently_loggedin_as.value == null) return [];
-
-      dbc.User? user = currently_loggedin_as.value;
-      return [];
-    }
-    filters = filters ?? EventFilters();
-    // Setup Basic Query
-    Query query = db.collection("${branchPrefix}events");
-    // Set Pagination Cursor
-    if (filters.lastelemEventid != null) {
-      query = query.startAfterDocument(await db
-          .doc("${branchPrefix}events/${filters.lastelemEventid}")
-          .get());
-    }
-    // Set Inequality Fields (Managed in EventFilter's Constructor)
-    if (filters.onlyBefore == null) {
-      query = query.where("end",
-          isGreaterThanOrEqualTo:
-              filters.onlyAfter ?? Timestamp.now()); // Filter after Timestamp
-    }
-    if (filters.onlyBefore != null) {
-      query = query.where("end",
-          isLessThanOrEqualTo: filters.onlyBefore); // Filter before Timestamp
-    }
-    if (filters.canGoByAge != null) {
-      query = query.where("minAge",
-          isLessThanOrEqualTo: filters.canGoByAge); // Filter before Timestamp
-    } /*
-    query = query.where("lastChanged",
-        isLessThanOrEqualTo: Timestamp.now()); // Filter before Timestamp
-    */
-    // /> Inequality Fields
-    if (filters.byStatus != null) {
-      query =
-          query.where("status", whereIn: filters.byStatus); // Filter by Status
-    }
-    // Pagination Limit
-    if (queryLimit != null) {
-      query = query.limit(queryLimit);
-    }
-    //print(query.parameters);
-    // Query Documents from db
-    QuerySnapshot snapshot = await query.get();
-    List<Map<String, dynamic>>? maplist = querySnapshotToMapList(snapshot);
-    //print(snapshot.size);
-    List<dbc.Event> events = [];
-    maplist.forEach((element) {
-      events.add(dbc.Event.fromMap(element));
-    });
-    events.sort((a, b) => a
-        .toMap()[filters!.orderbyField]
-        .compareTo(b.toMap()[filters.orderbyField]));
-    //print(query.parameters);
-    return events;
-  } catch (e) {
-    print(e);
-    return [];
+  @override
+  String toString() {
+    return 'Filter(lastelemEventid: $lastelemEventid, onlyAfter: ${timestamp2readablestamp(onlyAfter)}, onlyBefore: ${timestamp2readablestamp(onlyBefore)}, canGoByAge: $canGoByAge, orderByField: $orderbyField, byStatus: $byStatus, onlyHostedByMe: $onlyHostedByMe)';
   }
 }
 
-Future<List<dbc.Event>> readEventsFromIndexFile(EventFilters filters,
-    [int? queryLimit]) async {
+Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
   String eventIndexesJson = await readEventIndexesJson();
   List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson);
+  eventList.forEach((element) {
+    print(element.status);
+  });
+  return eventList;
+}
+
+List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
+    [int? queryLimit]) {
+  List<dbc.Event> eventList = events;
+  //print(". ${eventList.length}");
+  //print("Stati Included: ${filters.byStatus}");
   if (filters.onlyAfter != null) {
     eventList =
         eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
   }
+  //print(".. ${eventList.length}");
+
   if (filters.onlyBefore != null) {
     eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
   }
-  if (filters.byStatus != null) {
-    eventList.whereIsInValues("status", filters.byStatus ?? []);
-  }
+  //print("... ${eventList.length}");
+
+  eventList = eventList.whereIsInValues("status", filters.byStatus);
+  //print(".... ${eventList.length}");
+
   if (filters.canGoByAge != null) {
-    eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
+    eventList =
+        eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
   }
-  eventList.sort(
-    (a, b) {
-      return a.end!.compareTo(b.end ?? b.begin ?? Timestamp.now());
-    }
-  );
+  //print("..... ${eventList.length}");
+
+  if (filters.onlyHostedByMe) {
+    List newList = [];
+    eventList.forEach((element) {
+      if (element.hostreference != null &&
+          currently_loggedin_as.value != null) {
+        if (element.hostreference!.path.contains("users/")) {
+          if (element.hostreference!.id ==
+              currently_loggedin_as.value!.username) {
+            newList.add(element);
+          }
+        } else if (element.hostreference!.path.contains("events/")) {
+          /// TBA For after Groups are done
+        }
+      }
+    });
+  }
+  //print("...... ${eventList.length}");
+
+  eventList.sort((a, b) {
+    return a.toMap()[filters.orderbyField].compareTo(
+        b.toMap()[filters.orderbyField] ?? b.toMap()[filters.orderbyField]);
+  });
+  //print("....... ${eventList.length}");
+
   return eventList;
 }
 

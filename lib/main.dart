@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
     return MaterialApp.router(
       routeInformationParser: BeamerParser(),
       routerDelegate: routerDelegate,
@@ -64,7 +64,7 @@ class MainRoute extends StatelessWidget {
                                       loggedinas: snapshot.data,
                                       startingscreen: startingscreen));
                             } else {
-                              return Container(color: Colors.transparent,);
+                              return Container(color: Colors.transparent);
                             }
                           });
                     } else {

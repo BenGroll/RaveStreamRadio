@@ -82,8 +82,7 @@ extension Queriefy on List<dbc.Event> {
     List<dbc.Event> outL = [];
     forEach((dbc.Event element) {
       Map mapElem = element.toMap();
-      if (mapElem.keys.contains(name) &&
-          mapElem[name] == value) {
+      if (mapElem.keys.contains(name) && mapElem[name] == value) {
         outL.add(element);
       }
     });
@@ -94,8 +93,7 @@ extension Queriefy on List<dbc.Event> {
     List<dbc.Event> outL = [];
     forEach((dbc.Event element) {
       Map mapElem = element.toMap();
-      if (mapElem.keys.contains(name) &&
-          mapElem[name] > value) {
+      if (mapElem.keys.contains(name) && mapElem[name] > value) {
         outL.add(element);
       }
     });
@@ -106,8 +104,7 @@ extension Queriefy on List<dbc.Event> {
     List<dbc.Event> outL = [];
     forEach((dbc.Event element) {
       Map mapElem = element.toMap();
-      if (mapElem.keys.contains(name) &&
-          mapElem[name] < value) {
+      if (mapElem.keys.contains(name) && mapElem[name] < value) {
         outL.add(element);
       }
     });
@@ -118,8 +115,7 @@ extension Queriefy on List<dbc.Event> {
     List<dbc.Event> outL = [];
     forEach((dbc.Event element) {
       Map mapElem = element.toMap();
-      if (mapElem.keys.contains(name) &&
-          mapElem[name] >= value) {
+      if (mapElem.keys.contains(name) && mapElem[name] >= value) {
         outL.add(element);
       }
     });
@@ -130,8 +126,7 @@ extension Queriefy on List<dbc.Event> {
     List<dbc.Event> outL = [];
     forEach((dbc.Event element) {
       Map mapElem = element.toMap();
-      if (mapElem.keys.contains(name) &&
-          mapElem[name] <= value) {
+      if (mapElem.keys.contains(name) && mapElem[name] <= value) {
         outL.add(element);
       }
     });
@@ -142,6 +137,7 @@ extension Queriefy on List<dbc.Event> {
     List<dbc.Event> outL = [];
     forEach((dbc.Event element) {
       Map mapElem = element.toMap();
+      print(mapElem[name]);
       if (mapElem.keys.contains(name) && values.contains(mapElem[name])) {
         outL.add(element);
       }

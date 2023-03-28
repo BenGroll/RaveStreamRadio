@@ -14,6 +14,7 @@ import 'package:ravestreamradioapp/pres/rave_stream_icons_icons.dart'
     show RaveStreamIcons;
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/screens/loginscreen.dart';
+import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'shared_state.dart';
 import 'filesystem.dart' as files;
 import 'database.dart' as db;
@@ -59,18 +60,23 @@ SnackBar hintSnackBar(String alertMessage) {
 }
 
 /// AppBar for the Calendar homescreen
-AppBar CalendarAppBar(BuildContext context) {
+AppBar CalendarAppBar(
+    BuildContext context, ValueNotifier<db.EventFilters> filters,
+    {String title = "Events"}) {
   return AppBar(
       leading: const OpenSidebarButton(),
       actions: [
         IconButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  hintSnackBar("Event Filters are not yet added."));
+              showModalBottomSheet(
+                backgroundColor: cl.nearly_black,
+                  context: context,
+                  builder: (BuildContext context) => EventFilterBottomSheet(filters: filters));
+              //ScaffoldMessenger.of(context).s
             },
-            icon: Icon(Icons.filter_alt))
+            icon: Icon(Icons.filter_list, color: Colors.white))
       ],
-      title: const Text("Events"),
+      title: Text(title),
       centerTitle: true);
 }
 
@@ -94,9 +100,7 @@ AppBar GroupsAppBar(BuildContext context) {
     backgroundColor: cl.deep_black,
     title: Text("Groups", style: TextStyle(color: Colors.white)),
     centerTitle: true,
-    actions: const [
-      OpenChatButton()
-    ],
+    actions: const [OpenChatButton()],
   );
 }
 
@@ -833,5 +837,75 @@ class ReportButton extends StatelessWidget {
               Icons.report_outlined,
               color: Colors.white,
             ));
+  }
+}
+
+class EventFilterSideBar extends StatelessWidget {
+  ValueNotifier<db.EventFilters> filters;
+  EventFilterSideBar({super.key, required this.filters});
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: cl.nearly_black,
+      child: Scaffold(
+        appBar: AppBar(title: Text("Filter(s)")),
+        body: ListView(
+          // ignore: prefer_const_literals_to_create_immutables
+          children: [
+            ListTile(
+              dense: true,
+              title: Text(
+                  maxLines: 1,
+                  "After (Timestamp)",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.height / 40)),
+            ),
+            ListTile(
+              dense: false,
+              title: Text(
+                  maxLines: 1,
+                  "TBI Pick Timestamp",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.height / 40)),
+            ),
+            ListTile(
+              dense: true,
+              title: Text(
+                  maxLines: 1,
+                  "Before (Timestamp)",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.height / 40)),
+            ),
+            ListTile(
+              dense: false,
+              title: Text(
+                  maxLines: 1,
+                  "Age limit",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.height / 40)),
+            ),
+            ListTile(
+                dense: false,
+                title: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(),
+                )),
+            ListTile(
+              dense: false,
+              title: Text(
+                  maxLines: 1,
+                  "TBI Pick Timestamp",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: MediaQuery.of(context).size.height / 40)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

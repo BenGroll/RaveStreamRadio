@@ -92,7 +92,7 @@ Widget map_Widget_to_Screen(Screens screen) {
   switch (screen) {
     case Screens.events:
       {
-        return EventCalendar(loggedinas: currently_loggedin_as.value);
+        return EventCalendar(loggedinas: currently_loggedin_as.value, mode: CalendarMode.normal);
       }
     case Screens.favourites:
       {
@@ -113,12 +113,12 @@ Widget map_Widget_to_Screen(Screens screen) {
   }
 }
 
-AppBar mapScreenToAppBar(
+AppBar? mapScreenToAppBar(
     Screens screen, dbc.User? loggedinas, BuildContext context) {
   switch (screen) {
     case Screens.events:
       {
-        return cw.CalendarAppBar(context);
+        return null;
       }
     case Screens.favourites:
       {
@@ -159,7 +159,6 @@ class HomeScreen extends StatelessWidget {
               builder: ((context, screen, child) {
                 return Scaffold(
                   drawer: cw.NavBar(),
-                  endDrawer: currently_selected_screen.value == Screens.forums ? ChatsDrawer() : null,
                   appBar: mapScreenToAppBar(
                       screen, currently_loggedin_as.value, context),
                   body: map_Widget_to_Screen(currently_selected_screen.value),

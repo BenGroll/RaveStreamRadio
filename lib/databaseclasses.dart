@@ -167,7 +167,7 @@ class Event {
     Map<DocumentReference, String>? guestlist,
     int? savedcount,
     String? templateHostID,
-    String status = "public",
+    String? status,
   }) {
     return Event(
       title: title ?? this.title,
@@ -186,7 +186,7 @@ class Event {
       guestlist: guestlist ?? this.guestlist,
       savedcount: savedcount ?? this.savedcount,
       templateHostID: templateHostID ?? this.templateHostID,
-      status: status,
+      status: status ?? this.status,
     );
   }
 
