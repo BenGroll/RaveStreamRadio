@@ -107,11 +107,11 @@ class ChatWindow extends StatelessWidget {
                     message: e, isGroupChat: chat.members.length > 2))
                 .toList();
             return Scaffold(
-              backgroundColor: cl.deep_black,
+              backgroundColor: cl.darkerGrey,
               appBar: AppBar(
                 title: Text(
                     chat.members.length > 2 ? chat.id : chat.members[0].id),
-                backgroundColor: cl.deep_black,
+                backgroundColor: cl.darkerGrey,
               ),
               body: ListView.separated(
                 controller: _controller,

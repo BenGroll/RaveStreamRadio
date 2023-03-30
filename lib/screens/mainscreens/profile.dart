@@ -33,7 +33,7 @@ class NotLoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.nearly_black,
+      backgroundColor: cl.lighterGrey,
       body: Padding(
           padding: const EdgeInsets.symmetric(
             vertical: 20.0,
@@ -62,7 +62,7 @@ class LoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.nearly_black,
+      backgroundColor: cl.lighterGrey,
       body : selectedbranch.value == ServerBranches.develop
       ? DevSettingsScreen()
       : Container()

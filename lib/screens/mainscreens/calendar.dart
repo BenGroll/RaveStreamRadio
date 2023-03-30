@@ -32,8 +32,9 @@ class EventFilterBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.nearly_black,
+      backgroundColor: cl.darkerGrey,
       appBar: AppBar(
+        backgroundColor: cl.lighterGrey,
         automaticallyImplyLeading: false,
         leading: null,
         title: Text("Filters", style: TextStyle(color: Colors.white)),
@@ -101,7 +102,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                               backgroundColor:
                                   (enabledFilters.canGoByAge != null &&
                                           enabledFilters.canGoByAge! < 18)
-                                      ? cl.deep_black
+                                      ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
                             filters.value.canGoByAge = 17;
@@ -113,7 +114,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                               backgroundColor:
                                   (enabledFilters.canGoByAge != null &&
                                           enabledFilters.canGoByAge! >= 18 && enabledFilters.canGoByAge! < 21)
-                                      ? cl.deep_black
+                                      ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
                             filters.value.canGoByAge = 18;
@@ -125,7 +126,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                               backgroundColor:
                                   (enabledFilters.canGoByAge != null &&
                                           enabledFilters.canGoByAge! >= 21)
-                                      ? cl.deep_black
+                                      ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
                             filters.value.canGoByAge = 21;
@@ -152,7 +153,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                               backgroundColor:
                                   (enabledFilters.byStatus != null &&
                                           enabledFilters.byStatus!.contains("public"))
-                                      ? cl.deep_black
+                                      ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
                             filters.value.byStatus.contains("public") ? filters.value.byStatus.remove("public") : filters.value.byStatus.add("public");
@@ -163,7 +164,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   ( enabledFilters.byStatus.contains("friendlist"))
-                                      ? cl.deep_black
+                                      ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
                             filters.value.byStatus.contains("friendlist") ? filters.value.byStatus.remove("friendlist") : filters.value.byStatus.add("friendlist");
@@ -175,7 +176,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                               backgroundColor:
                                   (
                                     enabledFilters.byStatus.contains("frozen"))
-                                      ? cl.deep_black
+                                      ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
                             filters.value.byStatus.contains("frozen") ? filters.value.byStatus.remove("frozen") : filters.value.byStatus.add("frozen");
@@ -187,7 +188,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                               backgroundColor:
                                   (
                                           enabledFilters.byStatus.contains("draft"))
-                                      ? cl.deep_black
+                                      ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
                             filters.value.byStatus.contains("draft") ? filters.value.byStatus.remove("draft") : filters.value.byStatus.add("draft");
@@ -220,9 +221,9 @@ class EventCalendar extends StatelessWidget {
     GlobalKey<ScaffoldState> scaffkey = GlobalKey<ScaffoldState>();
     Scaffold scaff = Scaffold(
         drawer: cw.NavBar(),
-        backgroundColor: cl.nearly_black,
+        backgroundColor: cl.darkerGrey,
         body: RefreshIndicator(
-            backgroundColor: cl.deep_black,
+            backgroundColor: cl.darkerGrey,
             color: Colors.white,
             onRefresh: () => Future.delayed(Duration(seconds: 1))
                 .then((value) => reloadEventPage()),
@@ -251,6 +252,7 @@ class EventCalendar extends StatelessWidget {
                       }));
                 }))),
         appBar: CalendarAppBar(
+          
           context,
           filters,
           title: mode == CalendarMode.drafts ? "Your Drafts" : "Events",
@@ -292,6 +294,7 @@ class CalendarEventCard extends StatelessWidget {
           background: Padding(
             padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width / 10),
+                
             child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
               ValueListenableBuilder(
                   valueListenable: saved,
@@ -389,14 +392,14 @@ class _CalendarEventCardBody extends StatelessWidget {
           aspectRatio: getAspectRatioForEventCard(event),
           child: Card(
               elevation: 3,
-              color: Colors.transparent,
+              color: cl.lighterGrey,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
                           MediaQuery.of(context).size.height) /
                       75,
-                  side: const BorderSide(
+                  side: BorderSide(
                     width: 1,
-                    color: Color.fromARGB(26, 255, 255, 255),
+                    color: cl.lighterGrey,
                   )),
               child: InkWell(
                 onTap: () {
@@ -413,7 +416,7 @@ class _CalendarEventCardBody extends StatelessWidget {
                         75,
                     side: const BorderSide(
                       width: 1,
-                      color: Color.fromARGB(26, 255, 255, 255),
+                      
                     )),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),

@@ -10,9 +10,9 @@ class ImPrint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.deep_black,
+      backgroundColor: cl.darkerGrey,
       appBar: AppBar(
-        backgroundColor: cl.deep_black,
+        backgroundColor: cl.darkerGrey,
         title: Text("Imprint (DE)"),
         centerTitle: true,
       ),

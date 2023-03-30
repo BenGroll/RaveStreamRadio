@@ -169,7 +169,7 @@ class HomeScreen extends StatelessWidget {
                       ? Tooltip(
                           message: FloatingActionButtonTooltip,
                           child: FloatingActionButton(
-                            backgroundColor: cl.deep_black,
+                            backgroundColor: cl.darkerGrey,
                             onPressed: () {
                               if (currently_selected_screen.value ==
                                   Screens.events) {
@@ -192,9 +192,9 @@ class HomeScreen extends StatelessWidget {
                     notchMargin: 6,
                     child: Theme(
                       data: Theme.of(context)
-                          .copyWith(canvasColor: cl.deep_black),
+                          .copyWith(canvasColor: cl.darkerGrey),
                       child: BottomNavigationBar(
-                        backgroundColor: cl.deep_black,
+                        backgroundColor: cl.darkerGrey,
                         selectedItemColor: Colors.white,
                         unselectedItemColor: Colors.white,
                         items: [
@@ -249,7 +249,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  backgroundColor: cl.nearly_black,
+                  backgroundColor: cl.lighterGrey,
                 );
               }));
         }));

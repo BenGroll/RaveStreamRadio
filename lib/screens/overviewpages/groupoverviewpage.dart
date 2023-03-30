@@ -22,7 +22,7 @@ class GroupOverviewPage extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               return Scaffold(
-                backgroundColor: cl.nearly_black,
+                backgroundColor: cl.darkerGrey,
                 appBar: AppBar(
                     centerTitle: true,
                     title: Text("Group: ${snapshot.data!.id}"),
@@ -38,7 +38,7 @@ class GroupOverviewPage extends StatelessWidget {
               );
             } else {
               return Scaffold(
-                  backgroundColor: cl.nearly_black,
+                  backgroundColor: cl.darkerGrey,
                   body: const Center(
                       child: CircularProgressIndicator(color: Colors.white)));
             }

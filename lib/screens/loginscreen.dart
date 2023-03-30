@@ -21,7 +21,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: cl.deep_black,
+        backgroundColor: cl.darkerGrey,
         body: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 12.0),
           child: Column(
@@ -54,7 +54,7 @@ class LoginScreen extends StatelessWidget {
                   autocorrect: false,
                   decoration: InputDecoration(
                       filled: true,
-                      fillColor: cl.nearly_black,
+                      fillColor: cl.lighterGrey,
                       prefixText: "@",
                       hintText: "Username",
                       helperStyle: const TextStyle(color: Colors.grey),
@@ -83,7 +83,7 @@ class LoginScreen extends StatelessWidget {
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                       filled: true,
-                      fillColor: cl.nearly_black,
+                      fillColor: cl.lighterGrey,
                       hintText: "Password",
                       helperText: "Password",
                       labelText: "Enter your password",
@@ -93,7 +93,7 @@ class LoginScreen extends StatelessWidget {
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: cl.nearly_black, // background
+                    primary: cl.lighterGrey, // background
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () async {
@@ -170,7 +170,7 @@ class LoginScreen extends StatelessWidget {
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: cl.nearly_black, // background
+                    primary: cl.lighterGrey, // background
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () {
@@ -201,7 +201,7 @@ class CreateAccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: cl.deep_black,
+        backgroundColor: cl.darkerGrey,
         body: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 12.0),
           child: Column(
@@ -234,7 +234,7 @@ class CreateAccountScreen extends StatelessWidget {
                   autocorrect: false,
                   decoration: InputDecoration(
                       filled: true,
-                      fillColor: cl.nearly_black,
+                      fillColor: cl.lighterGrey,
                       prefixText: "@",
                       hintText: "Username",
                       helperText: "Username",
@@ -262,7 +262,7 @@ class CreateAccountScreen extends StatelessWidget {
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                       filled: true,
-                      fillColor: cl.nearly_black,
+                      fillColor: cl.lighterGrey,
                       hintText: "Password",
                       helperText: "Password",
                       labelText: "Choose your password",
@@ -272,7 +272,7 @@ class CreateAccountScreen extends StatelessWidget {
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: cl.nearly_black, // background
+                    primary: cl.lighterGrey, // background
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () async {
@@ -320,7 +320,7 @@ class CreateAccountScreen extends StatelessWidget {
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: cl.nearly_black, // background
+                    primary: cl.lighterGrey, // background
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () {

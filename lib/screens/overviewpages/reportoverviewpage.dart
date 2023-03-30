@@ -15,10 +15,10 @@ class SingleReportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.nearly_black,
+      backgroundColor: cl.lighterGrey,
       appBar: AppBar(
         title: Text("Edit Report", style: TextStyle(color: Colors.white)),
-        backgroundColor: cl.deep_black,
+        backgroundColor: cl.darkerGrey,
       ),
       body: FutureBuilder(
           future: db.db.doc("${branchPrefix}reports/$reportid").get(),
@@ -58,7 +58,7 @@ class SingleReportScreen extends StatelessWidget {
                                   context: context,
                                   builder: (BuildContext context) {
                                     return AlertDialog(
-                                      backgroundColor: cl.deep_black,
+                                      backgroundColor: cl.darkerGrey,
                                       title: Text("Change Status",
                                           style:
                                               TextStyle(color: Colors.white)),

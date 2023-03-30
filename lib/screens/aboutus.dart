@@ -11,7 +11,7 @@ class AboutUsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.deep_black,
+      backgroundColor: cl.darkerGrey,
       appBar: AppBar(
         centerTitle: true,
         title: const Text("About Us", style: TextStyle(color: Colors.white)),

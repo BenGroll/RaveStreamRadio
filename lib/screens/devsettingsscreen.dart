@@ -25,7 +25,7 @@ class DevSettingsScreen extends StatelessWidget {
         db.doIHavePermission(GlobalPermission.CHANGE_DEV_SETTINGS);
     return sees_devsettings
         ? Scaffold(
-            backgroundColor: cl.deep_black,
+            backgroundColor: cl.darkerGrey,
             appBar: AppBar(
               title: Text("Dev. Settings"),
               centerTitle: true,
@@ -43,7 +43,7 @@ class DevSettingsScreen extends StatelessWidget {
                             const Text("Branch: ",
                                 style: TextStyle(color: Colors.white)),
                             DropdownButton(
-                                dropdownColor: cl.deep_black,
+                                dropdownColor: cl.darkerGrey,
                                 value: BranchVal,
                                 items: ServerBranches.values
                                     .map((ServerBranches branch) {
@@ -261,7 +261,7 @@ class DevSettingsScreen extends StatelessWidget {
             appBar: AppBar(
               title: Text("Missing Permission"),
             ),
-            backgroundColor: cl.deep_black,
+            backgroundColor: cl.darkerGrey,
             body: Center(
                 child: Text(
               "You dont have permission to edit developer settings.",
