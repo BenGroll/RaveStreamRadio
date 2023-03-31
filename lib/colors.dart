@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Color darkerGrey = Color.fromARGB(255, 32, 32, 32);
+Color darkerGrey = Color.fromARGB(255, 27, 27, 27);
 Color lighterGrey = Color.fromARGB(255, 57, 57, 57);
 
 Color greynothighlight = const Color.fromARGB(255, 158, 158, 158);

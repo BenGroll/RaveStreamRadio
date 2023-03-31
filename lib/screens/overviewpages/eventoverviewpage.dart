@@ -68,7 +68,7 @@ class EventOverviewPage extends StatelessWidget {
                                           return Scaffold(
                                             backgroundColor: cl.darkerGrey,
                                             appBar: AppBar(
-                                              backgroundColor: cl.lighterGrey,
+                                              backgroundColor: cl.darkerGrey,
                                               centerTitle: true,
                                               title: Text(event.value!.eventid, maxLines: 2),
                                               actions: [
@@ -304,7 +304,7 @@ class EventOverviewPage extends StatelessWidget {
                                                
                                                     ], 
                                                     ), 
-                                                    Padding(padding: EdgeInsets.symmetric(vertical: 8.0),
+                                                    Padding(padding: EdgeInsets.symmetric(vertical: 12.0),
                                                     child: Row(crossAxisAlignment: CrossAxisAlignment.start,
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
@@ -346,7 +346,7 @@ class EventOverviewPage extends StatelessWidget {
                                                           children: [
                                                           Text('Genre',style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
                                                           
-                                                        Padding(padding: EdgeInsets.symmetric(vertical: 8.0),
+                                                        Padding(padding: EdgeInsets.symmetric(vertical: 6.0),
                                                         child: Column(mainAxisAlignment: MainAxisAlignment.center,
                                                         crossAxisAlignment: CrossAxisAlignment.center,
                                                           children: [
@@ -364,7 +364,7 @@ class EventOverviewPage extends StatelessWidget {
                                                       ) //: const SizedBox(height: 0)
 
                                                     ])),
-                                                    Padding(padding: EdgeInsets.symmetric(vertical: 8.0),
+                                                    Padding(padding: EdgeInsets.symmetric(vertical: 4.0),
                                                     child: Row(crossAxisAlignment: CrossAxisAlignment.start,
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [

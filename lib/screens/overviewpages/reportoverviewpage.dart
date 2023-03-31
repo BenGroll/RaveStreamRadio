@@ -15,7 +15,7 @@ class SingleReportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.lighterGrey,
+      backgroundColor: cl.darkerGrey,
       appBar: AppBar(
         title: Text("Edit Report", style: TextStyle(color: Colors.white)),
         backgroundColor: cl.darkerGrey,

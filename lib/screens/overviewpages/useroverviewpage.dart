@@ -21,7 +21,7 @@ class UserOverviewPage extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
               return Scaffold(
-                backgroundColor: cl.lighterGrey,
+                backgroundColor: cl.darkerGrey,
                   appBar: AppBar(
                     centerTitle: true,
                     title: Text("User: ${snapshot.data!.id}"),
@@ -37,7 +37,7 @@ class UserOverviewPage extends StatelessWidget {
                   
             } else {
               return Scaffold(
-                backgroundColor: cl.lighterGrey,
+                backgroundColor: cl.darkerGrey,
                 body: const Center(child:CircularProgressIndicator(color: Colors.white)));
             }
           },

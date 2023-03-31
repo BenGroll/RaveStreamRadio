@@ -10,7 +10,7 @@ class ChatsDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: cl.lighterGrey,
+      backgroundColor: cl.darkerGrey,
       child: FutureBuilder(
         future: getUsersChats(),
         builder: (context, snapshot) {

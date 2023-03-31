@@ -13,6 +13,7 @@ class AboutUsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: cl.darkerGrey,
       appBar: AppBar(
+        backgroundColor: cl.darkerGrey,
         centerTitle: true,
         title: const Text("About Us", style: TextStyle(color: Colors.white)),
       ),

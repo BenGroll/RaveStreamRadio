@@ -54,7 +54,7 @@ Future<TimeOfDay?> pick_time(
 /// Fixed to the bottom of scaffold body
 SnackBar hintSnackBar(String alertMessage) {
   return SnackBar(
-      backgroundColor: cl.lighterGrey,
+    backgroundColor: cl.darkerGrey,
       behavior: SnackBarBehavior.fixed,
       content: Text(alertMessage));
 }
@@ -64,7 +64,7 @@ AppBar CalendarAppBar(
     BuildContext context, ValueNotifier<db.EventFilters> filters,
     {String title = "Events"}) {
   return AppBar(
-      backgroundColor: cl.lighterGrey,
+      backgroundColor: cl.darkerGrey,
       leading: const OpenSidebarButton(),
       actions: [
         IconButton(
@@ -99,7 +99,7 @@ AppBar GroupsAppBar(BuildContext context) {
   return AppBar(
     leading: const OpenSidebarButton(),
     elevation: 8,
-    backgroundColor: cl.lighterGrey,
+    backgroundColor: cl.darkerGrey,
     title: Text("Groups", style: TextStyle(color: Colors.white)),
     centerTitle: true,
     actions: const [OpenChatButton()],
@@ -111,13 +111,13 @@ AppBar ProfileAppBar(BuildContext context) {
   dbc.User? user = currently_loggedin_as.value;
   return user == null
       ? AppBar(
-          backgroundColor: cl.lighterGrey,
+          backgroundColor: cl.darkerGrey,
           leading: const OpenSidebarButton(),
           title: const Text("Not logged in."),
           centerTitle: true,
         )
       : AppBar(
-          backgroundColor: cl.lighterGrey,
+          backgroundColor: cl.darkerGrey,
           leading: const OpenSidebarButton(),
           title: Text(user.username),
           actions: [
@@ -257,6 +257,7 @@ class NavBar extends StatelessWidget {
                     }
                   })
               : SizedBox(),
+              Divider(color: cl.darkerGrey),
           db.doIHavePermission(GlobalPermission.MANAGE_HOSTS) ||
                   db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)
               ? ListTile(
@@ -278,7 +279,10 @@ class NavBar extends StatelessWidget {
                         fontSize: MediaQuery.of(context).size.height / 80),
                   ),
                 )
+                
               : SizedBox(),
+              Divider(color: cl.darkerGrey),
+
           db.doIHavePermission(GlobalPermission.CHANGE_DEV_SETTINGS)
               ? ListTile(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
@@ -298,6 +302,7 @@ class NavBar extends StatelessWidget {
                   ),
                 )
               : SizedBox(height: 0),
+              Divider(color: cl.darkerGrey),
           ListTile(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
             tileColor: cl.lighterGrey,
@@ -309,6 +314,7 @@ class NavBar extends StatelessWidget {
                     color: Colors.white,
                     fontSize: MediaQuery.of(context).size.height / 40)),
           ),
+          Divider(color: cl.darkerGrey),
           ListTile(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
             tileColor: cl.lighterGrey,
@@ -320,6 +326,7 @@ class NavBar extends StatelessWidget {
                     color: Colors.white,
                     fontSize: MediaQuery.of(context).size.height / 40)),
           ),
+          Divider(color: cl.darkerGrey),
           ListTile(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
             tileColor: cl.lighterGrey,
@@ -807,6 +814,7 @@ class ReportButton extends StatelessWidget {
             onPressed: () {
               String desc = "";
               showModalBottomSheet(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0)),
                   backgroundColor: cl.darkerGrey,
                   context: context,
                   builder: (BuildContext context) {
@@ -821,18 +829,23 @@ class ReportButton extends StatelessWidget {
                             },
                             minLines: 5,
                             maxLines: 2000,
+                            
                             decoration: InputDecoration(
+                              filled: true,
+                              fillColor: cl.lighterGrey,
                                 labelText: "Tell us more about this report...",
                                 labelStyle: TextStyle(color: Colors.white),
                                 enabledBorder: OutlineInputBorder(
                                     borderSide:
-                                        BorderSide(color: Colors.white))),
+                                        BorderSide(color: cl.lighterGrey),borderRadius: BorderRadius.circular(8.0))),
                             style: TextStyle(color: Colors.white),
                             cursorColor: Colors.white,
                             showCursor: true,
                           ),
                         ),
                         TextButton(
+                          style: TextButton.styleFrom(shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                          backgroundColor: cl.lighterGrey),
                             onPressed: () async {
                               DocumentReference newRep = await db.db
                                   .collection("${branchPrefix}reports")
@@ -856,6 +869,7 @@ class ReportButton extends StatelessWidget {
                       ],
                     );
                   });
+                  
             },
             icon: Icon(
               Icons.report_outlined,

@@ -34,7 +34,7 @@ class EventFilterBottomSheet extends StatelessWidget {
     return Scaffold(
       backgroundColor: cl.darkerGrey,
       appBar: AppBar(
-        backgroundColor: cl.lighterGrey,
+        backgroundColor: cl.darkerGrey,
         automaticallyImplyLeading: false,
         leading: null,
         title: Text("Filters", style: TextStyle(color: Colors.white)),

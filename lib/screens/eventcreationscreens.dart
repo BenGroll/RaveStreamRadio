@@ -173,6 +173,7 @@ class EventCreationScreen extends StatelessWidget {
                 return Scaffold(
                     backgroundColor: cl.darkerGrey,
                     appBar: AppBar(
+                      backgroundColor: cl.darkerGrey,
                       bottom: const TabBar(tabs: [
                         Tab(
                           child: Text("General"),
@@ -809,6 +810,9 @@ class AddLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor:cl.darkerGrey,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0))),
         onPressed: () {
           showDialog(
               context: context, builder: (context) => LinkCreateDialog());

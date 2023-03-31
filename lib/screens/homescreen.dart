@@ -249,7 +249,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  backgroundColor: cl.lighterGrey,
+                  backgroundColor: cl.darkerGrey,
                 );
               }));
         }));
