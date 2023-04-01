@@ -66,8 +66,9 @@ class EventOverviewPage extends StatelessWidget {
                                           });
                                           print(event.value!.eventid);
                                           return Scaffold(
-                                            backgroundColor: cl.nearly_black,
+                                            backgroundColor: cl.darkerGrey,
                                             appBar: AppBar(
+                                              backgroundColor: cl.darkerGrey,
                                               centerTitle: true,
                                               title: Text(event.value!.eventid, maxLines: 2),
                                               actions: [
@@ -136,7 +137,8 @@ class EventOverviewPage extends StatelessWidget {
                                                       MediaQuery.of(context)
                                                               .size
                                                               .width /
-                                                          30),
+                                                          30,
+                                                          vertical: 8.0),
                                               child: ListView(
                                                 children: [
                                                   Center(
@@ -151,20 +153,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                       .size
                                                                       .height /
                                                                   20))),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      event.value!.locationname !=
-                                                              null
-                                                          ? Text(event.value!
-                                                                  .locationname ??
-                                                              "")
-                                                          : const SizedBox(
-                                                              height: 0),
-                                                    ],
-                                                  ),
+                                                  
                                                   Row(children: [
                                                     Expanded(
                                                         flex: 3,
@@ -184,7 +173,8 @@ class EventOverviewPage extends StatelessWidget {
                                                   Padding(
                                                     padding: const EdgeInsets
                                                             .symmetric(
-                                                        horizontal: 16.0),
+                                                        horizontal: 16.0,
+                                                        vertical: 8.0),
                                                     child: Row(
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
@@ -209,9 +199,7 @@ class EventOverviewPage extends StatelessWidget {
                                                       ],
                                                     ),
                                                   ),
-                                                  const Divider(
-                                                      color: Color.fromARGB(
-                                                          255, 66, 66, 66)),
+                                                  Expanded(child:
                                                   event.value!.description !=
                                                           null
                                                       ? Padding(
@@ -237,113 +225,63 @@ class EventOverviewPage extends StatelessWidget {
                                                                               .description ??
                                                                           ""))))
                                                       : const SizedBox(height: 0),
-                                                  event.value!.locationname !=
+                                                  
+                                                  ),
+                                                  Padding(padding: EdgeInsets.symmetric(
+                                                    horizontal: 16.0,
+                                                    vertical: 8.0
+                                                  ), child: Column(children: [Row(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      event.value!.locationname !=
                                                           null
-                                                      ? Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: const [
-                                                            Expanded(
-                                                                child: Divider(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            66,
-                                                                            66,
-                                                                            66))),
-                                                            Text("Location",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .white)),
-                                                            Expanded(
-                                                                child: Divider(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            66,
-                                                                            66,
-                                                                            66))),
-                                                          ],
-                                                        )
-                                                      : const SizedBox(
-                                                          height: 0),
-                                                  event.value!.locationname !=
-                                                          null
-                                                      ? Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Card(
-                                                              color: cl
-                                                                  .nearly_black,
-                                                              child: Text(
-                                                                event.value!
+                                                      
+                                                      ? Container(
+                                                        width: MediaQuery.of(context).size.width / 2.4,
+                                                        height: MediaQuery.of(context).size.width / 3,
+                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0),
+                                                        color: cl.lighterGrey),
+                                                        child: Padding(padding: EdgeInsets.all(4.0),
+                                                        child:
+                                                        Column(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                                          
+                                                          children: [
+                                                          Text('Location',style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                                          
+                                                       
+                                                          Text(event.value!
                                                                         .locationname ??
                                                                     "Unknown",
                                                                 style: const TextStyle(
                                                                     color: Colors
-                                                                        .white),
-                                                              )),
+                                                                        .white),textAlign: TextAlign.center,),
+                                                                        Text(' '),
+                                                        ],
+                                                        
+                                                        ),
                                                         )
-                                                      : const SizedBox(
-                                                          height: 0),
-                                                  event.value!.minAge != null
-                                                      ? Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: const [
-                                                            Expanded(
-                                                                child: Divider(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            66,
-                                                                            66,
-                                                                            66))),
-                                                            Text("Duration",
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .white)),
-                                                            Expanded(
-                                                                child: Divider(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            66,
-                                                                            66,
-                                                                            66))),
-                                                          ],
-                                                        )
-                                                      : const SizedBox(
-                                                          height: 0),
-                                                  event.value!.begin != null ||
+                                                      ) : const SizedBox(height: 0),
+
+                                                       event.value!.begin != null ||
                                                           event.value!.end !=
                                                               null
-                                                      ? Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Card(
-                                                              color: cl
-                                                                  .nearly_black,
-                                                              child: Column(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .start,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .min,
-                                                                  children: [
-                                                                    Text(
+                                                      ? Container(
+                                                        width: MediaQuery.of(context).size.width / 2.4,
+                                                        height: MediaQuery.of(context).size.width / 3,
+                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0),
+                                                        color: cl.lighterGrey),
+                                                        child: Padding(padding: EdgeInsets.all(4.0),
+                                                        child:
+                                                        Column(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                          Text('Duration',style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                                          
+                                                        
+                                                          Text(
                                                                         "Begin: ${timestamp2readablestamp(event.value!.begin)}",
                                                                         style: TextStyle(
                                                                             fontSize: MediaQuery.of(context).size.width /
@@ -355,161 +293,152 @@ class EventOverviewPage extends StatelessWidget {
                                                                         style: TextStyle(
                                                                             fontSize: MediaQuery.of(context).size.width /
                                                                                 30,
-                                                                            color:
-                                                                                Colors.white))
-                                                                  ])),
+                                                                            color:        
+                                                                                Colors.white)),
+                                                                  
+                                                        Text(''),
+                                                        ],
+                                                        ),
                                                         )
-                                                      : const SizedBox(
-                                                          height: 0),
-                                                  event.value!.minAge != null
-                                                      ? Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: const [
-                                                            Expanded(
-                                                                child: Divider(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            66,
-                                                                            66,
-                                                                            66))),
-                                                            Text("Age",
-                                                                style: TextStyle(
+                                                      ) : const SizedBox(height: 0),
+                                               
+                                                    ], 
+                                                    ), 
+                                                    Padding(padding: EdgeInsets.symmetric(vertical: 12.0),
+                                                    child: Row(crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      event.value!.minAge != null
+                                                      ?  Container(
+                                                        width: MediaQuery.of(context).size.width / 2.4,
+                                                        height: MediaQuery.of(context).size.width / 3,
+                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0),
+                                                        color: cl.lighterGrey),
+                                                        child: Padding(padding: EdgeInsets.all(4.0),
+                                                        child:
+                                                        Column(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                          Text('Min. Age',style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                                          
+                                                      
+                                                          Text("${event.value!.minAge}",
+                                                                style: const TextStyle(
                                                                     color: Colors
                                                                         .white)),
-                                                            Expanded(
-                                                                child: Divider(
-                                                                    color: Color
-                                                                        .fromARGB(
-                                                                            255,
-                                                                            66,
-                                                                            66,
-                                                                            66))),
-                                                          ],
+                                                                        Text(' ')
+                                                        ]
+                                                        ),
+                                                        
+                                                        
+                                                        
                                                         )
-                                                      : const SizedBox(
-                                                          height: 0),
-                                                  event.value!.minAge != null
-                                                      ? Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Card(
-                                                              color: cl
-                                                                  .nearly_black,
-                                                              child: Text(
-                                                                  "Minimum Age: ${event.value!.minAge}",
-                                                                  style: const TextStyle(
-                                                                      color: Colors
-                                                                          .white))),
+                                                      ) : const SizedBox(height: 0),
+                                                      // Condition for genre missing
+                                                      Container(
+                                                        width: MediaQuery.of(context).size.width / 2.4,
+                                                        height: MediaQuery.of(context).size.width / 3,
+                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0),
+                                                        color: cl.lighterGrey),
+                                                        child: Padding(padding: EdgeInsets.all(4.0),
+                                                        child:
+                                                        Column(
+                                                          children: [
+                                                          Text('Genre',style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold,),textAlign: TextAlign.center,),
+                                                          
+                                                        Padding(padding: EdgeInsets.symmetric(vertical: 6.0),
+                                                        child: Column(mainAxisAlignment: MainAxisAlignment.center,
+                                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                                          children: [
+                                                          Text(""//genre missing
+                                                                ,style: const TextStyle(
+                                                                    color: Colors
+                                                                        .white)),
+                                                                        Text(''),
+                                                        ]
+                                                        ),
                                                         )
-                                                      : const SizedBox(),
-                                                  linkButtons != []
-                                                      ? Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: const [
-                                                              Expanded(
-                                                                  child: Divider(
-                                                                      color: Color.fromARGB(
-                                                                          255,
-                                                                          66,
-                                                                          66,
-                                                                          66))),
-                                                              Text("Links",
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .white)),
-                                                              Expanded(
-                                                                  child: Divider(
-                                                                      color: Color.fromARGB(
-                                                                          255,
-                                                                          66,
-                                                                          66,
-                                                                          66))),
-                                                            ])
-                                                      : const SizedBox(
-                                                          height: 0),
-                                                  linkButtons != []
-                                                      ? Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Card(
-                                                              color: cl
-                                                                  .nearly_black,
-                                                              child: Wrap(
-                                                                alignment:
-                                                                    WrapAlignment
-                                                                        .center,
-                                                                children:
-                                                                    linkButtons,
-                                                              )),
+                                                        ],
+                                                        ),
                                                         )
-                                                      : const SizedBox(),
+                                                      ) //: const SizedBox(height: 0)
+
+                                                    ])),
+                                                    Padding(padding: EdgeInsets.symmetric(vertical: 4.0),
+                                                    child: Row(crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                       linkButtons != []
+                                                      ?  Container(
+                                                        width:MediaQuery.of(context).size.width - 61,
+                                                        height: MediaQuery.of(context).size.width /3,
+                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.0),
+                                                        color: cl.lighterGrey),
+                                                        child: Padding(padding: EdgeInsets.all(4.0),
+                                                        child:
+                                                        Column(
+                                                          children: [
+                                                          Text('Links',style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                                          
+                                                        Padding(padding: EdgeInsets.symmetric(vertical: 8.0),
+                                                        child: Column(mainAxisAlignment: MainAxisAlignment.center,
+                                                          children: [
+                                                         Wrap(children: linkButtons),
+                                                          
                                                   event.value!.links
                                                               ?.containsKey(
                                                                   "sales") ??
                                                           false
-                                                      ? Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: const [
-                                                              Expanded(
-                                                                  child: Divider(
-                                                                      color: Color.fromARGB(
-                                                                          255,
-                                                                          66,
-                                                                          66,
-                                                                          66))),
+                                                      ? 
                                                               Text("Ticketlink",
                                                                   style: TextStyle(
                                                                       color: Colors
-                                                                          .white)),
-                                                              Expanded(
-                                                                  child: Divider(
-                                                                      color: Color.fromARGB(
-                                                                          255,
-                                                                          66,
-                                                                          66,
-                                                                          66))),
-                                                            ])
+                                                                          .white))
+                                                              
+                                                            
                                                       : const SizedBox(
                                                           height: 0),
                                                   event.value!.links
                                                               ?.containsKey(
                                                                   "sales") ??
                                                           false
-                                                      ? Center(
-                                                          child: UrlLinkButton(
+                                                      ? UrlLinkButton(
                                                               event.value!.links![
                                                                       "sales"] ??
                                                                   "",
                                                               "Entry/Tickets",
                                                               const TextStyle(
                                                                   color: Colors
-                                                                      .white)),
-                                                        )
+                                                                      .white))
+                                                        
                                                       : const SizedBox(
                                                           height: 0)
-                                                ],
-                                              ),
-                                            ),
-                                          );
+                                                        ],
+                                                        ),
+                                                        )
+                                                        ],
+                                                        ),
+                                                        )
+                                                      ) : const SizedBox(height: 0),
+
+                                                  ]
+                                                  )
+                                                  )
+                                                  
+                                                
+                                                  ]
+                                                  ),
+                                                  ),
+                                                  
+                                                  
+                                                  
+                                              ])
+                                            )
+                                          );  
                                         });
                                   } else {
                                     return Scaffold(
-                                        backgroundColor: cl.nearly_black,
+                                        backgroundColor: cl.lighterGrey,
                                         body: const CircularProgressIndicator(
                                             color: Colors.white));
                                   }

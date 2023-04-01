@@ -54,7 +54,7 @@ Future<TimeOfDay?> pick_time(
 /// Fixed to the bottom of scaffold body
 SnackBar hintSnackBar(String alertMessage) {
   return SnackBar(
-      backgroundColor: cl.deep_black,
+    backgroundColor: cl.darkerGrey,
       behavior: SnackBarBehavior.fixed,
       content: Text(alertMessage));
 }
@@ -64,12 +64,13 @@ AppBar CalendarAppBar(
     BuildContext context, ValueNotifier<db.EventFilters> filters,
     {String title = "Events"}) {
   return AppBar(
+      backgroundColor: cl.darkerGrey,
       leading: const OpenSidebarButton(),
       actions: [
         IconButton(
             onPressed: () {
               showModalBottomSheet(
-                backgroundColor: cl.nearly_black,
+                backgroundColor: cl.lighterGrey,
                   context: context,
                   builder: (BuildContext context) => EventFilterBottomSheet(filters: filters));
               //ScaffoldMessenger.of(context).s
@@ -77,14 +78,15 @@ AppBar CalendarAppBar(
             icon: Icon(Icons.filter_list, color: Colors.white))
       ],
       title: Text(title),
-      centerTitle: true);
+      centerTitle: true)
+      ;
 }
 
 /// AppBar for the Calendar homescreen
 AppBar FavouritesAppBar(BuildContext context) {
   return AppBar(
     leading: const OpenSidebarButton(),
-    backgroundColor: cl.deep_black,
+    backgroundColor: cl.darkerGrey,
     title: const Text("Favourites"),
     centerTitle: true,
   );
@@ -97,7 +99,7 @@ AppBar GroupsAppBar(BuildContext context) {
   return AppBar(
     leading: const OpenSidebarButton(),
     elevation: 8,
-    backgroundColor: cl.deep_black,
+    backgroundColor: cl.darkerGrey,
     title: Text("Groups", style: TextStyle(color: Colors.white)),
     centerTitle: true,
     actions: const [OpenChatButton()],
@@ -109,11 +111,13 @@ AppBar ProfileAppBar(BuildContext context) {
   dbc.User? user = currently_loggedin_as.value;
   return user == null
       ? AppBar(
+          backgroundColor: cl.darkerGrey,
           leading: const OpenSidebarButton(),
           title: const Text("Not logged in."),
           centerTitle: true,
         )
       : AppBar(
+          backgroundColor: cl.darkerGrey,
           leading: const OpenSidebarButton(),
           title: Text(user.username),
           actions: [
@@ -182,8 +186,8 @@ class NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: cl.nearly_black,
-      child: Column(
+      backgroundColor: cl.darkerGrey,
+      child: Padding(padding: EdgeInsetsDirectional.all(8.0), child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,6 +197,8 @@ class NavBar extends StatelessWidget {
             child: SizedBox(),
           ),
           ListTile(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
             onTap: () {
               Beamer.of(context).beamToNamed("/drafts");
             },
@@ -213,6 +219,8 @@ class NavBar extends StatelessWidget {
                   builder: (context, repCount) {
                     if (repCount.connectionState == ConnectionState.done) {
                       return ListTile(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
                         onTap: () {
                           Beamer.of(context).beamToNamed("/moderate");
                         },
@@ -249,9 +257,12 @@ class NavBar extends StatelessWidget {
                     }
                   })
               : SizedBox(),
+              Divider(color: cl.darkerGrey),
           db.doIHavePermission(GlobalPermission.MANAGE_HOSTS) ||
                   db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)
               ? ListTile(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
                   onTap: () {
                     Beamer.of(context).beamToNamed("/manage");
                   },
@@ -268,9 +279,14 @@ class NavBar extends StatelessWidget {
                         fontSize: MediaQuery.of(context).size.height / 80),
                   ),
                 )
+                
               : SizedBox(),
+              Divider(color: cl.darkerGrey),
+
           db.doIHavePermission(GlobalPermission.CHANGE_DEV_SETTINGS)
               ? ListTile(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
                   onTap: () {
                     Beamer.of(context).beamToNamed("/dev");
                   },
@@ -286,7 +302,10 @@ class NavBar extends StatelessWidget {
                   ),
                 )
               : SizedBox(height: 0),
+              Divider(color: cl.darkerGrey),
           ListTile(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
             onTap: () {
               Beamer.of(context).beamToNamed("/social");
             },
@@ -295,7 +314,10 @@ class NavBar extends StatelessWidget {
                     color: Colors.white,
                     fontSize: MediaQuery.of(context).size.height / 40)),
           ),
+          Divider(color: cl.darkerGrey),
           ListTile(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
             onTap: () {
               Beamer.of(context).beamToNamed("/imprint");
             },
@@ -304,7 +326,10 @@ class NavBar extends StatelessWidget {
                     color: Colors.white,
                     fontSize: MediaQuery.of(context).size.height / 40)),
           ),
+          Divider(color: cl.darkerGrey),
           ListTile(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
             onTap: () {
               Beamer.of(context).beamToNamed("/policy");
             },
@@ -322,7 +347,7 @@ class NavBar extends StatelessWidget {
           )
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -340,7 +365,7 @@ class ErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.deep_black,
+      backgroundColor: cl.darkerGrey,
       body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -366,7 +391,7 @@ class EventTable extends StatelessWidget {
     ValueNotifier<int?> sortIndex = ValueNotifier(null);
     ValueNotifier<bool> isAscending = ValueNotifier<bool>(false);
     return Scaffold(
-      backgroundColor: cl.deep_black,
+      backgroundColor: cl.darkerGrey,
       appBar: AppBar(
         centerTitle: true,
         title: Text("Events"),
@@ -392,7 +417,7 @@ class EventTable extends StatelessWidget {
         ],
       ),
       drawer: Drawer(
-        backgroundColor: cl.nearly_black,
+        backgroundColor: cl.lighterGrey,
         child: Column(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.end,
@@ -402,6 +427,8 @@ class EventTable extends StatelessWidget {
                 ? []
                 : [
                     ListTile(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
                       onTap: () {
                         managescreen.selectedManagementScreen.value =
                             managescreen.ManagementScreens.Events;
@@ -414,6 +441,8 @@ class EventTable extends StatelessWidget {
                                   MediaQuery.of(context).size.height / 40)),
                     ),
                     ListTile(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
                       onTap: () {
                         managescreen.selectedManagementScreen.value =
                             managescreen.ManagementScreens.Hosts;
@@ -426,6 +455,8 @@ class EventTable extends StatelessWidget {
                                   MediaQuery.of(context).size.height / 40)),
                     ),
                     ListTile(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            tileColor: cl.lighterGrey,
                       onTap: () {
                         managescreen.selectedManagementScreen.value =
                             managescreen.ManagementScreens.Media;
@@ -580,7 +611,7 @@ class EventTable extends StatelessWidget {
               return Color.fromARGB(255, 116, 116, 116).withOpacity(0.2);
             } else {
               return cl
-                  .deep_black; // Use default value for other states and odd rows.
+                  .darkerGrey; // Use default value for other states and odd rows.
             }
           }),
           cells: event.keys.map((String key) {
@@ -783,7 +814,8 @@ class ReportButton extends StatelessWidget {
             onPressed: () {
               String desc = "";
               showModalBottomSheet(
-                  backgroundColor: cl.deep_black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0)),
+                  backgroundColor: cl.darkerGrey,
                   context: context,
                   builder: (BuildContext context) {
                     return Column(
@@ -797,18 +829,23 @@ class ReportButton extends StatelessWidget {
                             },
                             minLines: 5,
                             maxLines: 2000,
+                            
                             decoration: InputDecoration(
+                              filled: true,
+                              fillColor: cl.lighterGrey,
                                 labelText: "Tell us more about this report...",
                                 labelStyle: TextStyle(color: Colors.white),
                                 enabledBorder: OutlineInputBorder(
                                     borderSide:
-                                        BorderSide(color: Colors.white))),
+                                        BorderSide(color: cl.lighterGrey),borderRadius: BorderRadius.circular(8.0))),
                             style: TextStyle(color: Colors.white),
                             cursorColor: Colors.white,
                             showCursor: true,
                           ),
                         ),
                         TextButton(
+                          style: TextButton.styleFrom(shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                          backgroundColor: cl.lighterGrey),
                             onPressed: () async {
                               DocumentReference newRep = await db.db
                                   .collection("${branchPrefix}reports")
@@ -832,6 +869,7 @@ class ReportButton extends StatelessWidget {
                       ],
                     );
                   });
+                  
             },
             icon: Icon(
               Icons.report_outlined,
@@ -846,7 +884,7 @@ class EventFilterSideBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: cl.nearly_black,
+      backgroundColor: cl.lighterGrey,
       child: Scaffold(
         appBar: AppBar(title: Text("Filter(s)")),
         body: ListView(

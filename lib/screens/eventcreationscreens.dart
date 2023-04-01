@@ -171,8 +171,9 @@ class EventCreationScreen extends StatelessWidget {
               valueListenable: current_screen,
               builder: (context, screen, child) {
                 return Scaffold(
-                    backgroundColor: cl.deep_black,
+                    backgroundColor: cl.darkerGrey,
                     appBar: AppBar(
+                      backgroundColor: cl.darkerGrey,
                       bottom: const TabBar(tabs: [
                         Tab(
                           child: Text("General"),
@@ -266,7 +267,7 @@ class EventCreationScreen extends StatelessWidget {
                                     valueListenable: current_screen,
                                     builder: (context, screen, child) {
                                       return Scaffold(
-                                          backgroundColor: cl.deep_black,
+                                          backgroundColor: cl.darkerGrey,
                                           appBar: AppBar(
                                             actions: [
                                               TextButton(
@@ -583,7 +584,7 @@ class GeneralSettingsPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Card(
-                                color: cl.nearly_black,
+                                color: cl.lighterGrey,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(
                                             MediaQuery.of(context)
@@ -667,7 +668,7 @@ class GeneralSettingsPage extends StatelessWidget {
                               thickness: 2,
                             ),
                             Card(
-                                color: cl.nearly_black,
+                                color: cl.lighterGrey,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(
                                             MediaQuery.of(context)
@@ -809,6 +810,9 @@ class AddLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor:cl.darkerGrey,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0))),
         onPressed: () {
           showDialog(
               context: context, builder: (context) => LinkCreateDialog());
@@ -865,7 +869,7 @@ class LinkCreateDialog extends StatelessWidget {
           borderRadius:
               BorderRadius.circular(MediaQuery.of(context).size.width / 50),
           side: BorderSide(color: Color.fromARGB(255, 60, 60, 60))),
-      backgroundColor: cl.deep_black,
+      backgroundColor: cl.darkerGrey,
       title: Text("Enter Link Data", style: TextStyle(color: Colors.white)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -926,7 +930,7 @@ class LinkEditDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: cl.deep_black,
+      backgroundColor: cl.darkerGrey,
       title: Text("Edit Link", style: TextStyle(color: Colors.white)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1010,7 +1014,7 @@ class UploadEventDialog extends StatelessWidget {
         valueListenable: is_awaiting_upload,
         builder: (context, uploading, foo) {
           return AlertDialog(
-            backgroundColor: cl.deep_black,
+            backgroundColor: cl.darkerGrey,
             title: uploading
                 ? null
                 : Text("Finished?", style: TextStyle(color: Colors.white)),
@@ -1055,7 +1059,7 @@ class UploadingErrorDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: cl.deep_black,
+      backgroundColor: cl.darkerGrey,
       title:
           Text("Couldn't upload Event", style: TextStyle(color: Colors.white)),
       content: FutureBuilder(

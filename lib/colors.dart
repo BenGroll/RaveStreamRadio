@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-Color deep_black = Colors.black;
-Color nearly_black = const Color(0xFF110B17);
+Color darkerGrey = Color.fromARGB(255, 27, 27, 27);
+Color lighterGrey = Color.fromARGB(255, 57, 57, 57);
 
 Color greynothighlight = const Color.fromARGB(255, 158, 158, 158);
 

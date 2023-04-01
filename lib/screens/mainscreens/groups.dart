@@ -22,7 +22,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: cl.nearly_black,
+        backgroundColor: cl.darkerGrey,
         body: Padding(
           padding: const EdgeInsets.all(0),
           child: GroupListBuilder(parent: widget)
@@ -138,7 +138,7 @@ class GroupEntry extends StatelessWidget {
                   color: Color.fromARGB(255, 220, 220, 220),
                 )
               : Container()),
-      tileColor: cl.deep_black,
+      tileColor: cl.darkerGrey,
     );
   }
 }
