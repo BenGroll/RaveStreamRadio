@@ -159,6 +159,7 @@ class HomeScreen extends StatelessWidget {
               builder: ((context, screen, child) {
                 return Scaffold(
                   drawer: cw.NavBar(),
+                  endDrawer: currently_selected_screen.value == Screens.forums ? ChatsDrawer() : null,
                   appBar: mapScreenToAppBar(
                       screen, currently_loggedin_as.value, context),
                   body: map_Widget_to_Screen(currently_selected_screen.value),

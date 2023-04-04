@@ -54,7 +54,7 @@ Future<TimeOfDay?> pick_time(
 /// Fixed to the bottom of scaffold body
 SnackBar hintSnackBar(String alertMessage) {
   return SnackBar(
-    backgroundColor: cl.darkerGrey,
+      backgroundColor: cl.darkerGrey,
       behavior: SnackBarBehavior.fixed,
       content: Text(alertMessage));
 }
@@ -70,16 +70,16 @@ AppBar CalendarAppBar(
         IconButton(
             onPressed: () {
               showModalBottomSheet(
-                backgroundColor: cl.lighterGrey,
+                  backgroundColor: cl.lighterGrey,
                   context: context,
-                  builder: (BuildContext context) => EventFilterBottomSheet(filters: filters));
+                  builder: (BuildContext context) =>
+                      EventFilterBottomSheet(filters: filters));
               //ScaffoldMessenger.of(context).s
             },
             icon: Icon(Icons.filter_list, color: Colors.white))
       ],
       title: Text(title),
-      centerTitle: true)
-      ;
+      centerTitle: true);
 }
 
 /// AppBar for the Calendar homescreen
@@ -102,7 +102,7 @@ AppBar GroupsAppBar(BuildContext context) {
     backgroundColor: cl.darkerGrey,
     title: Text("Groups", style: TextStyle(color: Colors.white)),
     centerTitle: true,
-    actions: const [OpenChatButton()],
+    actions: [OpenChatButton(context: context)],
   );
 }
 
@@ -169,12 +169,13 @@ class OpenSidebarButton extends StatelessWidget {
 
 /// Button that opens HomeScreen Drawer
 class OpenChatButton extends StatelessWidget {
-  const OpenChatButton({super.key});
+  late BuildContext context;
+  OpenChatButton({super.key, required this.context});
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext contextt) {
     return IconButton(
         onPressed: () {
-          Scaffold.of(context).openEndDrawer();
+          Scaffold.of(contextt).openEndDrawer();
         },
         icon: Icon(Icons.question_answer));
   }
@@ -186,168 +187,180 @@ class NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: cl.darkerGrey,
-      child: Padding(padding: EdgeInsetsDirectional.all(8.0), child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        // ignore: prefer_const_literals_to_create_immutables
-        children: [
-          Expanded(
-            child: SizedBox(),
-          ),
-          ListTile(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
-            onTap: () {
-              Beamer.of(context).beamToNamed("/drafts");
-            },
-            title: Text(
-                maxLines: 2,
-                "Your Drafts",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: MediaQuery.of(context).size.height / 40)),
-          ),
-          Expanded(
-            child: SizedBox(),
-          ),
-          db.doIHavePermission(GlobalPermission.MODERATE) ||
-                  db.doIHavePermission(GlobalPermission.MODERATE)
-              ? FutureBuilder(
-                  future: db.getOpenReportsCount(),
-                  builder: (context, repCount) {
-                    if (repCount.connectionState == ConnectionState.done) {
-                      return ListTile(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
-                        onTap: () {
-                          Beamer.of(context).beamToNamed("/moderate");
-                        },
-                        title: Text(
-                            maxLines: 2,
-                            "View Reports",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize:
-                                    MediaQuery.of(context).size.height / 40)),
-                        subtitle: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${repCount.data?['filed']} filed Report(s)',
-                              style: TextStyle(
-                                  color: cl.greynothighlight,
-                                  fontSize:
-                                      MediaQuery.of(context).size.height / 80),
+        backgroundColor: cl.darkerGrey,
+        child: Padding(
+          padding: EdgeInsetsDirectional.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            // ignore: prefer_const_literals_to_create_immutables
+            children: [
+              Expanded(
+                child: SizedBox(),
+              ),
+              ListTile(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                tileColor: cl.lighterGrey,
+                onTap: () {
+                  Beamer.of(context).beamToNamed("/drafts");
+                },
+                title: Text(
+                    maxLines: 2,
+                    "Your Drafts",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.height / 40)),
+              ),
+              Expanded(
+                child: SizedBox(),
+              ),
+              db.doIHavePermission(GlobalPermission.MODERATE) ||
+                      db.doIHavePermission(GlobalPermission.MODERATE)
+                  ? FutureBuilder(
+                      future: db.getOpenReportsCount(),
+                      builder: (context, repCount) {
+                        if (repCount.connectionState == ConnectionState.done) {
+                          return ListTile(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0)),
+                            tileColor: cl.lighterGrey,
+                            onTap: () {
+                              Beamer.of(context).beamToNamed("/moderate");
+                            },
+                            title: Text(
+                                maxLines: 2,
+                                "View Reports",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize:
+                                        MediaQuery.of(context).size.height /
+                                            40)),
+                            subtitle: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${repCount.data?['filed']} filed Report(s)',
+                                  style: TextStyle(
+                                      color: cl.greynothighlight,
+                                      fontSize:
+                                          MediaQuery.of(context).size.height /
+                                              80),
+                                ),
+                                Text(
+                                  '${repCount.data?['pending']} pending Repor(ts)',
+                                  style: TextStyle(
+                                      color: cl.greynothighlight,
+                                      fontSize:
+                                          MediaQuery.of(context).size.height /
+                                              80),
+                                )
+                              ],
                             ),
-                            Text(
-                              '${repCount.data?['pending']} pending Repor(ts)',
-                              style: TextStyle(
-                                  color: cl.greynothighlight,
-                                  fontSize:
-                                      MediaQuery.of(context).size.height / 80),
-                            )
-                          ],
-                        ),
-                      );
-                    } else {
-                      return CircularProgressIndicator();
-                    }
-                  })
-              : SizedBox(),
+                          );
+                        } else {
+                          return CircularProgressIndicator();
+                        }
+                      })
+                  : SizedBox(),
               Divider(color: cl.darkerGrey),
-          db.doIHavePermission(GlobalPermission.MANAGE_HOSTS) ||
-                  db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)
-              ? ListTile(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
-                  onTap: () {
-                    Beamer.of(context).beamToNamed("/manage");
-                  },
-                  title: Text(
-                      maxLines: 2,
-                      "Manage Calendar",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: MediaQuery.of(context).size.height / 40)),
-                  subtitle: Text(
-                    '"MANAGE_EVENTS" permission needed.',
+              db.doIHavePermission(GlobalPermission.MANAGE_HOSTS) ||
+                      db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)
+                  ? ListTile(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0)),
+                      tileColor: cl.lighterGrey,
+                      onTap: () {
+                        Beamer.of(context).beamToNamed("/manage");
+                      },
+                      title: Text(
+                          maxLines: 2,
+                          "Manage Calendar",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize:
+                                  MediaQuery.of(context).size.height / 40)),
+                      subtitle: Text(
+                        '"MANAGE_EVENTS" permission needed.',
+                        style: TextStyle(
+                            color: cl.greynothighlight,
+                            fontSize: MediaQuery.of(context).size.height / 80),
+                      ),
+                    )
+                  : SizedBox(),
+              Divider(color: cl.darkerGrey),
+              db.doIHavePermission(GlobalPermission.CHANGE_DEV_SETTINGS)
+                  ? ListTile(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0)),
+                      tileColor: cl.lighterGrey,
+                      onTap: () {
+                        Beamer.of(context).beamToNamed("/dev");
+                      },
+                      title: Text("Dev. Settings",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize:
+                                  MediaQuery.of(context).size.height / 40)),
+                      subtitle: Text(
+                        '"CHANGE_DEV_SETTINGS" permission needed.',
+                        style: TextStyle(
+                            color: cl.greynothighlight,
+                            fontSize: MediaQuery.of(context).size.height / 80),
+                      ),
+                    )
+                  : SizedBox(height: 0),
+              Divider(color: cl.darkerGrey),
+              ListTile(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                tileColor: cl.lighterGrey,
+                onTap: () {
+                  Beamer.of(context).beamToNamed("/social");
+                },
+                title: Text("About Us(DE)",
                     style: TextStyle(
-                        color: cl.greynothighlight,
-                        fontSize: MediaQuery.of(context).size.height / 80),
-                  ),
-                )
-                
-              : SizedBox(),
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.height / 40)),
+              ),
               Divider(color: cl.darkerGrey),
-
-          db.doIHavePermission(GlobalPermission.CHANGE_DEV_SETTINGS)
-              ? ListTile(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
-                  onTap: () {
-                    Beamer.of(context).beamToNamed("/dev");
-                  },
-                  title: Text("Dev. Settings",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: MediaQuery.of(context).size.height / 40)),
-                  subtitle: Text(
-                    '"CHANGE_DEV_SETTINGS" permission needed.',
+              ListTile(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                tileColor: cl.lighterGrey,
+                onTap: () {
+                  Beamer.of(context).beamToNamed("/imprint");
+                },
+                title: Text("Imprint(DE)",
                     style: TextStyle(
-                        color: cl.greynothighlight,
-                        fontSize: MediaQuery.of(context).size.height / 80),
-                  ),
-                )
-              : SizedBox(height: 0),
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.height / 40)),
+              ),
               Divider(color: cl.darkerGrey),
-          ListTile(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
-            onTap: () {
-              Beamer.of(context).beamToNamed("/social");
-            },
-            title: Text("About Us(DE)",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: MediaQuery.of(context).size.height / 40)),
+              ListTile(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                tileColor: cl.lighterGrey,
+                onTap: () {
+                  Beamer.of(context).beamToNamed("/policy");
+                },
+                title: Text("Privacy Policy(DE)",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.height / 40)),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text(
+                  "© RaveStreamRadio 2023",
+                  style: TextStyle(color: Colors.white),
+                ),
+              )
+            ],
           ),
-          Divider(color: cl.darkerGrey),
-          ListTile(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
-            onTap: () {
-              Beamer.of(context).beamToNamed("/imprint");
-            },
-            title: Text("Imprint(DE)",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: MediaQuery.of(context).size.height / 40)),
-          ),
-          Divider(color: cl.darkerGrey),
-          ListTile(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
-            onTap: () {
-              Beamer.of(context).beamToNamed("/policy");
-            },
-            title: Text("Privacy Policy(DE)",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: MediaQuery.of(context).size.height / 40)),
-          ),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text(
-              "© RaveStreamRadio 2023",
-              style: TextStyle(color: Colors.white),
-            ),
-          )
-        ],
-      ),
-    ));
+        ));
   }
 }
 
@@ -427,8 +440,9 @@ class EventTable extends StatelessWidget {
                 ? []
                 : [
                     ListTile(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0)),
+                      tileColor: cl.lighterGrey,
                       onTap: () {
                         managescreen.selectedManagementScreen.value =
                             managescreen.ManagementScreens.Events;
@@ -441,8 +455,9 @@ class EventTable extends StatelessWidget {
                                   MediaQuery.of(context).size.height / 40)),
                     ),
                     ListTile(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0)),
+                      tileColor: cl.lighterGrey,
                       onTap: () {
                         managescreen.selectedManagementScreen.value =
                             managescreen.ManagementScreens.Hosts;
@@ -455,8 +470,9 @@ class EventTable extends StatelessWidget {
                                   MediaQuery.of(context).size.height / 40)),
                     ),
                     ListTile(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-            tileColor: cl.lighterGrey,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0)),
+                      tileColor: cl.lighterGrey,
                       onTap: () {
                         managescreen.selectedManagementScreen.value =
                             managescreen.ManagementScreens.Media;
@@ -814,7 +830,8 @@ class ReportButton extends StatelessWidget {
             onPressed: () {
               String desc = "";
               showModalBottomSheet(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadiusDirectional.circular(8.0)),
                   backgroundColor: cl.darkerGrey,
                   context: context,
                   builder: (BuildContext context) {
@@ -829,23 +846,25 @@ class ReportButton extends StatelessWidget {
                             },
                             minLines: 5,
                             maxLines: 2000,
-                            
                             decoration: InputDecoration(
-                              filled: true,
-                              fillColor: cl.lighterGrey,
+                                filled: true,
+                                fillColor: cl.lighterGrey,
                                 labelText: "Tell us more about this report...",
                                 labelStyle: TextStyle(color: Colors.white),
                                 enabledBorder: OutlineInputBorder(
                                     borderSide:
-                                        BorderSide(color: cl.lighterGrey),borderRadius: BorderRadius.circular(8.0))),
+                                        BorderSide(color: cl.lighterGrey),
+                                    borderRadius: BorderRadius.circular(8.0))),
                             style: TextStyle(color: Colors.white),
                             cursorColor: Colors.white,
                             showCursor: true,
                           ),
                         ),
                         TextButton(
-                          style: TextButton.styleFrom(shape:RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                          backgroundColor: cl.lighterGrey),
+                            style: TextButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0)),
+                                backgroundColor: cl.lighterGrey),
                             onPressed: () async {
                               DocumentReference newRep = await db.db
                                   .collection("${branchPrefix}reports")
@@ -869,7 +888,6 @@ class ReportButton extends StatelessWidget {
                       ],
                     );
                   });
-                  
             },
             icon: Icon(
               Icons.report_outlined,

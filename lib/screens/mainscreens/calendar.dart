@@ -151,8 +151,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                       ElevatedButton(
                           style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  (enabledFilters.byStatus != null &&
-                                          enabledFilters.byStatus!.contains("public"))
+                                  (enabledFilters.byStatus.contains("public"))
                                       ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
