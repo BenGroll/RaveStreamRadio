@@ -11,6 +11,8 @@ import 'package:ravestreamradioapp/debugsettings.dart';
 import 'colors.dart' as cl;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'shared_state.dart' as shs;
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 
 /// Error Image with white logo and transparent background.
@@ -149,29 +151,29 @@ Future<Widget> getEventIcon(dbc.Event event) async {
     return await getImage(event.icon ?? "") ?? errorWhiteImage;
   } else {
     if (event.hostreference == null) {
-      //print("@fs : No Host specified.");
+      //pprint("@fs : No Host specified.");
       return const Image(
           image: AssetImage("graphics/DefaultEventTemplate.jpg"));
     } else {
       DocumentSnapshot<Map<String, dynamic>> host = await event.hostreference
           ?.get() as DocumentSnapshot<Map<String, dynamic>>;
       if (host == null) {
-        //print("@fs : Couldnt get Host document");
+        //pprint("@fs : Couldnt get Host document");
         return errorWhiteImage;
       }
       if (host.data() == null) {
-        //print("@fs : Host data couldnt be read");
+        //pprint("@fs : Host data couldnt be read");
         return errorWhiteImage;
       }
       if (host.data()?["profile_picture"] == null) {
-        //print("@fs : Host has no profile picture.");
+        //pprint("@fs : Host has no profile picture.");
         return SvgPicture.asset("graphics/person_black_48dp.svg",
             color: cl.greynothighlight);
       }
       Widget? hostProfilePic =
           await getImage(host.data()?["profile_picture"] as String);
       if (hostProfilePic == null) {
-        //print("@fs : Host has no profile picture.");
+        //pprint("@fs : Host has no profile picture.");
         return SvgPicture.asset("graphics/person_black_48dp.svg",
             color: cl.greynothighlight);
       } else {

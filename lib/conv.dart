@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'dart:convert';
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:ravestreamradioapp/extensions.dart';
 
 /// Forces String type on all Elements of a List.
 /// Elements that can't take String type are deleted.
@@ -297,7 +298,7 @@ Map<String, dynamic> forceStringDynamicMapFromObject(Object input) {
     Map<String, dynamic> out = input as Map<String, dynamic>;
     return out;
   } catch (e) {
-    print(e);
+    pprint(e);
     return {};
   }
 }

@@ -1,4 +1,6 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
@@ -12,6 +14,8 @@ import 'package:ravestreamradioapp/screens/overviewpages/eventoverviewpage.dart'
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:beamer/beamer.dart';
+
+const $ = "calendar.dart";
 
 List<dbc.Event>? event_data = [];
 int totalelements = 0;
@@ -43,7 +47,7 @@ class EventFilterBottomSheet extends StatelessWidget {
       body: ValueListenableBuilder(
           valueListenable: filters,
           builder: (context, enabledFilters, foo) {
-            print(enabledFilters);
+            pprint(enabledFilters);
             return ListView(
               children: [
                 ListTile(

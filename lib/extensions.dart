@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/database.dart' as db;
+import 'dart:io' show Platform;
+
+const FILENAME = "extensions.dart";
 
 /// Extension to Capitalize or TitleCase a String
 extension StringCasingExtension on String {
@@ -44,6 +47,11 @@ extension MapComparator on Map {
   int compareTo(Map other) {
     return entries.length.compareTo(other.entries.length);
   }
+}
+
+void pprint(dynamic data) {
+  data = "@${Platform.script.path}: $data";
+  print(data);
 }
 
 /// Find the index of the map where one common key matches specific value
@@ -137,7 +145,7 @@ extension Queriefy on List<dbc.Event> {
     List<dbc.Event> outL = [];
     forEach((dbc.Event element) {
       Map mapElem = element.toMap();
-      print(mapElem[name]);
+      pprint(mapElem[name]);
       if (mapElem.keys.contains(name) && values.contains(mapElem[name])) {
         outL.add(element);
       }

@@ -10,6 +10,8 @@ import 'package:ravestreamradioapp/linkbuttons.dart';
 import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 class EventOverviewPage extends StatelessWidget {
   final String eventid;
@@ -46,7 +48,7 @@ class EventOverviewPage extends StatelessWidget {
                                     event.value ?? dbc.demoEvent,
                                     currently_loggedin_as.value),
                                 builder: (context, snapshot) {
-                                  //print(stringToTextSpanList("Hello Friends!\n Lol"));
+                                  //pprint(stringToTextSpanList("Hello Friends!\n Lol"));
                                   if (snapshot.connectionState ==
                                       ConnectionState.done) {
                                     eventUserSpecificData.value = snapshot.data;
@@ -64,7 +66,7 @@ class EventOverviewPage extends StatelessWidget {
                                                       color: Colors.grey)));
                                             }
                                           });
-                                          print(event.value!.eventid);
+                                          pprint(event.value!.eventid);
                                           return Scaffold(
                                             backgroundColor: cl.darkerGrey,
                                             appBar: AppBar(

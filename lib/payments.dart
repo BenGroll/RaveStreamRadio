@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
 import 'shared_state.dart';
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 /// Demotransactiondata
 const transactions = [
@@ -31,9 +33,9 @@ const transactions = [
 /// Demo PaypalInterface
 UsePaypal paypalInterface = UsePaypal(
     sandboxMode: true,
-    onSuccess: (Map params) {print("Success: $params");},
-    onError: (Map params) {print("Error: $params");},
-    onCancel: (Map params) {print("Cancel: $params");},
+    onSuccess: (Map params) {pprint("Success: $params");},
+    onError: (Map params) {pprint("Error: $params");},
+    onCancel: (Map params) {pprint("Cancel: $params");},
     returnURL: "${WEB_URL}/returntransaction",
     cancelURL: "${WEB_URL}/canceledtransaction",
     note: "Contact us for any questions on your order.",

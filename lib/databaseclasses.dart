@@ -7,6 +7,7 @@ import 'package:ravestreamradioapp/database.dart' show db;
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/screens/managecalendarscreen.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:ravestreamradioapp/extensions.dart';
 
 /// DataClass for Link (Pair of Title and url)
 class Link {
@@ -241,7 +242,7 @@ class Event {
               inputmap.containsKey("status") ? inputmap["status"] : "public");
       return mapevent;
     } catch (e) {
-      print(e);
+      pprint(e);
       return Event(eventid: "errorevent");
     }
   }
@@ -513,7 +514,7 @@ class User {
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
-    //print(map);
+    //pprint(map);
     return User(
       username: map['username'] as String,
       alias: map['alias'] as String?,
@@ -627,7 +628,7 @@ HostCategory? getCategory(Map<String, dynamic> host) {
     if (host["category"] == "location") return HostCategory.location;
   }
   if (host.containsKey("kategorie")) {
-    print("Kat: ${host["kategorie"]}");
+    pprint("Kat: ${host["kategorie"]}");
     String kat = host["kategorie"];
     if (kat == "Kollektiv") {
       Map<String, dynamic> data = host;

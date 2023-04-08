@@ -19,6 +19,8 @@ import 'screens/privacypolicy.dart';
 import 'screens/imprint.dart';
 import 'package:ravestreamradioapp/screens/devsettingsscreen.dart';
 import 'package:ravestreamradioapp/screens/draftscreen.dart';
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 /// All named Routes are to be included here
 Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {

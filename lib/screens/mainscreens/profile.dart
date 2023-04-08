@@ -9,6 +9,8 @@ import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   final dbc.User? loggedinas;

@@ -11,7 +11,7 @@ import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'testdbscenario.dart';
-import 'package:ravestreamradioapp/extensions.dart' show Queriefy;
+import 'package:ravestreamradioapp/extensions.dart' show Queriefy, pprint;
 
 var db = FirebaseFirestore.instance;
 
@@ -24,7 +24,7 @@ Future addTestUser() async {
       .doc(dbc.demoUser.username)
       .set(dbc.demoUser.toMap())
       .then((value) {
-    print("Users set");
+    pprint("Users set");
   });
   return Future.delayed(Duration.zero);
 }
@@ -33,14 +33,14 @@ Future addTestUser() async {
 ///
 /// (Deprecated)
 Future addTestEvent() async {
-  /*print(
+  /*pprint(
       "demoEvent guestlist Runtime Type: ${dbc.demoEvent.guestlist.runtimeType}");*/
   await db
       .collection("${branchPrefix}events")
       .doc(dbc.demoEvent.eventid)
       .set(dbc.demoEvent.toMap())
       .then((value) {
-    print("Events Set");
+    pprint("Events Set");
   });
   return Future.delayed(Duration.zero);
 }
@@ -54,7 +54,7 @@ Future addTestGroup() async {
       .doc(dbc.demoGroup.groupid)
       .set(dbc.demoGroup.toMap())
       .then((value) {
-    print("Groups set");
+    pprint("Groups set");
   });
   return Future.delayed(Duration.zero);
 }
@@ -106,21 +106,21 @@ Future setTestDBScenario() async {
 /// Returns Failed attempt on Web until Filesystem alternative is worked out
 /// Only typesafe on web, doesnt work.
 Future<dbc.User?> tryUserLogin(String username, String password) async {
-  //print("tryUserLogin with $username $password");
+  //pprint("tryUserLogin with $username $password");
   //if (kIsWeb && DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return dbc.demoUser;
   //if (kIsWeb && !DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return null;
   try {
-    //print("Trying to login using username : $username, password: $password");
+    //pprint("Trying to login using username : $username, password: $password");
     if (username.isEmpty || password.isEmpty) {
       return null;
     }
-    //print("${branchPrefix}users/$username");
+    //pprint("${branchPrefix}users/$username");
 
     DocumentSnapshot<Map<String, dynamic>> doc =
         await db.doc("${branchPrefix}users/$username").get();
     /*DocumentSnapshot<Map<String, dynamic>> doc =
         await db.doc("users/admin").get();*/
-    //print("Doc: $doc");
+    //pprint("Doc: $doc");
     if (doc.data() == null) {
       return null;
     }
@@ -130,7 +130,7 @@ Future<dbc.User?> tryUserLogin(String username, String password) async {
     dbc.User constructedUser = dbc.User.fromMap(doc.data() ?? {});
     return constructedUser;
   } catch (e) {
-    print(e);
+    pprint(e);
   }
 }
 
@@ -144,7 +144,7 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
   //await files.writeLoginData("", "");
   //Uncomment the following line to manually add an event
   //await setTestDBScenario();
-  //print(await saveEventToUserReturnWasSaved(dbc.demoEvent, dbc.demoUser));
+  //pprint(await saveEventToUserReturnWasSaved(dbc.demoEvent, dbc.demoUser));
   //await db.doc("dev.users/admin").set(testuserlist.first.toMap());
   Map savedlogindata = kIsWeb
       ? await files.readLoginDataWeb()
@@ -221,8 +221,7 @@ Future<List<dbc.Event>> getEvents() async {
 
 
 
-
-
+///
 /// [lastelemEventid] is used as a cursor for paginating results. Leaving it empty means you are at page 0.
 ///
 /// When set, [onlyAfter] filters to only show Events that end after the given Timestamp.
@@ -268,39 +267,41 @@ class EventFilters {
   }
 }
 
+/// Gets the list of events for current branch from firestore.
 Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
   String eventIndexesJson = await readEventIndexesJson();
   List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson);
   eventList.forEach((element) {
-    print(element.status);
+    pprint(element.status);
   });
   return eventList;
 }
 
+/// Filter and order the list of events
 List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     [int? queryLimit]) {
   List<dbc.Event> eventList = events;
-  //print(". ${eventList.length}");
-  //print("Stati Included: ${filters.byStatus}");
+  //pprint(". ${eventList.length}");
+  //pprint("Stati Included: ${filters.byStatus}");
   if (filters.onlyAfter != null) {
     eventList =
         eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
   }
-  //print(".. ${eventList.length}");
+  //pprint(".. ${eventList.length}");
 
   if (filters.onlyBefore != null) {
     eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
   }
-  //print("... ${eventList.length}");
+  //pprint("... ${eventList.length}");
 
   eventList = eventList.whereIsInValues("status", filters.byStatus);
-  //print(".... ${eventList.length}");
+  //pprint(".... ${eventList.length}");
 
   if (filters.canGoByAge != null) {
     eventList =
         eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
   }
-  //print("..... ${eventList.length}");
+  //pprint("..... ${eventList.length}");
 
   if (filters.onlyHostedByMe) {
     List newList = [];
@@ -318,13 +319,13 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
       }
     });
   }
-  //print("...... ${eventList.length}");
+  //pprint("...... ${eventList.length}");
 
   eventList.sort((a, b) {
     return a.toMap()[filters.orderbyField].compareTo(
         b.toMap()[filters.orderbyField] ?? b.toMap()[filters.orderbyField]);
   });
-  //print("....... ${eventList.length}");
+  //pprint("....... ${eventList.length}");
 
   return eventList;
 }

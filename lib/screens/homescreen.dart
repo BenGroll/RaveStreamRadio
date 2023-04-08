@@ -11,6 +11,8 @@ import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/screens/chats.dart';
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 Screens map_Index_to_Screen(int index) {
   switch (index) {
@@ -122,7 +124,7 @@ AppBar? mapScreenToAppBar(
       }
     case Screens.favourites:
       {
-        return cw.FavouritesAppBar(context);
+        return null;
       }
     case Screens.forums:
       {

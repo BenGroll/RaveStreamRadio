@@ -12,6 +12,7 @@ import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:ravestreamradioapp/extensions.dart';
 
 class LoginScreen extends StatelessWidget {
   String? username = "";
@@ -105,7 +106,7 @@ class LoginScreen extends StatelessWidget {
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () async {
-                    print("Button Pressed");
+                    pprint("Button Pressed");
                     if (!kIsWeb) {
                       dbc.User? tryUserData =
                           await db.tryUserLogin(username ?? "", password ?? "");
@@ -129,7 +130,7 @@ class LoginScreen extends StatelessWidget {
                             cw.hintSnackBar("Logged in as @$username"));
                       }
                     } else {
-                      print("Is On Web!");
+                      pprint("Is On Web!");
 
                       DocumentSnapshot doc = await db.db
                           .doc("${branchPrefix}users/$username")
@@ -141,10 +142,10 @@ class LoginScreen extends StatelessWidget {
                             builder: (BuildContext context) =>
                                 _showLoginFailedDialog(context));
                       } else {
-                        print("User exists!");
+                        pprint("User exists!");
                         Map<String, dynamic>? docData =
                             doc.data() as Map<String, dynamic>?;
-                        print(doc.data());
+                        pprint(doc.data());
                         if (docData == null) {
                           await showDialog(
                               context: context,
@@ -153,7 +154,7 @@ class LoginScreen extends StatelessWidget {
                         } else {
                           dbc.User tryUserData = dbc.User.fromMap(
                               forceStringDynamicMapFromObject(docData));
-                          print("Constructed User");
+                          pprint("Constructed User");
                           if (tryUserData.password == password) {
                             currently_loggedin_as.value = tryUserData;
                             Beamer.of(context).beamToNamed("/");

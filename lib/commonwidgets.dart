@@ -591,7 +591,7 @@ class EventTable extends StatelessWidget {
                                                                       list;
                                                                 }
                                                               } catch (e) {
-                                                                print(e);
+                                                                pprint(e);
                                                               }
                                                             },
                                                           ))
@@ -727,7 +727,7 @@ class EventTable extends StatelessWidget {
                             dbc.Event.fromMap(event))
                         ? null
                         : () async {
-                            //print(eventid);
+                            //pprint(eventid);
                             String description = await db
                                 .getEvent(eventid)
                                 .then((value) => value?.description ?? "");

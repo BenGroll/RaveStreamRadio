@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 /// Page to edit description (Richtext)
 class DescriptionEditingPage extends StatelessWidget {

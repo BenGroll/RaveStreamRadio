@@ -13,6 +13,7 @@ import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:ravestreamradioapp/extensions.dart';
 
 /// What text to show in the dropdown to host as yourself
 const HOST_YOURSELF_ID = "Host as yourself.";
@@ -400,7 +401,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                                     currentEventData,
                                                 builder: (context,
                                                     eventDatacurrent, foo) {
-                                                  print(
+                                                  pprint(
                                                       "NewBuild: ${currentEventData.value.templateHostID}");
                                                   return DropdownSearch(
                                                     selectedItem:
@@ -416,7 +417,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                                       /*templateHostID =
                                                         getKeyMatchingValueFromMap(
                                                             snapshot.data ?? {}, value);*/
-                                                      print(currentEventData
+                                                      pprint(currentEventData
                                                           .value
                                                           .templateHostID);
                                                     },
@@ -492,30 +493,30 @@ class GeneralSettingsPage extends StatelessWidget {
                             : TextFormField(
                                 initialValue: currentEventData.value.eventid,
                                 onChanged: (value) async {
-                                  print(
+                                  pprint(
                                       "onCH tH: ${currentEventData.value.templateHostID}");
                                   eventidvalidator.value =
                                       validateEventIDFieldLight(value);
-                                  print(
+                                  pprint(
                                       "onCH tH2: ${currentEventData.value.templateHostID}");
                                   currentEventData.value.eventid = value;
                                 },
                                 onFieldSubmitted: (value) async {
-                                  print(
+                                  pprint(
                                       "onFS tH: ${currentEventData.value.templateHostID}");
                                   eventidvalidator.value =
                                       await validateEventIDFieldDB(value);
-                                  print(
+                                  pprint(
                                       "onFS tH2: ${currentEventData.value.templateHostID}");
                                   currentEventData.value.eventid = value;
                                 },
                                 onSaved: (newValue) async {
-                                  print(
+                                  pprint(
                                       "onS tH: ${currentEventData.value.templateHostID}");
                                   eventidvalidator.value =
                                       await validateEventIDFieldDB(
                                           newValue ?? "");
-                                  print(
+                                  pprint(
                                       "onS tH2: ${currentEventData.value.templateHostID}");
                                   currentEventData.value.eventid =
                                       newValue ?? "";
@@ -615,7 +616,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                           if (picked_date != null) {
                                             currentEventData.value.begin =
                                                 Timestamp.fromDate(picked_date);
-                                            print(currentEventData.value.begin);
+                                            pprint(currentEventData.value.begin);
                                             currentEventData.notifyListeners();
                                           }
                                         },
@@ -697,7 +698,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                           if (picked_date != null) {
                                             currentEventData.value.end =
                                                 Timestamp.fromDate(picked_date);
-                                            print(timestamp2readablestamp(
+                                            pprint(timestamp2readablestamp(
                                                 currentEventData.value.end));
                                             currentEventData.notifyListeners();
                                           }
@@ -810,9 +811,10 @@ class AddLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor:cl.darkerGrey,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0))),
+        style: ElevatedButton.styleFrom(
+            backgroundColor: cl.darkerGrey,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadiusDirectional.circular(8.0))),
         onPressed: () {
           showDialog(
               context: context, builder: (context) => LinkCreateDialog());

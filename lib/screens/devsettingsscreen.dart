@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:ravestreamradioapp/extensions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
@@ -192,7 +192,7 @@ class DevSettingsScreen extends StatelessWidget {
                       onPressed: () async {
                         List<Event> events = db.getEventListFromIndexes(
                             await db.readEventIndexesJson());
-                        print(events);
+                        pprint(events);
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Created Indexes"));
                       },
@@ -229,7 +229,7 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("write Chat to json test")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(await readChatFromDB(testchat["id"])
+                        pprint(await readChatFromDB(testchat["id"])
                             .then((value) => value.toMap()));
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Json Read Test"));
@@ -238,7 +238,7 @@ class DevSettingsScreen extends StatelessWidget {
                   ElevatedButton(
                       onPressed: () async {
                         Chat chat = Chat.fromMap(testchat);
-                        print(chat.members);
+                        pprint(chat.members);
                         rtdb.setChatData(chat);
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("RealtimeDB Test"));

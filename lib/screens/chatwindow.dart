@@ -6,6 +6,7 @@ import 'package:ravestreamradioapp/chatting.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
+import 'package:ravestreamradioapp/extensions.dart';
 
 
 /// Borrowed from https://stackoverflow.com/users/6618622/copsonroad
@@ -96,7 +97,7 @@ class ChatWindow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("ChatWindow Opened");
+    pprint("ChatWindow Opened");
     return StreamBuilder(
         stream: rtdb.listenToChat(id),
         builder: (BuildContext context, AsyncSnapshot snap) {

@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import "package:ravestreamradioapp/realtimedb.dart";
 import "package:ravestreamradioapp/screens/chatwindow.dart";
 import "package:ravestreamradioapp/shared_state.dart";
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 class Message {
   /// Contains full path to the Document

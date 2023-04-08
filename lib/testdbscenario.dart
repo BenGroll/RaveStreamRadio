@@ -5,6 +5,8 @@ import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/chatting.dart';
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 List<dbc.User> testuserlist = [
   dbc.User(username: "admin", password: "Admin", path: "${branchPrefix}users/admin")

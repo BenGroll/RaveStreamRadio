@@ -5,6 +5,8 @@ import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/conv.dart';
+import 'package:ravestreamradioapp/extensions.dart';
+
 
 Widget leadingIcon(dbc.Report e) {
   if (e.target == null) return SizedBox();

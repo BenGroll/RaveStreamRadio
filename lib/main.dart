@@ -1,6 +1,7 @@
 //TestChange
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
+import 'package:ravestreamradioapp/extensions.dart';
 import 'screens/homescreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -14,7 +15,9 @@ import 'package:ravestreamradioapp/beamerroutes.dart';
 void main() async {
   setPathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
-  app = await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  app = await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform);
+  pprint("Test");
   runApp(const MyApp());
 }
 
@@ -25,7 +28,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   // This widget is the root of your application.
   @override
-    Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return MaterialApp.router(
       routeInformationParser: BeamerParser(),
       routerDelegate: routerDelegate,
