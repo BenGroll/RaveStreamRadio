@@ -82,7 +82,17 @@ Future uploadEventToDatabase(dbc.Event event) async {
   }
   Map eventIndexFile = await json.decode(await readEventIndexesJson());
   eventIndexFile[event.eventid] = event.toMap();
+  // Conversions necessary for Json encoding
+  if (eventIndexFile[event.eventid]["begin"] != null) {
+    eventIndexFile[event.eventid]["begin"] =
+        eventIndexFile[event.eventid]["begin"].millisecondsSinceEpoch;
+  }
+  if (eventIndexFile[event.eventid]["end"] != null) {
+    eventIndexFile[event.eventid]["end"] =
+        eventIndexFile[event.eventid]["end"].millisecondsSinceEpoch;
+  }
   if (eventIndexFile[event.eventid]["hostreference"] != null) {
+    // Convert Hostreference from DocRef to String (json)
     eventIndexFile[event.eventid]["hostreference"] =
         eventIndexFile[event.eventid]["hostreference"].path;
   }

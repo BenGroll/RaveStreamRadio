@@ -403,10 +403,13 @@ class GeneralSettingsPage extends StatelessWidget {
                                                     eventDatacurrent, foo) {
                                                   pprint(
                                                       "NewBuild: ${currentEventData.value.templateHostID}");
+                                                  pprint(
+                                                      "@ecs ${currentEventData.value.templateHostID} TemplateHostID");
+                                                  pprint(
+                                                      "@ecs ${snapshot.data} Snapshot Data");
                                                   return DropdownSearch(
                                                     selectedItem:
-                                                        currentEventData.value
-                                                            .templateHostID,
+                                                        snapshot.data!.keys.contains(currentEventData.value.templateHostID) ? snapshot.data![currentEventData.value.templateHostID] : currentEventData.value.templateHostID,
                                                     onChanged: (value) {
                                                       pprint(
                                                           "New Build Invoked");
