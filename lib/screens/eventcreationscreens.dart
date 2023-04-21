@@ -620,6 +620,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                           }
                                           DateTime? picked_date = await cw
                                               .pick_date(context, initialDate);
+                                          print(picked_date);
                                           if (picked_date != null) {
                                             currentEventData.value.begin =
                                                 Timestamp.fromDate(picked_date);

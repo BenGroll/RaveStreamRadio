@@ -82,8 +82,10 @@ Future uploadEventToDatabase(dbc.Event event) async {
   }
   Map eventIndexFile = await json.decode(await readEventIndexesJson());
   eventIndexFile[event.eventid] = event.toMap();
-  eventIndexFile[event.eventid]["hostreference"] =
-      eventIndexFile[event.eventid]["hostreference"].path;
+  if (eventIndexFile[event.eventid]["hostreference"] != null) {
+    eventIndexFile[event.eventid]["hostreference"] =
+        eventIndexFile[event.eventid]["hostreference"].path;
+  }
   await storage.ref("indexes/${branchPrefix}eventsIndex.json").putString(
       eventMapToJson(forceStringDynamicMapFromObject(eventIndexFile)));
   return Future.delayed(Duration.zero);
@@ -256,9 +258,23 @@ class EventFilters {
 Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
   String eventIndexesJson = await readEventIndexesJson();
   List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson);
-  eventList.forEach((element) {
+  AggregateQuery eventsInDB =
+      await db.collection("${branchPrefix}events").count();
+  int docsInDB = await eventsInDB.get().then((value) => value.count);
+  print("@db Events detected in Index file: ${eventList.length}");
+  print("@db Events detected in Database: $docsInDB");
+  /*eventList.forEach((element) {
     pprint(element.status);
-  });
+  });*/
+  if (eventList.length != docsInDB) {
+    print(
+        "@db Eventcount in db and index file doesnt match.\nPerforming self-diagnostic fix.");
+    List<dbc.Event> events = await getEvents();
+    String jsonindexString =
+        eventMapToJson(eventListToJsonCompatibleMap(events));
+    await writeEventIndexes(jsonindexString);
+    return await fetchEventsFromIndexFile();
+  }
   return eventList;
 }
 

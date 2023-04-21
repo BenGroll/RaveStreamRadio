@@ -29,7 +29,7 @@ import 'package:ravestreamradioapp/screens/managecalendarscreen.dart'
 ///
 /// If return = null, user canceled the picking
 Future<DateTime?> pick_date(BuildContext context, DateTime? initialDate) async {
-  await showDatePicker(
+  return await showDatePicker(
       context: context,
       initialDate: initialDate ?? DateTime.now(),
       firstDate: DateTime.now(),
