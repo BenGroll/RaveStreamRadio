@@ -688,11 +688,11 @@ class EventTable extends StatelessWidget {
                                   .showSnackBar(hintSnackBar("$key Changed."));
                             } else {
                               DateTime newFinalDateTime = DateTime(
-                                newDate!.year,
-                                newDate.month,
-                                newDate.day,
-                                newTime?.hour ?? newDate.hour,
-                                newTime?.minute ?? newDate.minute,
+                                (initialDate != null ? initialDate.year : 2000),
+                                (initialDate != null ? initialDate.month : 1),
+                                (initialDate != null ? initialDate.day : 1),
+                                newTime?.hour ?? (initialDate != null ? initialDate.hour : 1),
+                                newTime?.minute ?? (initialDate != null ? initialDate.minute : 1),
                               );
                               eventListNOT.value[foundEventIndex][key] =
                                   Timestamp.fromDate(newFinalDateTime);

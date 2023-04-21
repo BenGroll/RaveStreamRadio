@@ -63,6 +63,7 @@ Future addTestGroup() async {
 ///
 /// Also adds it to the events list of the host automatically
 Future uploadEventToDatabase(dbc.Event event) async {
+  final storage = FirebaseStorage.instanceFor(app: app);
   await db
       .collection("${branchPrefix}events")
       .doc(event.eventid)
@@ -79,6 +80,12 @@ Future uploadEventToDatabase(dbc.Event event) async {
     hostdata["events"] = hostedevents;
     await event.hostreference!.set(hostdata);
   }
+  Map eventIndexFile = await json.decode(await readEventIndexesJson());
+  eventIndexFile[event.eventid] = event.toMap();
+  eventIndexFile[event.eventid]["hostreference"] =
+      eventIndexFile[event.eventid]["hostreference"].path;
+  await storage.ref("indexes/${branchPrefix}eventsIndex.json").putString(
+      eventMapToJson(forceStringDynamicMapFromObject(eventIndexFile)));
   return Future.delayed(Duration.zero);
 }
 
@@ -170,8 +177,6 @@ Future<dbc.User?> getUser(String username) async {
   }
 }
 
-
-
 /// Returns total count of Events ending after today
 /// TBA Get event count from given query, not only default query
 Future<int> getEventCount() async {
@@ -184,9 +189,6 @@ Future<int> getEventCount() async {
   return itemcount;
 }
 
-
-
-
 /// Deprecated (use readEventsFromIndexFile instead)
 ///
 /// General Query to get List of Events
@@ -195,31 +197,16 @@ Future<int> getEventCount() async {
 ///
 /// Query size can be specified by the [queryLimit] param
 Future<List<dbc.Event>> getEvents() async {
-      if (currently_loggedin_as.value == null) return [];
-    Query query = db.collection("${branchPrefix}events");
-    QuerySnapshot snapshot = await query.get();
-    List<Map<String, dynamic>>? maplist = querySnapshotToMapList(snapshot);
-    List<dbc.Event> events = [];
-    maplist.forEach((element) {
-      events.add(dbc.Event.fromMap(element));
-    });
-    return events;
+  if (currently_loggedin_as.value == null) return [];
+  Query query = db.collection("${branchPrefix}events");
+  QuerySnapshot snapshot = await query.get();
+  List<Map<String, dynamic>>? maplist = querySnapshotToMapList(snapshot);
+  List<dbc.Event> events = [];
+  maplist.forEach((element) {
+    events.add(dbc.Event.fromMap(element));
+  });
+  return events;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ///
 /// [lastelemEventid] is used as a cursor for paginating results. Leaving it empty means you are at page 0.
@@ -251,8 +238,6 @@ class EventFilters {
   List<String> byStatus;
   bool onlyHostedByMe;
   EventFilters(
-
-      /// Not used yet in readEventsFromIndexFile
       {this.lastelemEventid,
       this.onlyAfter,
       this.onlyBefore,
@@ -322,8 +307,13 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
   //pprint("...... ${eventList.length}");
 
   eventList.sort((a, b) {
-    return a.toMap()[filters.orderbyField].compareTo(
-        b.toMap()[filters.orderbyField] ?? b.toMap()[filters.orderbyField]);
+    dynamic sort_a = a.toMap().keys.contains(filters.orderbyField)
+        ? a.toMap()[filters.orderbyField]
+        : 0;
+    dynamic sort_b = a.toMap().keys.contains(filters.orderbyField)
+        ? a.toMap()[filters.orderbyField]
+        : 0;
+    return sort_a.compareTo(sort_b);
   });
   //pprint("....... ${eventList.length}");
 

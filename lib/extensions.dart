@@ -50,7 +50,7 @@ extension MapComparator on Map {
 }
 
 void pprint(dynamic data) {
-  data = "@${Platform.script.path}: $data";
+  //data = "@${Platform.script.path}: $data";
   print(data);
 }
 

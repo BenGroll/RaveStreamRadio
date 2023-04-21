@@ -405,18 +405,25 @@ class GeneralSettingsPage extends StatelessWidget {
                                                       "NewBuild: ${currentEventData.value.templateHostID}");
                                                   return DropdownSearch(
                                                     selectedItem:
-                                                        eventDatacurrent
+                                                        currentEventData.value
                                                             .templateHostID,
                                                     onChanged: (value) {
-                                                      currentEventData.value
-                                                              .templateHostID =
-                                                          getKeyMatchingValueFromMap(
-                                                              snapshot.data ??
-                                                                  {},
-                                                              value);
-                                                      /*templateHostID =
-                                                        getKeyMatchingValueFromMap(
-                                                            snapshot.data ?? {}, value);*/
+                                                      pprint(
+                                                          "New Build Invoked");
+                                                      print(value);
+                                                      if (value ==
+                                                          HOST_YOURSELF_ID) {
+                                                        currentEventData.value
+                                                                .templateHostID =
+                                                            HOST_YOURSELF_ID;
+                                                      } else {
+                                                        currentEventData.value
+                                                                .templateHostID =
+                                                            getKeyMatchingValueFromMap(
+                                                                snapshot.data ??
+                                                                    {},
+                                                                value);
+                                                      }
                                                       pprint(currentEventData
                                                           .value
                                                           .templateHostID);
@@ -616,7 +623,8 @@ class GeneralSettingsPage extends StatelessWidget {
                                           if (picked_date != null) {
                                             currentEventData.value.begin =
                                                 Timestamp.fromDate(picked_date);
-                                            pprint(currentEventData.value.begin);
+                                            pprint(
+                                                currentEventData.value.begin);
                                             currentEventData.notifyListeners();
                                           }
                                         },
@@ -989,6 +997,7 @@ List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
 }
 
 Future uploadEvent(dbc.Event event, BuildContext context) async {
+  print(event.hostreference);
   is_awaiting_upload.value = true;
   if (event.templateHostID != null && event.templateHostID!.isNotEmpty) {
     event.hostreference = null;
