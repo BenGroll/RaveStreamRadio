@@ -60,12 +60,7 @@ class GroupListBuilder extends StatelessWidget {
                     );
                   });
             } else {
-              return const Center(
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              );
+              return cw.LoadingIndicator(color: Colors.white);
             }
           }),
     );

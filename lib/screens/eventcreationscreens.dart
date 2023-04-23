@@ -22,7 +22,7 @@ const HOST_YOURSELF_ID = "Host as yourself.";
 enum Screen { general, description, links, media }
 
 /// Loading Animation
-const loader = CircularProgressIndicator(color: Colors.white);
+const loader = cw.LoadingIndicator(color: Colors.white);
 
 bool isOpenedByRSRTeamMember = false;
 ValueNotifier<Screen> current_screen = ValueNotifier<Screen>(Screen.general);

@@ -162,7 +162,7 @@ class SingleReportScreen extends StatelessWidget {
                 ),
               );
             } else {
-              return CircularProgressIndicator();
+              return cw.LoadingIndicator(color: Colors.white);
             }
           }),
     );

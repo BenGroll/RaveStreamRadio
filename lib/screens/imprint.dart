@@ -3,6 +3,7 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/database.dart' show db;
 import 'package:ravestreamradioapp/extensions.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 /// The Imprint Screen
 class ImPrint extends StatelessWidget {
@@ -38,7 +39,7 @@ class ImPrint extends StatelessWidget {
                                     
                                     ))));
               } else {
-                return const CircularProgressIndicator(
+                return const cw.LoadingIndicator(
                   color: Colors.white
                 );
               }

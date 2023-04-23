@@ -14,40 +14,37 @@ import "package:ravestreamradioapp/screens/chatwindow.dart";
 import "package:ravestreamradioapp/shared_state.dart";
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 class Message {
   /// Contains full path to the Document
   final String sender;
-
-  /// Contains full path to the Document
-  final String? reciever;
-
-  /// Leave empty if chat has more than two members
+  /// Unix Timestamp
   final Timestamp sentAt;
 
   /// the utf8 content of the message
   final String content;
 
-  /// Custom Name (e.g GroupName)
+  /// Unique ID
+  final String? id;
 
   Message({
     required this.sender,
-    this.reciever,
     required this.sentAt,
     required this.content,
+    this.id
   });
   factory Message.fromMap(Map<String, dynamic> map) {
     return Message(
       content: map["content"],
       sender: map["sender"],
       sentAt: Timestamp.fromMillisecondsSinceEpoch(map["sentAt"]),
-      reciever: map["reciever"],
+      
     );
   }
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'sender': sender,
-      'reciever': reciever,
       'sentAt': sentAt.millisecondsSinceEpoch,
       'content': content,
     };
@@ -240,8 +237,7 @@ class ChatsDrawer extends StatelessWidget {
                       snapshot.data!.map((e) => ChatTile(chat: e)).toList(),
                 );
               } else {
-                return AspectRatio(
-                    aspectRatio: 1, child: CircularProgressIndicator());
+                return cw.LoadingIndicator(color: Colors.white);
               }
             }));
   }

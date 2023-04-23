@@ -11,6 +11,7 @@ import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 class EventOverviewPage extends StatelessWidget {
   final String eventid;
@@ -480,8 +481,7 @@ class EventOverviewPage extends StatelessWidget {
                                   } else {
                                     return Scaffold(
                                         backgroundColor: cl.lighterGrey,
-                                        body: const CircularProgressIndicator(
-                                            color: Colors.white));
+                                        body: cw.LoadingIndicator(color: Colors.white));
                                   }
                                 });
                           }),
@@ -491,7 +491,7 @@ class EventOverviewPage extends StatelessWidget {
               return Text("Event couldnt be loaded.");
             }
           } else {
-            return CircularProgressIndicator(color: Colors.white);
+            return cw.LoadingIndicator(color: Colors.white);
           }
         });
   }

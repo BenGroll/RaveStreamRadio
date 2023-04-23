@@ -249,7 +249,7 @@ class EventCalendar extends StatelessWidget {
                       future: db.fetchEventsFromIndexFile(),
                       builder: ((context, snapshot) {
                         if (snapshot.connectionState != ConnectionState.done) {
-                          return CircularProgressIndicator();
+                          return cw.LoadingIndicator(color: Colors.white);
                         } else {
                           return ValueListenableBuilder(
                               valueListenable: filters,

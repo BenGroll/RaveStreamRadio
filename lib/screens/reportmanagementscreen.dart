@@ -6,6 +6,7 @@ import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 
 Widget leadingIcon(dbc.Report e) {
@@ -87,7 +88,7 @@ class ReportManagementScreen extends StatelessWidget {
                 }).toList(),
               );
             } else {
-              return CircularProgressIndicator();
+              return cw.LoadingIndicator(color: Colors.white);
             }
           }),
     );

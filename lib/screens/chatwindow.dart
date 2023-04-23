@@ -7,6 +7,7 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 /// Borrowed from https://stackoverflow.com/users/6618622/copsonroad
 final ScrollController _controller = ScrollController();
@@ -211,14 +212,16 @@ class ChatWindow extends StatelessWidget {
                                 ))),
                       );
                     } else {
-                      return CircularProgressIndicator(
+                      return const cw.LoadingIndicator(
                         color: Colors.white,
                       );
                     }
                   });
             }
           } else {
-            return CircularProgressIndicator();
+            return const cw.LoadingIndicator(
+                color: Colors.white,
+              );
           }
         });
   }

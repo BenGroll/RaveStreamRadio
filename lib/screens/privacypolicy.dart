@@ -3,12 +3,12 @@ import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' show db;
 import 'package:ravestreamradioapp/extensions.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 
 /// Privacy Policy Screen
 class PrivacyPolicy extends StatelessWidget {
   const PrivacyPolicy({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,7 +37,7 @@ class PrivacyPolicy extends StatelessWidget {
                                     privacypolicystring*/
                                 privacypolicystring))));
               } else {
-                return const CircularProgressIndicator(color: Colors.white);
+                return const cw.LoadingIndicator(color: Colors.white);
               }
             }),
       ),

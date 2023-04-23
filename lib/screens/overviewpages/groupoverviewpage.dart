@@ -6,6 +6,7 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 class GroupOverviewPage extends StatelessWidget {
   final String groupid;
@@ -41,7 +42,7 @@ class GroupOverviewPage extends StatelessWidget {
               return Scaffold(
                   backgroundColor: cl.darkerGrey,
                   body: const Center(
-                      child: CircularProgressIndicator(color: Colors.white)));
+                      child: cw.LoadingIndicator(color: Colors.white)));
             }
           },
         ));

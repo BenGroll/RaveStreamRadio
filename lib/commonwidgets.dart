@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/linkbuttons.dart';
@@ -148,7 +149,7 @@ class FutureImageBuilder extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.done) {
             return snapshot.data as Widget;
           } else {
-            return const CircularProgressIndicator(color: Colors.white);
+            return const LoadingIndicator(color: Colors.white);
           }
         }));
   }
@@ -159,12 +160,14 @@ class OpenSidebarButton extends StatelessWidget {
   const OpenSidebarButton({super.key});
   @override
   Widget build(BuildContext context) {
-    return TextButton(
+    return IconButton(
         onPressed: () {
           Scaffold.of(context).openDrawer();
         },
-        child: Image(
-            image: AssetImage("graphics/ravestreamlogo_white_on_trans.png")));
+        icon: Padding(
+          padding: EdgeInsets.all(MediaQuery.of(context).size.height / 300),
+          child: SvgPicture.asset("graphics/rsrvector.svg", color: Colors.white),
+        ));
   }
 }
 
@@ -262,7 +265,7 @@ class NavBar extends StatelessWidget {
                             ),
                           );
                         } else {
-                          return CircularProgressIndicator();
+                          return Expanded(child: LoadingIndicator(color: Colors.white));
                         }
                       })
                   : SizedBox(),
@@ -608,7 +611,7 @@ class EventTable extends StatelessWidget {
                         });
                   });
             } else {
-              return CircularProgressIndicator(color: Colors.white);
+              return LoadingIndicator(color: Colors.white);
             }
           }),
     );
@@ -988,13 +991,33 @@ class StartChatButton extends StatelessWidget {
                 return Dialog(
                   backgroundColor: Colors.transparent,
                   child: Container(
-                    child: AspectRatio(
-                        aspectRatio: 1, child: CircularProgressIndicator()),
+                    child: LoadingIndicator(color: Colors.white)
                   ),
                 );
               });
           Beamer.of(context).beamToNamed("/");
         },
         icon: Icon(Icons.send, color: Colors.white));
+  }
+}
+
+class LoadingIndicator extends StatelessWidget {
+  final Color color;
+  const LoadingIndicator({super.key, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: FractionallySizedBox(
+            widthFactor: 0.66,
+            heightFactor: 0.66,
+            child: CircularProgressIndicator(color: Colors.white)),
+          ),
+      ),
+    );
   }
 }

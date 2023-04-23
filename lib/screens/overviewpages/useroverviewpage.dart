@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:ravestreamradioapp/commonwidgets.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+
 
 class UserOverviewPage extends StatelessWidget {
   final String username;
@@ -27,8 +28,8 @@ class UserOverviewPage extends StatelessWidget {
                   centerTitle: true,
                   title: Text("User: ${snapshot.data!.id}"),
                   actions: [
-                    ReportButton(target: "${branchPrefix}users/$username"),
-                    StartChatButton(other_person_username: username)
+                    cw.ReportButton(target: "${branchPrefix}users/$username"),
+                    cw.StartChatButton(other_person_username: username)
                   ],
                 ),
                 body: const Center(
@@ -40,8 +41,7 @@ class UserOverviewPage extends StatelessWidget {
             } else {
               return Scaffold(
                   backgroundColor: cl.darkerGrey,
-                  body: const Center(
-                      child: CircularProgressIndicator(color: Colors.white)));
+                  body: cw.LoadingIndicator(color: Colors.white));
             }
           },
         ));
