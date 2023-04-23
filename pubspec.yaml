@@ -65,8 +65,8 @@ dev_dependencies:
   flutter_native_splash: ^2.0.1+1
 
 flutter_native_splash:
-  color: "#000000"
-  image: graphics/splash.png
+  color: "#FFFFFF"
+  image: "graphics/ravestreamlogo_white_on_trans.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

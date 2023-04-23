@@ -192,7 +192,6 @@ class DevSettingsScreen extends StatelessWidget {
                       onPressed: () async {
                         List<Event> events = db.getEventListFromIndexes(
                             await db.readEventIndexesJson());
-                        pprint(events);
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Created Indexes"));
                       },

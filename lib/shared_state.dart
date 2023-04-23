@@ -9,10 +9,21 @@ import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ravestreamradioapp/conv.dart';
 
+/// ++++++++++++++ DEBUG SETTINGS ++++++++++++ //
+const bool DISABLE_EVENT_EDITING = true;
+
 late FirebaseApp app;
 
 /// Enum of Different Database Branches
 enum ServerBranches { public, test, develop }
+
+/// Map of URLs with dedicated Logo
+///
+/// Key is regex pattern for url checking, value is logo file path
+Map<String, String> urlPatternsForLogos = {
+  "instagram.com": "graphics/linkicons/instagramlogo.svg",
+  "ravestreamradio.de": "graphics/rsrvector.svg"
+};
 
 /// Enum of Possible Permissions. Users can have none, or multiple. [Admin] gives the user every other permission
 enum GlobalPermission {

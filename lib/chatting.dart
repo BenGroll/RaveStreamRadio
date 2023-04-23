@@ -13,7 +13,7 @@ import "package:ravestreamradioapp/realtimedb.dart";
 import "package:ravestreamradioapp/screens/chatwindow.dart";
 import "package:ravestreamradioapp/shared_state.dart";
 import 'package:ravestreamradioapp/extensions.dart';
-
+import 'package:ravestreamradioapp/colors.dart' as cl;
 
 class Message {
   /// Contains full path to the Document
@@ -155,13 +155,23 @@ Future<List<Chat>> getUsersChats() async {
     if (currently_loggedin_as.value!.chats == null) {
       return [];
     }
-    List<String> chatIDs = currently_loggedin_as.value!.chats;
-    List<Future<Chat>> futures = [];
+    Map<String, dynamic> chats =
+        forceStringDynamicMapFromObject(currently_loggedin_as.value!.chats);
+    currently_loggedin_as.value!.chats;
+    List<String> chatIDs =
+        chats.keys.map((String element) => chats[element] as String).toList();
+    List<Future<Chat?>> futures = [];
     chatIDs.forEach((element) async {
       futures.add(getChat_rtdb(element));
     });
-    List<Chat> chats = await Future.wait(futures);
-    return chats;
+    List<Chat?> chatResponses = await Future.wait(futures);
+    List<Chat> chatList = [];
+    chatResponses.forEach((element) {
+      if (element != null) {
+        chatList.add(element);
+      }
+    });
+    return chatList;
   }
 }
 
@@ -173,8 +183,9 @@ class ChatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: 
-        (BuildContext context) => ChatWindow(id: chat.id)));
+        Beamer.of(context).beamToNamed("/chat/${chat.id}");
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (BuildContext context) => ChatWindow(id: chat.id)));
       },
       leading: Icon(Icons.person, color: Colors.white),
       title: Text(getChatNameFromChat(chat),
@@ -206,4 +217,36 @@ String? getOtherPersonsPathInOoOChat(List<DocumentReference> members) {
     }
   });
   return personspath;
+}
+
+Future<Chat> startNewChat(List<DocumentReference> members) async {
+  Chat newChatData = Chat(members: members, id: getRandString(20));
+  await setChatData(newChatData);
+  return newChatData;
+}
+
+class ChatsDrawer extends StatelessWidget {
+  const ChatsDrawer({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+        backgroundColor: cl.darkerGrey,
+        child: FutureBuilder(
+            future: getUsersChats(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return ListView(
+                  children:
+                      snapshot.data!.map((e) => ChatTile(chat: e)).toList(),
+                );
+              } else {
+                return AspectRatio(
+                    aspectRatio: 1, child: CircularProgressIndicator());
+              }
+            }));
+  }
+}
+
+String? getChatIDbyMembers(Map<String, List> chats) {
+  chats.keys.forEach((element) {});
 }

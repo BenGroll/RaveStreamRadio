@@ -22,6 +22,7 @@ import 'databaseclasses.dart' as dbc;
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:ravestreamradioapp/screens/managecalendarscreen.dart'
     as managescreen;
+import 'package:ravestreamradioapp/chatting.dart';
 
 /// Function to open date picker
 ///
@@ -691,8 +692,14 @@ class EventTable extends StatelessWidget {
                                 (initialDate != null ? initialDate.year : 2000),
                                 (initialDate != null ? initialDate.month : 1),
                                 (initialDate != null ? initialDate.day : 1),
-                                newTime?.hour ?? (initialDate != null ? initialDate.hour : 1),
-                                newTime?.minute ?? (initialDate != null ? initialDate.minute : 1),
+                                newTime?.hour ??
+                                    (initialDate != null
+                                        ? initialDate.hour
+                                        : 1),
+                                newTime?.minute ??
+                                    (initialDate != null
+                                        ? initialDate.minute
+                                        : 1),
                               );
                               eventListNOT.value[foundEventIndex][key] =
                                   Timestamp.fromDate(newFinalDateTime);
@@ -963,5 +970,31 @@ class EventFilterSideBar extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class StartChatButton extends StatelessWidget {
+  String other_person_username;
+  StartChatButton({required this.other_person_username});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+        onPressed: () async {
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return Dialog(
+                  backgroundColor: Colors.transparent,
+                  child: Container(
+                    child: AspectRatio(
+                        aspectRatio: 1, child: CircularProgressIndicator()),
+                  ),
+                );
+              });
+          Beamer.of(context).beamToNamed("/");
+        },
+        icon: Icon(Icons.send, color: Colors.white));
   }
 }

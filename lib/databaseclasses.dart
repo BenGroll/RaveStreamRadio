@@ -42,29 +42,31 @@ Map<String, String> mapFromLinkList(List<Link> linklist) {
 
 /// Converts a list of db User permissions to list of GlobalPermission objects
 List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
+  print(permits);
   List<GlobalPermission> outlist = [];
   if (permits.contains("ADMIN")) {
-    for (int i = 0; i < GlobalPermission.values.length; i++) {
-      outlist.add(GlobalPermission.values[i]);
-    }
-  } else {
-    permits.forEach((element) {
-      if (GlobalPermission.values.contains(element)) {
-        switch (element) {
-          case "MANAGE_EVENTS":
-            outlist.add(GlobalPermission.MANAGE_EVENTS);
-            break;
-          case "CHANGE_DEV_SETTINGS":
-            outlist.add(GlobalPermission.CHANGE_DEV_SETTINGS);
-            break;
-          case "MANAGE_HOSTS":
-            outlist.add(GlobalPermission.MANAGE_HOSTS);
-            break;
-          default:
-        }
-      }
-    });
+    outlist.add(GlobalPermission.MANAGE_EVENTS);
+    outlist.add(GlobalPermission.CHANGE_DEV_SETTINGS);
+    outlist.add(GlobalPermission.MANAGE_HOSTS);
+    outlist.add(GlobalPermission.MODERATE);
+    return outlist;
   }
+  permits.forEach((element) {
+    switch (element) {
+      case "MANAGE_EVENTS":
+        outlist.add(GlobalPermission.MANAGE_EVENTS);
+        break;
+      case "CHANGE_DEV_SETTINGS":
+        outlist.add(GlobalPermission.CHANGE_DEV_SETTINGS);
+        break;
+      case "MANAGE_HOSTS":
+        outlist.add(GlobalPermission.MANAGE_HOSTS);
+        break;
+      case "MODERATE":
+        outlist.add(GlobalPermission.MODERATE);
+        break;
+    }
+  });
   return outlist;
 }
 

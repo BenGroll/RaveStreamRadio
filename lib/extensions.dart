@@ -145,7 +145,6 @@ extension Queriefy on List<dbc.Event> {
     List<dbc.Event> outL = [];
     forEach((dbc.Event element) {
       Map mapElem = element.toMap();
-      pprint(mapElem[name]);
       if (mapElem.keys.contains(name) && values.contains(mapElem[name])) {
         outL.add(element);
       }

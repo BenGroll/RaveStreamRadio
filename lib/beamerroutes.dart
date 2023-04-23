@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ravestreamradioapp/screens/aboutus.dart';
+import 'package:ravestreamradioapp/screens/chatwindow.dart';
 import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/screens/loginscreen.dart';
 import 'package:ravestreamradioapp/screens/managecalendarscreen.dart';
@@ -20,7 +21,6 @@ import 'screens/imprint.dart';
 import 'package:ravestreamradioapp/screens/devsettingsscreen.dart';
 import 'package:ravestreamradioapp/screens/draftscreen.dart';
 import 'package:ravestreamradioapp/extensions.dart';
-
 
 /// All named Routes are to be included here
 Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
@@ -92,6 +92,15 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   "/manage": (context, state, data) => ManageEventScreen(),
   "/drafts": (context, state, data) => const DraftCalendar(),
   "/moderate": (context, state, data) => ReportManagementScreen(),
+  "/chat/:chatid": (context, state, data) {
+    final chatid = state.pathParameters["chatid"];
+    return BeamPage(
+        key: ValueKey("Chat - $chatid"),
+        //type: BeamPageType.scaleTransition,
+        child: chatid == null
+            ? Text("Report not Found")
+            : ChatWindow(id: chatid));
+  },
   "/report/:reportid": (context, state, data) {
     final reportid = state.pathParameters["reportid"];
     return BeamPage(

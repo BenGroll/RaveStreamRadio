@@ -192,6 +192,7 @@ class EventCreationScreen extends StatelessWidget {
                       actions: [
                         TextButton(
                             onPressed: () async {
+                              print(block_upload);
                               if (!block_upload) {
                                 block_upload = true;
                                 List<Widget> errorcontent =
@@ -408,8 +409,18 @@ class GeneralSettingsPage extends StatelessWidget {
                                                   pprint(
                                                       "@ecs ${snapshot.data} Snapshot Data");
                                                   return DropdownSearch(
-                                                    selectedItem:
-                                                        snapshot.data!.keys.contains(currentEventData.value.templateHostID) ? snapshot.data![currentEventData.value.templateHostID] : currentEventData.value.templateHostID,
+                                                    selectedItem: snapshot
+                                                            .data!.keys
+                                                            .contains(
+                                                                currentEventData
+                                                                    .value
+                                                                    .templateHostID)
+                                                        ? snapshot.data![
+                                                            currentEventData
+                                                                .value
+                                                                .templateHostID]
+                                                        : currentEventData.value
+                                                            .templateHostID,
                                                     onChanged: (value) {
                                                       pprint(
                                                           "New Build Invoked");

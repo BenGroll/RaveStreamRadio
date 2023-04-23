@@ -4,12 +4,11 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/filesystem.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
-import 'package:ravestreamradioapp/screens/chats.dart';
 import 'package:ravestreamradioapp/screens/overviewpages/groupoverviewpage.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/extensions.dart';
-
+import 'package:ravestreamradioapp/chatting.dart';
 
 class GroupsScreen extends StatefulWidget {
   ValueNotifier<List<Widget>> widgets = ValueNotifier([]);
@@ -23,12 +22,11 @@ class _GroupsScreenState extends State<GroupsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: cl.darkerGrey,
-        body: Padding(
+      backgroundColor: cl.darkerGrey,
+      body: Padding(
           padding: const EdgeInsets.all(0),
-          child: GroupListBuilder(parent: widget)
-        ),
-        endDrawer: const ChatsDrawer(),
+          child: GroupListBuilder(parent: widget)),
+      endDrawer: const ChatsDrawer(),
     );
   }
 }
@@ -40,40 +38,39 @@ class GroupListBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-            onRefresh: () async {
-              parent.widgets.value = await buildGroupTiles();
-            },
-            child: FutureBuilder(
-                future: buildGroupTiles(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    parent.widgets.value = snapshot.data ??
-                        [
-                          Text(
-                            "No Groups joined yet.",
-                            style: TextStyle(color: Colors.white),
-                          )
-                        ];
-                    return ValueListenableBuilder(
-                        valueListenable: parent.widgets,
-                        builder: (context, widgetlist, foo) {
-                          return ListView(
-                            children: widgetlist,
-                          );
-                        });
-                  } else {
-                    return const Center(
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: CircularProgressIndicator(color: Colors.white),
-                      ),
+      onRefresh: () async {
+        parent.widgets.value = await buildGroupTiles();
+      },
+      child: FutureBuilder(
+          future: buildGroupTiles(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              parent.widgets.value = snapshot.data ??
+                  [
+                    Text(
+                      "No Groups joined yet.",
+                      style: TextStyle(color: Colors.white),
+                    )
+                  ];
+              return ValueListenableBuilder(
+                  valueListenable: parent.widgets,
+                  builder: (context, widgetlist, foo) {
+                    return ListView(
+                      children: widgetlist,
                     );
-                  }
-                }),
-          );
+                  });
+            } else {
+              return const Center(
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              );
+            }
+          }),
+    );
   }
 }
-
 
 Future<List<Widget>> buildGroupTiles() async {
   if (currently_loggedin_as.value == null) {
@@ -143,7 +140,6 @@ class GroupEntry extends StatelessWidget {
     );
   }
 }
-
 
 Future<List<Widget>> buildChatTiles() async {
   if (currently_loggedin_as.value == null) {

@@ -1,7 +1,6 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
 import 'package:ravestreamradioapp/extensions.dart';
 
-
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/conv.dart';
@@ -89,13 +88,14 @@ class EventFilterBottomSheet extends StatelessWidget {
                 ),
                 ListTile(
                   dense: false,
-                  title:
-                      Text("Can go with this Age:", style: TextStyle(color: Colors.white)),
-                  trailing:
-                      IconButton(onPressed: () {
+                  title: Text("Can go with this Age:",
+                      style: TextStyle(color: Colors.white)),
+                  trailing: IconButton(
+                      onPressed: () {
                         filters.value.canGoByAge = 18;
-                            filters.notifyListeners();
-                      }, icon: Icon(Icons.undo)),
+                        filters.notifyListeners();
+                      },
+                      icon: Icon(Icons.undo)),
                 ),
                 ListTile(
                   dense: true,
@@ -117,7 +117,8 @@ class EventFilterBottomSheet extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                               backgroundColor:
                                   (enabledFilters.canGoByAge != null &&
-                                          enabledFilters.canGoByAge! >= 18 && enabledFilters.canGoByAge! < 21)
+                                          enabledFilters.canGoByAge! >= 18 &&
+                                          enabledFilters.canGoByAge! < 21)
                                       ? cl.darkerGrey
                                       : cl.greynothighlight),
                           onPressed: () {
@@ -140,67 +141,77 @@ class EventFilterBottomSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-                db.doIHavePermission(GlobalPermission.MODERATE) ? 
-                ListTile(
-                  dense: false,
-                  title: Text("Status:", style: TextStyle(color: Colors.white)),
-                  trailing:
-                      IconButton(onPressed: () {}, icon: Icon(Icons.undo)),
-                ) : const SizedBox(height: 0),
-                db.doIHavePermission(GlobalPermission.MODERATE) ?
-                ListTile(
-                  dense: true,
-                  title: Row(
-                    children: [
-                      ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  (enabledFilters.byStatus.contains("public"))
-                                      ? cl.darkerGrey
-                                      : cl.greynothighlight),
-                          onPressed: () {
-                            filters.value.byStatus.contains("public") ? filters.value.byStatus.remove("public") : filters.value.byStatus.add("public");
-                            filters.notifyListeners();
-                          },
-                          child: Text("Public")),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  ( enabledFilters.byStatus.contains("friendlist"))
-                                      ? cl.darkerGrey
-                                      : cl.greynothighlight),
-                          onPressed: () {
-                            filters.value.byStatus.contains("friendlist") ? filters.value.byStatus.remove("friendlist") : filters.value.byStatus.add("friendlist");
-                            filters.notifyListeners();
-                          },
-                          child: Text("Friendlist")),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  (
-                                    enabledFilters.byStatus.contains("frozen"))
-                                      ? cl.darkerGrey
-                                      : cl.greynothighlight),
-                          onPressed: () {
-                            filters.value.byStatus.contains("frozen") ? filters.value.byStatus.remove("frozen") : filters.value.byStatus.add("frozen");
-                            filters.notifyListeners();
-                          },
-                          child: Text("Frozen")),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  (
-                                          enabledFilters.byStatus.contains("draft"))
-                                      ? cl.darkerGrey
-                                      : cl.greynothighlight),
-                          onPressed: () {
-                            filters.value.byStatus.contains("draft") ? filters.value.byStatus.remove("draft") : filters.value.byStatus.add("draft");
-                            filters.notifyListeners();
-                          },
-                          child: Text("Drafts")),
-                    ],
-                  )
-                ) : const SizedBox(height: 0),
+                db.doIHavePermission(GlobalPermission.MODERATE)
+                    ? ListTile(
+                        dense: false,
+                        title: Text("Status:",
+                            style: TextStyle(color: Colors.white)),
+                        trailing: IconButton(
+                            onPressed: () {}, icon: Icon(Icons.undo)),
+                      )
+                    : const SizedBox(height: 0),
+                db.doIHavePermission(GlobalPermission.MODERATE)
+                    ? ListTile(
+                        dense: true,
+                        title: Row(
+                          children: [
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: (enabledFilters.byStatus
+                                            .contains("public"))
+                                        ? cl.darkerGrey
+                                        : cl.greynothighlight),
+                                onPressed: () {
+                                  filters.value.byStatus.contains("public")
+                                      ? filters.value.byStatus.remove("public")
+                                      : filters.value.byStatus.add("public");
+                                  filters.notifyListeners();
+                                },
+                                child: Text("Public")),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: (enabledFilters.byStatus
+                                            .contains("friendlist"))
+                                        ? cl.darkerGrey
+                                        : cl.greynothighlight),
+                                onPressed: () {
+                                  filters.value.byStatus.contains("friendlist")
+                                      ? filters.value.byStatus
+                                          .remove("friendlist")
+                                      : filters.value.byStatus
+                                          .add("friendlist");
+                                  filters.notifyListeners();
+                                },
+                                child: Text("Friendlist")),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: (enabledFilters.byStatus
+                                            .contains("frozen"))
+                                        ? cl.darkerGrey
+                                        : cl.greynothighlight),
+                                onPressed: () {
+                                  filters.value.byStatus.contains("frozen")
+                                      ? filters.value.byStatus.remove("frozen")
+                                      : filters.value.byStatus.add("frozen");
+                                  filters.notifyListeners();
+                                },
+                                child: Text("Frozen")),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: (enabledFilters.byStatus
+                                            .contains("draft"))
+                                        ? cl.darkerGrey
+                                        : cl.greynothighlight),
+                                onPressed: () {
+                                  filters.value.byStatus.contains("draft")
+                                      ? filters.value.byStatus.remove("draft")
+                                      : filters.value.byStatus.add("draft");
+                                  filters.notifyListeners();
+                                },
+                                child: Text("Drafts")),
+                          ],
+                        ))
+                    : const SizedBox(height: 0),
               ],
             );
           }),
@@ -217,7 +228,8 @@ class EventCalendar extends StatelessWidget {
       {super.key, required this.loggedinas, this.mode = CalendarMode.normal});
   @override
   Widget build(BuildContext context) {
-      ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(byStatus: mode == CalendarMode.normal ? ["public"] : ["draft"]));
+    ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
+        byStatus: mode == CalendarMode.normal ? ["public"] : ["draft"]));
     event_data = [];
     totalelements = 0;
     current_page.value = 0;
@@ -255,7 +267,6 @@ class EventCalendar extends StatelessWidget {
                       }));
                 }))),
         appBar: CalendarAppBar(
-          
           context,
           filters,
           title: mode == CalendarMode.drafts ? "Your Drafts" : "Events",
@@ -290,14 +301,18 @@ class CalendarEventCard extends StatelessWidget {
             }
             if (direction == DismissDirection.endToStart) {
               // Open Editing Screen vor Event
-              Beamer.of(context).beamToNamed("/editevent/${event.eventid}");
+              if (DISABLE_EVENT_EDITING) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    cw.hintSnackBar("Event Editing is currently disabled."));
+              } else {
+                Beamer.of(context).beamToNamed("/editevent/${event.eventid}");
+              }
             }
             return false;
           },
           background: Padding(
             padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width / 10),
-                
             child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
               ValueListenableBuilder(
                   valueListenable: saved,
@@ -419,7 +434,6 @@ class _CalendarEventCardBody extends StatelessWidget {
                         75,
                     side: const BorderSide(
                       width: 1,
-                      
                     )),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -467,41 +481,10 @@ class _CalendarEventCardBody extends StatelessWidget {
                                                 style: TextStyle(
                                                     color: Colors.white)),
                                             event.templateHostID != null
-                                                ? Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(
-                                                            MediaQuery.of(
-                                                                        context)
-                                                                    .size
-                                                                    .width /
-                                                                100,
-                                                            0,
-                                                            0,
-                                                            0),
-                                                    child: FutureBuilder(
-                                                        future:
-                                                            db.getDemoHostIDs(),
-                                                        builder: (context,
-                                                            snapshot) {
-                                                          if (snapshot
-                                                                  .connectionState ==
-                                                              ConnectionState
-                                                                  .done) {
-                                                            return Text(
-                                                              snapshot.data![event
-                                                                      .templateHostID] ??
-                                                                  "This should never display",
-                                                              style: const TextStyle(
-                                                                  color: Colors
-                                                                      .white),
-                                                            );
-                                                          } else {
-                                                            return CircularProgressIndicator(
-                                                                color: Colors
-                                                                    .white);
-                                                          }
-                                                        }),
-                                                  )
+                                                ? linkbuttons
+                                                    .TemplateHostLinkButton(
+                                                        id: event
+                                                            .templateHostID)
                                                 : (event.hostreference != null
                                                     ? linkbuttons
                                                         .buildLinkButtonFromRef(

@@ -6,7 +6,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
-
 FirebaseDatabase rtdb = FirebaseDatabase.instanceFor(
     app: app,
     databaseURL:
@@ -17,9 +16,13 @@ Stream listenToChat(String ID) {
   return stream;
 }
 
-Future<Chat> getChat_rtdb(String ID) async {
+Future<Chat?> getChat_rtdb(String ID) async {
   DataSnapshot snap = await rtdb.ref("root/Chats/$ID").get();
-  return Chat.fromDBSnapshot(snap.value as Map);
+  if (snap.exists) {
+    return Chat.fromDBSnapshot(snap.value as Map);
+  } else {
+    return null;
+  }
 }
 
 Future setChatData(Chat chat) async {

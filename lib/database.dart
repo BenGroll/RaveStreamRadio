@@ -81,8 +81,9 @@ Future uploadEventToDatabase(dbc.Event event) async {
     await event.hostreference!.set(hostdata);
   }
   Map eventIndexFile = await json.decode(await readEventIndexesJson());
-  eventIndexFile[event.eventid] = event.toMap();
+  eventIndexFile[event.eventid] = event.toJsonCompatibleMap();
   // Conversions necessary for Json encoding
+  /*
   if (eventIndexFile[event.eventid]["begin"] != null) {
     eventIndexFile[event.eventid]["begin"] =
         eventIndexFile[event.eventid]["begin"].millisecondsSinceEpoch;
@@ -95,7 +96,7 @@ Future uploadEventToDatabase(dbc.Event event) async {
     // Convert Hostreference from DocRef to String (json)
     eventIndexFile[event.eventid]["hostreference"] =
         eventIndexFile[event.eventid]["hostreference"].path;
-  }
+  }*/
   await storage.ref("indexes/${branchPrefix}eventsIndex.json").putString(
       eventMapToJson(forceStringDynamicMapFromObject(eventIndexFile)));
   return Future.delayed(Duration.zero);
@@ -643,7 +644,9 @@ Future<Map<String, String>> getDocIDsFromCollectionAsList(
 
 /// Get demohost Ids
 Future<Map<String, String>> getDemoHostIDs() async {
-  if (!doIHavePermission(GlobalPermission.MANAGE_HOSTS)) return {};
+  if (!doIHavePermission(GlobalPermission.MANAGE_HOSTS)) {
+    return {};
+  }
   DocumentSnapshot indexesSnap = await db.doc("content/indexes").get();
   if (indexesSnap.data() != null) {
     return forceStringStringMapFromStringDynamic(

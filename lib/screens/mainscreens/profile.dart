@@ -7,6 +7,7 @@ import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:ravestreamradioapp/screens/loginscreen.dart';
 import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/database.dart' as db;
+import 'package:ravestreamradioapp/screens/overviewpages/useroverviewpage.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/extensions.dart';
@@ -65,9 +66,15 @@ class LoggedInScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cl.lighterGrey,
-      body : selectedbranch.value == ServerBranches.develop
-      ? DevSettingsScreen()
-      : Container()
-    );
+      body : ProfileView());
+  }
+}
+
+class ProfileView extends StatelessWidget {
+  const ProfileView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Placeholder();
   }
 }

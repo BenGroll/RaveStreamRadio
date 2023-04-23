@@ -7,7 +7,6 @@ import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
-
 class UserOverviewPage extends StatelessWidget {
   final String username;
   dbc.User? user;
@@ -24,23 +23,25 @@ class UserOverviewPage extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.done) {
               return Scaffold(
                 backgroundColor: cl.darkerGrey,
-                  appBar: AppBar(
-                    centerTitle: true,
-                    title: Text("User: ${snapshot.data!.id}"),
-                    actions: [
-                      ReportButton(target: "${branchPrefix}users/$username")
-                    ],
-                    ),
-                  body: const Center(
-                    child: Text("TBA", style: TextStyle(color: Colors.white),)),
-
-                      
-                      );
-                  
+                appBar: AppBar(
+                  centerTitle: true,
+                  title: Text("User: ${snapshot.data!.id}"),
+                  actions: [
+                    ReportButton(target: "${branchPrefix}users/$username"),
+                    StartChatButton(other_person_username: username)
+                  ],
+                ),
+                body: const Center(
+                    child: Text(
+                  "TBA",
+                  style: TextStyle(color: Colors.white),
+                )),
+              );
             } else {
               return Scaffold(
-                backgroundColor: cl.darkerGrey,
-                body: const Center(child:CircularProgressIndicator(color: Colors.white)));
+                  backgroundColor: cl.darkerGrey,
+                  body: const Center(
+                      child: CircularProgressIndicator(color: Colors.white)));
             }
           },
         ));
