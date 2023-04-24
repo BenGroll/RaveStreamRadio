@@ -14,6 +14,7 @@ import 'package:ravestreamradioapp/payments.dart' as pay;
 import 'package:ravestreamradioapp/chatting.dart';
 import 'package:ravestreamradioapp/testdbscenario.dart';
 import 'package:ravestreamradioapp/realtimedb.dart' as rtdb;
+import 'package:firebase_database/firebase_database.dart';
 
 /// Screen for developer level Actions and Informations
 class DevSettingsScreen extends StatelessWidget {
@@ -252,6 +253,34 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("Chat Test"));
                       },
                       child: Text("Chat Test")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(generateDocumentID());
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Chat Test"));
+                      },
+                      child: Text("Generate 20-length Document ID")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        Message testmessage = Message(
+                            sender: "dev.users/admin",
+                            sentAt: Timestamp.now(),
+                            content: "Sup");
+                        Message testmessage2 = Message(
+                            sender: "dev.users/addmin",
+                            sentAt: Timestamp.now(),
+                            content: "wie gehts");
+
+                        //await rtdb.addMessage(testmessage);
+                        //await rtdb.addMessage(testmessage2);
+                        //await rtdb.rtdb.ref("root/Chats/${"TZTrs5BngHYohRGsm4w2"}/messages").set(["adiugh", "adoiuhd"]);
+                        await rtdb.addMessageToChat(
+                            testmessage, Chat(id: "TZTrs5BngHYohRGsm4w2", members: [db.db.doc("dev.users/admin"), db.db.doc("dev.users/addmin")]));
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            hintSnackBar("Add Test Messages to RTDB"));
+                      },
+                      child: Text("Add Test Messages to RTDB")),
                 ],
               ),
             ),

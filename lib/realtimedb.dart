@@ -5,6 +5,8 @@ import 'package:ravestreamradioapp/chatting.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+import 'conv.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 FirebaseDatabase rtdb = FirebaseDatabase.instanceFor(
     app: app,
@@ -16,11 +18,27 @@ Stream listenToChat(String ID) {
   return stream;
 }
 
-
 Future<Chat?> getChat_rtdb(String ID) async {
   DataSnapshot snap = await rtdb.ref("root/Chats/$ID").get();
   if (snap.exists) {
-    return Chat.fromDBSnapshot(snap.value as Map);
+    Chat chat = Chat.fromMap(snap.value as Map);
+    DataSnapshot messages = await rtdb.ref("root/Chats/$ID/messages").get();
+    List<String> messageIDList = forceStringType(messages.value as List);
+    //print(messageIDList);
+    List<Future> futures = [];
+    messageIDList.forEach((element) {
+      futures.add(rtdb.ref("root/Messages/$element").get());
+    });
+    List snapshots = await Future.wait(futures);
+    //print(snapshots);
+    List<Message> messageList = [];
+    snapshots.forEach((element) {
+      print(element.value);
+      messageList
+          .add(Message.fromMap(forceStringDynamicMapFromObject(element.value as Map) ));
+    });
+    chat.messages = messageList;
+    return chat;
   } else {
     return null;
   }
@@ -32,8 +50,17 @@ Future setChatData(Chat chat) async {
 }
 
 Future addMessageToChat(Message message, Chat chat) async {
-  DatabaseReference ref = rtdb.ref("root/Chats/${chat.id}");
-  chat.messages.add(message);
-  await ref.set(chat.toMap());
-  return;
+  Message totalMessage = await addMessage(message);
+  DataSnapshot ref = await rtdb.ref("root/Chats/${chat.id}/messages").get();
+  List<Object?> messages = ref.value == null ? [] : ref.value as List<Object?>;
+  messages.add(totalMessage.id);
+  await rtdb.ref("root/Chats/${chat.id}/messages").set(messages);
+  return Future.delayed(Duration.zero);
+}
+
+Future<Message> addMessage(Message message) async {
+  String messageID = generateDocumentID();
+  await rtdb.ref("root/Messages/$messageID").set(message.toMap());
+  message.id = messageID;
+  return message;
 }

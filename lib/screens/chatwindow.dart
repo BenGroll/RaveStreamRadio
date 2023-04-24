@@ -110,9 +110,10 @@ class ChatWindow extends StatelessWidget {
               return StreamBuilder(
                   stream: rtdb.listenToChat(id),
                   builder: (BuildContext context, AsyncSnapshot snap) {
-                    if (snap.connectionState == ConnectionState.active) {
-                      Chat chat = Chat.fromDBSnapshot(snap.data.snapshot.value);
-                      List<MessageElement> messagecards = chat.messages
+                    if (snap.connectionState == ConnectionState.done) {
+                      Chat chat = Chat.fromDBSnapshot(snap.data);
+                      if (chat.messages == null) chat.messages = [];
+                      List<MessageElement> messagecards = chat.messages!
                           .map((e) => MessageElement(
                               message: e, isGroupChat: chat.members.length > 2))
                           .toList();
@@ -220,8 +221,8 @@ class ChatWindow extends StatelessWidget {
             }
           } else {
             return const cw.LoadingIndicator(
-                color: Colors.white,
-              );
+              color: Colors.white,
+            );
           }
         });
   }

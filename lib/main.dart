@@ -17,7 +17,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   app = await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform);
-  pprint("Test");
+  //pprint("Test");
   runApp(const MyApp());
 }
 

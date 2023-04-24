@@ -138,6 +138,80 @@ String getRandString(int len) {
   return base64UrlEncode(values);
 }
 
+String generateDocumentID() {
+  List<String> allowed_values = [
+    "a",
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "m",
+    "n",
+    "o",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ];
+  print(allowed_values.length);
+  String returnID = "";
+  var rng = Random();
+  for (int i = 0; i < 20; i++) {
+    returnID = "$returnID${allowed_values[rng.nextInt(62)]}";
+  }
+  return returnID;
+}
+
 /// Widget to support asynchronous loading of event titles
 class EventTitle extends StatelessWidget {
   final TextStyle style;

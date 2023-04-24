@@ -15,10 +15,12 @@ import "package:ravestreamradioapp/shared_state.dart";
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
+import 'package:firebase_database/firebase_database.dart';
 
 class Message {
   /// Contains full path to the Document
   final String sender;
+
   /// Unix Timestamp
   final Timestamp sentAt;
 
@@ -26,27 +28,26 @@ class Message {
   final String content;
 
   /// Unique ID
-  final String? id;
+  String? id = generateDocumentID();
 
-  Message({
-    required this.sender,
-    required this.sentAt,
-    required this.content,
-    this.id
-  });
+  Message(
+      {required this.sender,
+      required this.sentAt,
+      required this.content,
+      this.id});
   factory Message.fromMap(Map<String, dynamic> map) {
     return Message(
-      content: map["content"],
-      sender: map["sender"],
-      sentAt: Timestamp.fromMillisecondsSinceEpoch(map["sentAt"]),
-      
-    );
+        content: map["content"],
+        sender: map["sender"],
+        sentAt: Timestamp.fromMillisecondsSinceEpoch(map["sentAt"]),
+        id: map["id"]);
   }
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'sender': sender,
       'sentAt': sentAt.millisecondsSinceEpoch,
       'content': content,
+      'id': id
     };
   }
 }
@@ -73,6 +74,7 @@ List<Message> chatFromDB(List<Map<String, dynamic>> map) {
 }
 
 List<Message> messagesFromDBSnapshot(List messagelist) {
+  
   return messagelist
       .map((e) => Message(
           sender: e["sender"],
@@ -83,7 +85,7 @@ List<Message> messagesFromDBSnapshot(List messagelist) {
 
 class Chat {
   final String id;
-  List<Message> messages;
+  List<Message>? messages;
   List<DocumentReference> members;
   String? pathToLogo;
   String? customName;
@@ -94,16 +96,29 @@ class Chat {
       this.customName,
       required this.id});
   factory Chat.fromMap(Map map) {
+    /*print("Members: ${map["members"]}");
+    print("Members rtt: ${map["members"].runtimeType}");
+    print("Member rtt; ${map["members"][0].runtimeType}");
+    print(map["messages"][0].runtimeType);
+    */
+    List<String> memberstringList =
+        forceStringType(map["members"]) as List<String>;
+    /*List<Message>? messagelist = map["messages"].map((e) => Message.fromMap(forceStringDynamicMapFromObject(e))).toList();*/
+    List<Message>? messagelist;
+    if (map["messages"].length == 0 ||
+        map["messages"][0].runtimeType == String) {
+      messagelist = null;
+    }
     return Chat(
-        members: forceDocumentReferenceFromStringList(map["members"]),
-        messages: dynamicListToMessageList(map["messages"]),
+        members: forceDocumentReferenceFromStringList(memberstringList),
+        messages: map["messages"] == null ? <Message>[] : <Message>[],
         pathToLogo: map["pathToLogo"],
         id: map["id"],
         customName: map["customName"]);
   }
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'messages': messages.map((e) => e.toMap()).toList(),
+      'messages': messages?.toList() ?? [],
       'members': members.paths(),
       "pathToLogo": pathToLogo,
       "id": id,
@@ -114,8 +129,8 @@ class Chat {
   factory Chat.fromDBSnapshot(Map snap) {
     List<String> members =
         forceStringType(snap["members"].map((e) => e.toString()).toList());
+    List<String> messageIDS = forceStringType(snap["messages"]);
     List<Message> messagelist = messagesFromDBSnapshot(snap["messages"]);
-
     return Chat(
         members: forceDocumentReferenceFromStringList(members),
         id: snap["id"],
@@ -152,23 +167,16 @@ Future<List<Chat>> getUsersChats() async {
     if (currently_loggedin_as.value!.chats == null) {
       return [];
     }
-    Map<String, dynamic> chats =
-        forceStringDynamicMapFromObject(currently_loggedin_as.value!.chats);
-    currently_loggedin_as.value!.chats;
-    List<String> chatIDs =
-        chats.keys.map((String element) => chats[element] as String).toList();
-    List<Future<Chat?>> futures = [];
-    chatIDs.forEach((element) async {
-      futures.add(getChat_rtdb(element));
+    List<String> joined_chats = currently_loggedin_as.value?.chats ?? [];
+    List<Future<DataSnapshot>> futures = [];
+    joined_chats.forEach((element) {
+      futures.add(rtdb.ref("root/Chats/$element").get());
     });
-    List<Chat?> chatResponses = await Future.wait(futures);
-    List<Chat> chatList = [];
-    chatResponses.forEach((element) {
-      if (element != null) {
-        chatList.add(element);
-      }
-    });
-    return chatList;
+    List<DataSnapshot> chats = await Future.wait(futures);
+    List<Chat> newchats =
+        chats.map((e) => Chat.fromMap(e.value as Map)).toList();
+    print(newchats[0]);
+    return newchats;
   }
 }
 
@@ -180,9 +188,10 @@ class ChatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
+        print("IGUOH");
         Beamer.of(context).beamToNamed("/chat/${chat.id}");
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (BuildContext context) => ChatWindow(id: chat.id)));
+        /* Navigator.of(context).push(MaterialPageRoute(
+            builder: (BuildContext context) => ChatWindow(id: chat.id)));*/
       },
       leading: Icon(Icons.person, color: Colors.white),
       title: Text(getChatNameFromChat(chat),
@@ -193,6 +202,7 @@ class ChatTile extends StatelessWidget {
 }
 
 String getChatNameFromChat(Chat chat) {
+  //return "TestChat";
   if (chat.customName != null && chat.customName!.isNotEmpty) {
     return chat.customName ?? "Empty ChatName";
   } else {

@@ -14,7 +14,7 @@ import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:beamer/beamer.dart';
 
-const $ = "calendar.dart";
+const n = "calendar.dart";
 
 List<dbc.Event>? event_data = [];
 int totalelements = 0;
