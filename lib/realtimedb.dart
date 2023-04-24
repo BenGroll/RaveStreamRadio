@@ -14,6 +14,7 @@ FirebaseDatabase rtdb = FirebaseDatabase.instanceFor(
         "https://ravestreammobileapp-default-rtdb.europe-west1.firebasedatabase.app/");
 
 Stream listenToChat(String ID) {
+  print("ID: $ID");
   Stream<DatabaseEvent> stream = rtdb.ref("root/Chats/$ID").onValue;
   return stream;
 }
@@ -24,7 +25,7 @@ Future<Chat?> getChat_rtdb(String ID) async {
     Chat chat = Chat.fromMap(snap.value as Map);
     DataSnapshot messages = await rtdb.ref("root/Chats/$ID/messages").get();
     List<String> messageIDList = forceStringType(messages.value as List);
-    //print(messageIDList);
+    print("MessageIDList: $messageIDList");
     List<Future> futures = [];
     messageIDList.forEach((element) {
       futures.add(rtdb.ref("root/Messages/$element").get());
@@ -33,10 +34,9 @@ Future<Chat?> getChat_rtdb(String ID) async {
     //print(snapshots);
     List<Message> messageList = [];
     snapshots.forEach((element) {
-      print(element.value);
-      messageList
-          .add(Message.fromMap(forceStringDynamicMapFromObject(element.value as Map) ));
+      messageList.add(Message.fromMap(element.value as Map));
     });
+    print(messageList);
     chat.messages = messageList;
     return chat;
   } else {
