@@ -98,6 +98,10 @@ class ChatWindow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     pprint("ChatWindow Opened");
+    if (DISABLE_CHATWINDOW){
+      return Scaffold(
+        backgroundColor: cl.darkerGrey,
+        body: Center(child: Text("Chatting is currently WIP.",style: TextStyle(color: Colors.white))));}
     return FutureBuilder(
         future: rtdb.getChat_rtdb(id),
         builder: (BuildContext context, AsyncSnapshot snap) {
