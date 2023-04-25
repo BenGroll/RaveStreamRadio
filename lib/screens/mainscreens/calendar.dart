@@ -231,155 +231,149 @@ class EventCalendar extends StatefulWidget {
   @override
   _EventCalendarState createState() => _EventCalendarState();
 }
+
 class _EventCalendarState extends State<EventCalendar> {
   late Future<List<dbc.Event>> events;
   String searchString = "";
-  
-  get mode => null ;
+
 
   @override
-  void initState(){
-  super.initState();
-  events =db.fetchEventsFromIndexFile();
-}
+  void initState() {
+    super.initState();
+    //events =db.fetchEventsFromIndexFile();
+  }
+
   @override
   Widget build(BuildContext context) {
+    CalendarMode mode = widget.mode;
     ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
         byStatus: mode == CalendarMode.normal ? ["public"] : ["draft"]));
+    print("OnCreate filters: $filters");
     event_data = [];
     totalelements = 0;
     current_page.value = 0;
     GlobalKey<ScaffoldState> scaffkey = GlobalKey<ScaffoldState>();
     Scaffold scaff = Scaffold(
-        drawer: cw.NavBar(),
-        backgroundColor: cl.darkerGrey,
-        body:
-        
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-      margin: EdgeInsets.only(bottom: 8 * 1),
-      
-      height: MediaQuery.of(context).size.height * 0.1,
-      child: Stack(
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.only(
-              left: 8,
-              right: 8,
-              bottom: 40,
-            ),
-            height: MediaQuery.of(context).size.height * 0.1 - 20,
-            decoration: BoxDecoration(
-              color: cl.lighterGrey,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(36),
-                bottomRight: Radius.circular(36),
-              ),
-            ),
-            
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              alignment: Alignment.center,
-              margin: EdgeInsets.symmetric(horizontal: 16),
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              height: 54,
-              decoration: BoxDecoration(
-                color: cl.darkerGrey,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    offset: Offset(0, 10),
-                    
-                    blurRadius: 20,
-                    color: Colors.black,
+      drawer: cw.NavBar(),
+      backgroundColor: cl.darkerGrey,
+      body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Container(
+          margin: EdgeInsets.only(bottom: 8 * 1),
+          height: MediaQuery.of(context).size.height * 0.1,
+          child: Stack(
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(
+                  left: 8,
+                  right: 8,
+                  bottom: 40,
+                ),
+                height: MediaQuery.of(context).size.height * 0.1 - 20,
+                decoration: BoxDecoration(
+                  color: cl.lighterGrey,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(36),
+                    bottomRight: Radius.circular(36),
                   ),
-                ],
-                
+                ),
               ),
-              child: Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextField(
-                      
-                      onChanged: (value) {
-                        setState((){
-                          searchString = value.toLowerCase();
-                        });
-                      },
-                      decoration: 
-                      InputDecoration(
-                        filled: true,
-                        fillColor: cl.darkerGrey,
-                        hintText: "Search",
-                        hintStyle: TextStyle(
-                          color: Colors.white,
-                        ),
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                      
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.symmetric(horizontal: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: cl.darkerGrey,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        offset:
+                            Offset(0, MediaQuery.of(context).size.height / 300),
+                        blurRadius: MediaQuery.of(context).size.height / 100,
+                        color: Colors.black,
                       ),
-                    ),
+                    ],
                   ),
-                  SvgPicture.asset("assets/icons/search.svg"),
-                ],
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: TextField(
+                          style: TextStyle(color: Colors.white),
+                          onChanged: (value) {
+                            setState(() {
+                              searchString = value.toLowerCase();
+                            });
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: cl.darkerGrey,
+                            hintText: "Search",
+                            hintStyle: TextStyle(
+                              color: Colors.white,
+                            ),
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      //SvgPicture.asset("assets/icons/search.svg"),
+                      Icon(Icons.search, color: Colors.white)
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-    ),
-  
-
-        Expanded(child: RefreshIndicator(
-            backgroundColor: cl.darkerGrey,
-            color: Colors.white,
-            onRefresh: () => Future.delayed(Duration(seconds: 1))
-                .then((value) => reloadEventPage()),
-            child: ValueListenableBuilder(
-                valueListenable: current_page,
-                builder: ((context, value, child) {
-                  return FutureBuilder(
-                      future: db.fetchEventsFromIndexFile(),
-                      builder: ((context, snapshot) {
-                        if (snapshot.connectionState != ConnectionState.done) {
-                          return cw.LoadingIndicator(color: Colors.white);
-                        } else {
-                          return ValueListenableBuilder(
-                              valueListenable: filters,
-                              builder: (BuildContext context,
-                                  db.EventFilters filters, foo) {
-                                List<dbc.Event> events = snapshot.data ?? [];
-                                return ListView(
-                                  children: db
-                                      .queriefyEventList(events, filters)
-                                      .map((e) => CalendarEventCard(e))
-                                      .toList(),
-                                );
-                              });
-                        }
-                      }));
-                })))),
-                
-                ]),
-                
-        appBar: CalendarAppBar(
-          context,
-          filters,
-          title: mode == CalendarMode.drafts ? "Your Drafts" : "Events",
         ),
-        );
-        
+        Expanded(
+            child: RefreshIndicator(
+                backgroundColor: cl.darkerGrey,
+                color: Colors.white,
+                onRefresh: () => Future.delayed(Duration(seconds: 1))
+                    .then((value) => reloadEventPage()),
+                child: ValueListenableBuilder(
+                    valueListenable: current_page,
+                    builder: ((context, value, child) {
+                      return FutureBuilder(
+                          future: db.fetchEventsFromIndexFile(),
+                          builder: ((context, snapshot) {
+                            if (snapshot.connectionState !=
+                                ConnectionState.done) {
+                              return cw.LoadingIndicator(color: Colors.white);
+                            } else {
+                              return ValueListenableBuilder(
+                                  valueListenable: filters,
+                                  builder: (BuildContext context,
+                                      db.EventFilters filters, foo) {
+                                    print(filters);
+                                    print(mode);
+                                    List<dbc.Event> events =
+                                        snapshot.data ?? [];
+                                    return ListView(
+                                      children: db
+                                          .queriefyEventList(events, filters)
+                                          .map((e) => CalendarEventCard(e))
+                                          .toList(),
+                                    );
+                                  });
+                            }
+                          }));
+                    })))),
+      ]),
+      appBar: CalendarAppBar(
+        context,
+        filters,
+        title: mode == CalendarMode.drafts ? "Your Drafts" : "Events",
+      ),
+    );
+
     return scaff;
   }
 }
-
-
 
 class CalendarEventCard extends StatelessWidget {
   late dbc.Event event;
@@ -580,8 +574,8 @@ class _CalendarEventCardBody extends StatelessWidget {
                                                               .size
                                                               .width /
                                                           15,
-                                                          fontWeight: FontWeight.w500
-                                                          ))),
+                                                  fontWeight:
+                                                      FontWeight.w500))),
                                       Expanded(
                                         child: Row(
                                           children: [

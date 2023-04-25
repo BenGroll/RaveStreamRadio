@@ -1,5 +1,6 @@
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/screens/devsettingsscreen.dart';
@@ -92,7 +93,7 @@ body: SingleChildScrollView(
               width: 150,
               child: const CircleAvatar(
                 radius: 60,
-                backgroundImage: ExactAssetImage('assets/images/profile.jpg'),
+                /*backgroundImage: SvgPicture(pictureProvider),*/
               ),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
