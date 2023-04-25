@@ -20,23 +20,18 @@ import 'package:firebase_database/firebase_database.dart';
 class Message {
   /// Contains full path to the Document
   final String sender;
-
   /// Unix Timestamp
   final Timestamp sentAt;
-
   /// the utf8 content of the message
   final String content;
-
   /// Unique ID
   String? id = generateDocumentID();
-
   Message(
       {required this.sender,
       required this.sentAt,
       required this.content,
       this.id});
   factory Message.fromMap(Map<dynamic, dynamic> map) {
-    print("MessageMap: $map");
     return Message(
         content: map["content"],
         sender: map["sender"],
@@ -50,6 +45,19 @@ class Message {
       'content': content,
       'id': id
     };
+  }
+
+  bool operator ==(covariant Message other) {
+    if (identical(this, other)) return true;
+    return other.content == content &&
+        other.sentAt == sentAt &&
+        other.id == id &&
+        other.sender == sender;
+  }
+
+  @override
+  String toString() {
+    return "Message(sender: $sender, sentAt: $sentAt, content: $content, id: $id)";
   }
 }
 
@@ -141,7 +149,6 @@ class Chat {
   String toString() {
     return 'Chat(members: $members, id: $id, messages: $messages, customName: $customName)';
   }
-
 }
 
 /// DONT USE, REPLACED WITH RealtimeDB
@@ -180,7 +187,6 @@ Future<List<Chat>> getUsersChats() async {
     List<DataSnapshot> chats = await Future.wait(futures);
     List<Chat> newchats =
         chats.map((e) => Chat.fromMap(e.value as Map)).toList();
-    print(newchats[0]);
     return newchats;
   }
 }
@@ -193,7 +199,6 @@ class ChatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
-        print("IGUOH");
         Beamer.of(context).beamToNamed("/chat/${chat.id}");
         /* Navigator.of(context).push(MaterialPageRoute(
             builder: (BuildContext context) => ChatWindow(id: chat.id)));*/
@@ -260,4 +265,33 @@ class ChatsDrawer extends StatelessWidget {
 
 String? getChatIDbyMembers(Map<String, List> chats) {
   chats.keys.forEach((element) {});
+}
+
+Future<List<Message>> loadMessagesForChat(String chatID) async {
+  List ids = await rtdb
+      .ref("root/Chats/$chatID/messages")
+      .get()
+      .then((value) => value.value as List);
+  List<Future> futures = [];
+  List<Message> messages = [];
+  ids.forEach((element) {
+    Message? found_message = saved_messages.checkForIDMatch(element);
+    if (found_message == null) {
+      futures.add(rtdb.ref("root/Messages/$element").get().then((value) {
+        Map? data = value.value as Map?;
+        if (data != null) {
+          data["id"] = element;
+          return data;
+        }
+      }));
+    } else {
+      messages.add(found_message);
+    }
+  });
+  List<dynamic> messageInfos = await Future.wait(futures);
+  List<Map> data = messageInfos.map((e) => e as Map).toList();
+  data.forEach((element) {
+    messages.add(Message.fromMap(element));
+  });
+  return messages;
 }

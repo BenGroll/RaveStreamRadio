@@ -8,10 +8,12 @@ import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ravestreamradioapp/conv.dart';
+import 'package:ravestreamradioapp/chatting.dart';
 
 /// ++++++++++++++ DEBUG SETTINGS ++++++++++++ //
 const bool DISABLE_EVENT_EDITING = true;
-const bool DISABLE_CHATWINDOW = true;
+const bool DISABLE_CHATWINDOW = false;
+const bool DISABLE_MESSAGE_SENDING = true;
 
 late FirebaseApp app;
 
@@ -60,7 +62,10 @@ ValueNotifier<ServerBranches> selectedbranch =
 /// Cache for saved Pictures. Saves bandwidth
 Map<String, Widget> saved_pictures = {};
 
-// Cache for events. Saves database costs
+///
+List<Message> saved_messages = [];
+
+/// Cache for events. Saves database costs(obsolete)
 List<dbc.Event> saved_events = [];
 
 class UserSettings {

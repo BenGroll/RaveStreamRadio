@@ -47,7 +47,6 @@ class EventFilterBottomSheet extends StatelessWidget {
       body: ValueListenableBuilder(
           valueListenable: filters,
           builder: (context, enabledFilters, foo) {
-            pprint(enabledFilters);
             return ListView(
               children: [
                 ListTile(
@@ -236,6 +235,7 @@ class _EventCalendarState extends State<EventCalendar> {
   late Future<List<dbc.Event>> events;
   String searchString = "";
 
+
   @override
   void initState() {
     super.initState();
@@ -247,7 +247,6 @@ class _EventCalendarState extends State<EventCalendar> {
     CalendarMode mode = widget.mode;
     ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
         byStatus: mode == CalendarMode.normal ? ["public"] : ["draft"]));
-    print("OnCreate filters: $filters");
     event_data = [];
     totalelements = 0;
     current_page.value = 0;
@@ -303,9 +302,9 @@ class _EventCalendarState extends State<EventCalendar> {
                         child: TextField(
                           style: TextStyle(color: Colors.white),
                           onChanged: (value) {
-                            //! Return Here !//
-                            filters.value.searchString = value;
-                            filters.notifyListeners();
+                            setState(() {
+                              searchString = value.toLowerCase();
+                            });
                           },
                           decoration: InputDecoration(
                             filled: true,
@@ -348,8 +347,6 @@ class _EventCalendarState extends State<EventCalendar> {
                                   valueListenable: filters,
                                   builder: (BuildContext context,
                                       db.EventFilters filters, foo) {
-                                    print(filters);
-                                    print(mode);
                                     List<dbc.Event> events =
                                         snapshot.data ?? [];
                                     return ListView(
