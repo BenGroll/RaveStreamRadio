@@ -1,4 +1,5 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
 import 'package:flutter/material.dart';
@@ -35,9 +36,9 @@ class EventFilterBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.darkerGrey,
+      backgroundColor: cl.lighterGrey,
       appBar: AppBar(
-        backgroundColor: cl.darkerGrey,
+        backgroundColor: cl.lighterGrey,
         automaticallyImplyLeading: false,
         leading: null,
         title: Text("Filters", style: TextStyle(color: Colors.white)),
@@ -221,11 +222,26 @@ class EventFilterBottomSheet extends StatelessWidget {
 
 enum CalendarMode { normal, drafts }
 
-class EventCalendar extends StatelessWidget {
+class EventCalendar extends StatefulWidget {
   final dbc.User? loggedinas;
   final CalendarMode mode;
   EventCalendar(
       {super.key, required this.loggedinas, this.mode = CalendarMode.normal});
+
+  @override
+  _EventCalendarState createState() => _EventCalendarState();
+}
+class _EventCalendarState extends State<EventCalendar> {
+  late Future<List<dbc.Event>> events;
+  String searchString = "";
+  
+  get mode => null ;
+
+  @override
+  void initState(){
+  super.initState();
+  events =db.fetchEventsFromIndexFile();
+}
   @override
   Widget build(BuildContext context) {
     ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
@@ -237,7 +253,90 @@ class EventCalendar extends StatelessWidget {
     Scaffold scaff = Scaffold(
         drawer: cw.NavBar(),
         backgroundColor: cl.darkerGrey,
-        body: RefreshIndicator(
+        body:
+        
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+      margin: EdgeInsets.only(bottom: 8 * 1),
+      
+      height: MediaQuery.of(context).size.height * 0.1,
+      child: Stack(
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.only(
+              left: 8,
+              right: 8,
+              bottom: 40,
+            ),
+            height: MediaQuery.of(context).size.height * 0.1 - 20,
+            decoration: BoxDecoration(
+              color: cl.lighterGrey,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(36),
+                bottomRight: Radius.circular(36),
+              ),
+            ),
+            
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              alignment: Alignment.center,
+              margin: EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              height: 54,
+              decoration: BoxDecoration(
+                color: cl.darkerGrey,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    offset: Offset(0, 10),
+                    
+                    blurRadius: 20,
+                    color: Colors.black,
+                  ),
+                ],
+                
+              ),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextField(
+                      
+                      onChanged: (value) {
+                        setState((){
+                          searchString = value.toLowerCase();
+                        });
+                      },
+                      decoration: 
+                      InputDecoration(
+                        filled: true,
+                        fillColor: cl.darkerGrey,
+                        hintText: "Search",
+                        hintStyle: TextStyle(
+                          color: Colors.white,
+                        ),
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                      
+                      ),
+                    ),
+                  ),
+                  SvgPicture.asset("assets/icons/search.svg"),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  
+
+        Expanded(child: RefreshIndicator(
             backgroundColor: cl.darkerGrey,
             color: Colors.white,
             onRefresh: () => Future.delayed(Duration(seconds: 1))
@@ -265,15 +364,22 @@ class EventCalendar extends StatelessWidget {
                               });
                         }
                       }));
-                }))),
+                })))),
+                
+                ]),
+                
         appBar: CalendarAppBar(
           context,
           filters,
           title: mode == CalendarMode.drafts ? "Your Drafts" : "Events",
-        ));
+        ),
+        );
+        
     return scaff;
   }
 }
+
+
 
 class CalendarEventCard extends StatelessWidget {
   late dbc.Event event;
@@ -473,7 +579,9 @@ class _CalendarEventCardBody extends StatelessWidget {
                                                       MediaQuery.of(context)
                                                               .size
                                                               .width /
-                                                          15))),
+                                                          15,
+                                                          fontWeight: FontWeight.w500
+                                                          ))),
                                       Expanded(
                                         child: Row(
                                           children: [

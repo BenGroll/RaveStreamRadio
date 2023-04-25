@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
 
-Color darkerGrey = Color.fromARGB(255, 27, 27, 27);
-Color lighterGrey = Color.fromARGB(255, 57, 57, 57);
+Color darkerGrey = Color.fromARGB(255, 17, 17, 17);
+Color lighterGrey = Color.fromARGB(255, 40, 40, 40);
 
 Color greynothighlight = const Color.fromARGB(255, 158, 158, 158);
 

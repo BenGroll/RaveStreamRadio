@@ -70,7 +70,7 @@ class EventOverviewPage extends StatelessWidget {
                                           return Scaffold(
                                               backgroundColor: cl.darkerGrey,
                                               appBar: AppBar(
-                                                backgroundColor: cl.darkerGrey,
+                                                backgroundColor: cl.lighterGrey,
                                                 centerTitle: true,
                                                 title: Text(
                                                     event.value!.eventid,
@@ -276,7 +276,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                         children: [
                                                                           Text(
                                                                               'Location',
-                                                                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                                                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                                                                           Text(
                                                                             event.value!.locationname ??
                                                                                 "Unknown",
@@ -324,7 +324,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                         children: [
                                                                           Text(
                                                                               'Duration',
-                                                                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                                                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                                                                           Text(
                                                                               "Begin: ${timestamp2readablestamp(event.value!.begin)}",
                                                                               style: TextStyle(fontSize: MediaQuery.of(context).size.width / 30, color: Colors.white)),
@@ -404,7 +404,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                               'Genre',
                                                                               style: TextStyle(
                                                                                 color: Colors.white,
-                                                                                fontSize: 16,
+                                                                                fontSize: 18,
                                                                                 fontWeight: FontWeight.bold,
                                                                               ),
                                                                               textAlign: TextAlign.center,
@@ -455,11 +455,12 @@ class EventOverviewPage extends StatelessWidget {
                                                                             child:
                                                                                 Column(
                                                                               children: [
-                                                                                Text('Links', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                                                                Text('Links', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                                                                                 Padding(
                                                                                   padding: EdgeInsets.symmetric(vertical: 8.0),
                                                                                   child: Column(
                                                                                     mainAxisAlignment: MainAxisAlignment.center,
+                                                                                    crossAxisAlignment: CrossAxisAlignment.center,
                                                                                     children: [
                                                                                       Wrap(children: linkButtons),
                                                                                       event.value!.links?.containsKey("sales") ?? false ? Text("Ticketlink", style: TextStyle(color: Colors.white)) : const SizedBox(height: 0),

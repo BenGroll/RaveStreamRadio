@@ -118,7 +118,10 @@ class GroupEntry extends StatelessWidget {
             .image,
       ),
       title: Text(group.title ?? group.groupid,
-          style: TextStyle(color: Colors.white)),
+          style: TextStyle(color: Colors.white,
+          fontSize: 18,
+                  fontWeight: FontWeight.w600),
+          ),
       subtitle: Text(
         "Members: ${group.members_roles?.length ?? 0}",
         style: TextStyle(color: Colors.white),

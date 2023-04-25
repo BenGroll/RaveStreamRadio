@@ -38,7 +38,9 @@ class MessageCard extends StatelessWidget {
             sentItMyself ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           sentItMyself
-              ? Container()
+              ? Container(
+                decoration: ShapeDecoration(shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(8.0)),),
+              )
               : Text(
                   "@${message.sender.split('/')[1]}",
                   style: TextStyle(color: Colors.white),

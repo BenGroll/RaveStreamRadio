@@ -65,16 +65,104 @@ class LoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.lighterGrey,
+      backgroundColor: cl.darkerGrey,
       body : ProfileView());
   }
 }
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
-    return Placeholder();
+     dbc.User? user = currently_loggedin_as.value;
+  return user == null
+      ? Text('Not logged in')
+ :Scaffold(
+  backgroundColor: cl.darkerGrey,
+body: SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+         
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 150,
+              child: const CircleAvatar(
+                radius: 60,
+                backgroundImage: ExactAssetImage('assets/images/profile.jpg'),
+              ),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: cl.lighterGrey,
+                  width: 5.0,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            SizedBox(
+              width:  MediaQuery.of(context)
+                                                                  .size
+                                                                  .width ,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  
+                  Text(
+                    user.username,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+                 
+                ],
+              ),
+            ),
+            
+            const SizedBox(
+              height: 30,
+            ),
+            SizedBox(
+              height:  MediaQuery.of(context)
+                                                                  .size
+                                                                  .height,
+              width:  MediaQuery.of(context)
+                                                                  .size
+                                                                  .width ,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: const [
+                  cw.ProfileWidget(
+                    icon: Icons.person,
+                    title: 'Edit Profile',
+                  ),
+                  cw.ProfileWidget(
+                    icon: Icons.settings,
+                    title: 'Settings',
+                  ),
+                  
+                  
+                
+                  cw.ProfileWidget(
+                    icon: Icons.share,
+                    title: 'Share',
+                  ),
+                 
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+    );
+     
+      
   }
 }
