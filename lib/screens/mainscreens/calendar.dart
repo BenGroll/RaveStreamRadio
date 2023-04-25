@@ -326,7 +326,8 @@ class _EventCalendarState extends State<EventCalendar> {
                       ),
                     ),
                   ),
-                  SvgPicture.asset("assets/icons/search.svg"),
+                  //SvgPicture.asset("assets/icons/search.svg"),
+                  Icon(Icons.search, color: Colors.white)
                 ],
               ),
             ),
