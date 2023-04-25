@@ -98,10 +98,15 @@ class ChatWindow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     pprint("ChatWindow Opened");
+    if (DISABLE_CHATWINDOW){
+      return Scaffold(
+        backgroundColor: cl.darkerGrey,
+        body: Center(child: Text("Chatting is currently WIP.",style: TextStyle(color: Colors.white))));}
     return FutureBuilder(
         future: rtdb.getChat_rtdb(id),
         builder: (BuildContext context, AsyncSnapshot snap) {
           if (snap.connectionState == ConnectionState.done) {
+            print("SNAP: ${snap.data}");
             if (snap.data == null) {
               return Scaffold(
                 body: Text("Chat not found."),
@@ -110,8 +115,10 @@ class ChatWindow extends StatelessWidget {
               return StreamBuilder(
                   stream: rtdb.listenToChat(id),
                   builder: (BuildContext context, AsyncSnapshot snap) {
-                    if (snap.connectionState == ConnectionState.done) {
-                      Chat chat = Chat.fromDBSnapshot(snap.data);
+                    if (snap.connectionState == ConnectionState.active) {
+                      DatabaseEvent event = snap.data;
+                      Chat chat = Chat.fromMap(event.snapshot.value as Map);
+                      print("Loaded Chat: $chat");
                       if (chat.messages == null) chat.messages = [];
                       List<MessageElement> messagecards = chat.messages!
                           .map((e) => MessageElement(

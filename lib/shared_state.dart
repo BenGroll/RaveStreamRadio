@@ -11,6 +11,7 @@ import 'package:ravestreamradioapp/conv.dart';
 
 /// ++++++++++++++ DEBUG SETTINGS ++++++++++++ //
 const bool DISABLE_EVENT_EDITING = true;
+const bool DISABLE_CHATWINDOW = true;
 
 late FirebaseApp app;
 

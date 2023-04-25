@@ -35,7 +35,8 @@ class Message {
       required this.sentAt,
       required this.content,
       this.id});
-  factory Message.fromMap(Map<String, dynamic> map) {
+  factory Message.fromMap(Map<dynamic, dynamic> map) {
+    print("MessageMap: $map");
     return Message(
         content: map["content"],
         sender: map["sender"],
@@ -74,7 +75,6 @@ List<Message> chatFromDB(List<Map<String, dynamic>> map) {
 }
 
 List<Message> messagesFromDBSnapshot(List messagelist) {
-  
   return messagelist
       .map((e) => Message(
           sender: e["sender"],
@@ -137,6 +137,11 @@ class Chat {
         messages: messagelist,
         customName: snap["customName"]);
   }
+  @override
+  String toString() {
+    return 'Chat(members: $members, id: $id, messages: $messages, customName: $customName)';
+  }
+
 }
 
 /// DONT USE, REPLACED WITH RealtimeDB
