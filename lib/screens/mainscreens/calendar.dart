@@ -236,7 +236,6 @@ class _EventCalendarState extends State<EventCalendar> {
   late Future<List<dbc.Event>> events;
   String searchString = "";
 
-
   @override
   void initState() {
     super.initState();
@@ -304,9 +303,9 @@ class _EventCalendarState extends State<EventCalendar> {
                         child: TextField(
                           style: TextStyle(color: Colors.white),
                           onChanged: (value) {
-                            setState(() {
-                              searchString = value.toLowerCase();
-                            });
+                            //! Return Here !//
+                            filters.value.searchString = value;
+                            filters.notifyListeners();
                           },
                           decoration: InputDecoration(
                             filled: true,

@@ -250,6 +250,7 @@ class EventFilters {
   String orderbyField;
   List<String> byStatus;
   bool onlyHostedByMe;
+  String? searchString;
   EventFilters(
       {this.lastelemEventid,
       this.onlyAfter,
@@ -257,11 +258,12 @@ class EventFilters {
       this.canGoByAge = 18,
       this.orderbyField = "end",
       required this.byStatus,
+      this.searchString,
       this.onlyHostedByMe = false});
 
   @override
   String toString() {
-    return 'Filter(lastelemEventid: $lastelemEventid, onlyAfter: ${timestamp2readablestamp(onlyAfter)}, onlyBefore: ${timestamp2readablestamp(onlyBefore)}, canGoByAge: $canGoByAge, orderByField: $orderbyField, byStatus: $byStatus, onlyHostedByMe: $onlyHostedByMe)';
+    return 'Filter(lastelemEventid: $lastelemEventid, onlyAfter: ${timestamp2readablestamp(onlyAfter)}, onlyBefore: ${timestamp2readablestamp(onlyBefore)}, canGoByAge: $canGoByAge, orderByField: $orderbyField, byStatus: $byStatus, onlyHostedByMe: $onlyHostedByMe, searchString: $searchString)';
   }
 }
 
@@ -293,28 +295,22 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
 List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     [int? queryLimit]) {
   List<dbc.Event> eventList = events;
-  //pprint(". ${eventList.length}");
-  //pprint("Stati Included: ${filters.byStatus}");
+  if (filters.searchString != null) {
+    eventList = eventList.whereContainsString(filters.searchString ?? "");
+  }
   if (filters.onlyAfter != null) {
     eventList =
         eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
   }
-  //pprint(".. ${eventList.length}");
-
   if (filters.onlyBefore != null) {
     eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
   }
-  //pprint("... ${eventList.length}");
-
   eventList = eventList.whereIsInValues("status", filters.byStatus);
-  //pprint(".... ${eventList.length}");
 
   if (filters.canGoByAge != null) {
     eventList =
         eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
   }
-  //pprint("..... ${eventList.length}");
-
   if (filters.onlyHostedByMe) {
     List newList = [];
     eventList.forEach((element) {
