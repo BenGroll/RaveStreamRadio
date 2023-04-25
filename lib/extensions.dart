@@ -151,4 +151,17 @@ extension Queriefy on List<dbc.Event> {
     });
     return outL;
   }
+
+  List<dbc.Event> whereContainsString(String searchString) {
+    List<dbc.Event> outL = [];
+    forEach((dbc.Event element) {
+      if ((element.title != null && element.title!.contains(searchString)) ||
+          (element.locationname != null &&
+              element.locationname!.contains(searchString)) ||
+          (element.eventid.contains(searchString))) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
 }
