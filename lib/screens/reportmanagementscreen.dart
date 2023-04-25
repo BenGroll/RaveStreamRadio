@@ -58,7 +58,7 @@ class ReportManagementScreen extends StatelessWidget {
           IconButton(onPressed: () {}, icon: Icon(Icons.filter_alt_outlined))
         ],
       ),
-      backgroundColor: cl.darkerGrey,
+      backgroundColor: cl.lighterGrey,
       body: FutureBuilder(
           future: db.getAllReports(),
           builder:

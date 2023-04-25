@@ -32,11 +32,9 @@ class UserOverviewPage extends StatelessWidget {
                     cw.StartChatButton(other_person_username: username)
                   ],
                 ),
-                body: const Center(
-                    child: Text(
-                  "TBA",
-                  style: TextStyle(color: Colors.white),
-                )),
+                body:  
+  Text('bla'),
+  
               );
             } else {
               return Scaffold(

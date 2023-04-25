@@ -20,7 +20,7 @@ class SingleReportScreen extends StatelessWidget {
       backgroundColor: cl.darkerGrey,
       appBar: AppBar(
         title: Text("Edit Report", style: TextStyle(color: Colors.white)),
-        backgroundColor: cl.darkerGrey,
+        backgroundColor: cl.lighterGrey,
       ),
       body: FutureBuilder(
           future: db.db.doc("${branchPrefix}reports/$reportid").get(),
@@ -151,12 +151,22 @@ class SingleReportScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.white),
                     ),
                     Expanded(
-                      child: Card(
-                        child: Text(
+                      child: Padding(padding: EdgeInsets.all(8.0),
+                      child: AspectRatio(aspectRatio: 1, child: Card(
+                        color: cl.lighterGrey,
+                        shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                          MediaQuery.of(context).size.height) /
+                      75,
+                  side: BorderSide(
+                    width: 1,
+                    color: cl.lighterGrey,
+                  )),
+                        child: Padding(padding: EdgeInsets.all(8.0),child: Text(
                             "${report.description?.isEmpty ?? 'No Description included.'}",
                             style: TextStyle(color: Colors.white),
                             maxLines: 1000),
-                      ),
+                      )),),)
                     ),
                   ],
                 ),

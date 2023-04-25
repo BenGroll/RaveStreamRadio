@@ -66,8 +66,11 @@ AppBar CalendarAppBar(
     BuildContext context, ValueNotifier<db.EventFilters> filters,
     {String title = "Events"}) {
   return AppBar(
-      backgroundColor: cl.darkerGrey,
+      backgroundColor: cl.lighterGrey,
+      elevation: 0,
       leading: const OpenSidebarButton(),
+      title: Text(title),
+      centerTitle: true,
       actions: [
         IconButton(
             onPressed: () {
@@ -78,17 +81,16 @@ AppBar CalendarAppBar(
                       EventFilterBottomSheet(filters: filters));
               //ScaffoldMessenger.of(context).s
             },
-            icon: Icon(Icons.filter_list, color: Colors.white))
-      ],
-      title: Text(title),
-      centerTitle: true);
+            icon: Icon(Icons.filter_list, color: Colors.white)),
+            
+      ]);
 }
 
-/// AppBar for the Calendar homescreen
+/// AppBar for the Favourites homescreen
 AppBar FavouritesAppBar(BuildContext context) {
   return AppBar(
     leading: const OpenSidebarButton(),
-    backgroundColor: cl.darkerGrey,
+    backgroundColor: cl.lighterGrey,
     title: const Text("Favourites"),
     centerTitle: true,
   );
@@ -101,7 +103,7 @@ AppBar GroupsAppBar(BuildContext context) {
   return AppBar(
     leading: const OpenSidebarButton(),
     elevation: 8,
-    backgroundColor: cl.darkerGrey,
+    backgroundColor: cl.lighterGrey,
     title: Text("Groups", style: TextStyle(color: Colors.white)),
     centerTitle: true,
     actions: [OpenChatButton(context: context)],
@@ -113,13 +115,13 @@ AppBar ProfileAppBar(BuildContext context) {
   dbc.User? user = currently_loggedin_as.value;
   return user == null
       ? AppBar(
-          backgroundColor: cl.darkerGrey,
+          backgroundColor: cl.lighterGrey,
           leading: const OpenSidebarButton(),
           title: const Text("Not logged in."),
           centerTitle: true,
         )
       : AppBar(
-          backgroundColor: cl.darkerGrey,
+          backgroundColor: cl.lighterGrey,
           leading: const OpenSidebarButton(),
           title: Text(user.username),
           actions: [
@@ -408,7 +410,7 @@ class EventTable extends StatelessWidget {
     ValueNotifier<int?> sortIndex = ValueNotifier(null);
     ValueNotifier<bool> isAscending = ValueNotifier<bool>(false);
     return Scaffold(
-      backgroundColor: cl.darkerGrey,
+      backgroundColor: cl.lighterGrey,
       appBar: AppBar(
         centerTitle: true,
         title: Text("Events"),
@@ -430,8 +432,10 @@ class EventTable extends StatelessWidget {
                 Navigator.of(context).push(MaterialPageRoute(
                     builder: (BuildContext context) => LoginScreen()));
               },
-              icon: Icon(Icons.login))
+              icon: Icon(Icons.login)),
+              
         ],
+        
       ),
       drawer: Drawer(
         backgroundColor: cl.lighterGrey,
@@ -912,7 +916,7 @@ class EventFilterSideBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: cl.lighterGrey,
+      backgroundColor: cl.darkerGrey,
       child: Scaffold(
         appBar: AppBar(title: Text("Filter(s)")),
         body: ListView(
@@ -998,6 +1002,53 @@ class StartChatButton extends StatelessWidget {
           Beamer.of(context).beamToNamed("/");
         },
         icon: Icon(Icons.send, color: Colors.white));
+  }
+}
+
+class ProfileWidget extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  const ProfileWidget({
+    Key? key,
+    required this.icon,
+    required this.title,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                color: Colors.white,
+                size: 24,
+              ),
+              const SizedBox(
+                width: 16,
+              ),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          Icon(
+            Icons.arrow_forward_ios,
+            color: cl.darkerGrey,
+            size: 16,
+          )
+        ],
+      ),
+    );
   }
 }
 
