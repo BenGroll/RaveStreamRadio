@@ -41,7 +41,7 @@ class EventFilterBottomSheet extends StatelessWidget {
         backgroundColor: cl.lighterGrey,
         automaticallyImplyLeading: false,
         leading: null,
-        title: Text("Filters", style: TextStyle(color: Colors.white)),
+        title: Text("Filters", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [IconButton(onPressed: () {}, icon: Icon(Icons.undo))],
       ),
       body: ValueListenableBuilder(
@@ -108,7 +108,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                                   (enabledFilters.canGoByAge != null &&
                                           enabledFilters.canGoByAge! < 18)
                                       ? cl.darkerGrey
-                                      : cl.greynothighlight),
+                                      : cl.lighterGrey),
                           onPressed: () {
                             filters.value.canGoByAge = 17;
                             filters.notifyListeners();
@@ -121,7 +121,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                                           enabledFilters.canGoByAge! >= 18 &&
                                           enabledFilters.canGoByAge! < 21)
                                       ? cl.darkerGrey
-                                      : cl.greynothighlight),
+                                      : cl.lighterGrey),
                           onPressed: () {
                             filters.value.canGoByAge = 18;
                             filters.notifyListeners();
@@ -133,7 +133,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                                   (enabledFilters.canGoByAge != null &&
                                           enabledFilters.canGoByAge! >= 21)
                                       ? cl.darkerGrey
-                                      : cl.greynothighlight),
+                                      : cl.lighterGrey),
                           onPressed: () {
                             filters.value.canGoByAge = 21;
                             filters.notifyListeners();
@@ -161,7 +161,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                                     backgroundColor: (enabledFilters.byStatus
                                             .contains("public"))
                                         ? cl.darkerGrey
-                                        : cl.greynothighlight),
+                                        : cl.lighterGrey),
                                 onPressed: () {
                                   filters.value.byStatus.contains("public")
                                       ? filters.value.byStatus.remove("public")
@@ -174,7 +174,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                                     backgroundColor: (enabledFilters.byStatus
                                             .contains("friendlist"))
                                         ? cl.darkerGrey
-                                        : cl.greynothighlight),
+                                        : cl.lighterGrey),
                                 onPressed: () {
                                   filters.value.byStatus.contains("friendlist")
                                       ? filters.value.byStatus
@@ -189,7 +189,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                                     backgroundColor: (enabledFilters.byStatus
                                             .contains("frozen"))
                                         ? cl.darkerGrey
-                                        : cl.greynothighlight),
+                                        : cl.lighterGrey),
                                 onPressed: () {
                                   filters.value.byStatus.contains("frozen")
                                       ? filters.value.byStatus.remove("frozen")
@@ -202,7 +202,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                                     backgroundColor: (enabledFilters.byStatus
                                             .contains("draft"))
                                         ? cl.darkerGrey
-                                        : cl.greynothighlight),
+                                        : cl.lighterGrey),
                                 onPressed: () {
                                   filters.value.byStatus.contains("draft")
                                       ? filters.value.byStatus.remove("draft")
@@ -220,13 +220,13 @@ class EventFilterBottomSheet extends StatelessWidget {
   }
 }
 
-enum CalendarMode { normal, drafts }
+enum CalendarMode { normal, drafts, favourites}
 
 class EventCalendar extends StatefulWidget {
   final dbc.User? loggedinas;
   final CalendarMode mode;
   EventCalendar(
-      {super.key, required this.loggedinas, this.mode = CalendarMode.normal});
+      {super.key, required this.loggedinas, this.mode = CalendarMode.normal, });
 
   @override
   _EventCalendarState createState() => _EventCalendarState();
@@ -246,7 +246,7 @@ class _EventCalendarState extends State<EventCalendar> {
   Widget build(BuildContext context) {
     CalendarMode mode = widget.mode;
     ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
-        byStatus: mode == CalendarMode.normal ? ["public"] : ["draft"]));
+        byStatus: mode == CalendarMode.normal ? ["public"] : (mode == CalendarMode.drafts ? ["draft"] :["public"] )));
     print("OnCreate filters: $filters");
     event_data = [];
     totalelements = 0;
@@ -298,9 +298,12 @@ class _EventCalendarState extends State<EventCalendar> {
                     ],
                   ),
                   child: Row(
+                    
                     children: <Widget>[
                       Expanded(
+                        
                         child: TextField(
+                          
                           style: TextStyle(color: Colors.white),
                           onChanged: (value) {
                             //! Return Here !//
@@ -308,8 +311,7 @@ class _EventCalendarState extends State<EventCalendar> {
                             filters.notifyListeners();
                           },
                           decoration: InputDecoration(
-                            filled: true,
-                            fillColor: cl.darkerGrey,
+                            
                             hintText: "Search",
                             hintStyle: TextStyle(
                               color: Colors.white,
@@ -352,9 +354,16 @@ class _EventCalendarState extends State<EventCalendar> {
                                     print(mode);
                                     List<dbc.Event> events =
                                         snapshot.data ?? [];
-                                    return ListView(
+                                    return mode == CalendarMode.favourites ?
+                                    ListView(
                                       children: db
-                                          .queriefyEventList(events, filters)
+                                      .queriefyEventList(saved_events, filters)
+                                      .map((e) => CalendarEventCard(e))
+                                      .toList(),
+                                    )
+                                    : ListView(
+                                      children: db
+                                          .queriefyEventList(events, filters,)
                                           .map((e) => CalendarEventCard(e))
                                           .toList(),
                                     );
@@ -366,7 +375,7 @@ class _EventCalendarState extends State<EventCalendar> {
       appBar: CalendarAppBar(
         context,
         filters,
-        title: mode == CalendarMode.drafts ? "Your Drafts" : "Events",
+        title: mode == CalendarMode.drafts ? "Your Drafts" : (mode == CalendarMode.normal ? "Events" : "Favourites"),
       ),
     );
 

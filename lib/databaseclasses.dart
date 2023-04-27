@@ -123,6 +123,7 @@ class Event {
   Timestamp? end;
   GeoPoint? location;
   String? locationname;
+  String? genre;
   int minAge;
   String? icon;
   String? flyer;
@@ -142,6 +143,7 @@ class Event {
     this.location = null,
     this.locationname,
     this.minAge = 0,
+    this.genre,
     this.icon = null,
     this.flyer = null,
     this.description,
