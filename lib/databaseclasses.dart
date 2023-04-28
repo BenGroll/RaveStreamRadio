@@ -143,7 +143,7 @@ class Event {
     this.location = null,
     this.locationname,
     this.minAge = 0,
-    this.genre,
+    this.genre = null,
     this.icon = null,
     this.flyer = null,
     this.description,
@@ -164,6 +164,7 @@ class Event {
     GeoPoint? location,
     String? locationname,
     int minAge = 0,
+    String? genre,
     String? icon,
     String? flyer,
     String? description,
@@ -183,6 +184,7 @@ class Event {
       location: location ?? this.location,
       locationname: locationname ?? this.locationname,
       minAge: minAge,
+      genre: genre,
       icon: icon ?? this.icon,
       flyer: flyer ?? this.flyer,
       description: description ?? this.description,
@@ -205,6 +207,7 @@ class Event {
       'location': location,
       'locationname': locationname,
       'minAge': minAge,
+      'genre' : genre,
       'icon': icon,
       'flyer': flyer,
       'description': description,
@@ -234,6 +237,7 @@ class Event {
           location: inputmap["location"],
           locationname: inputmap["locationname"],
           minAge: inputmap["minAge"],
+          genre: inputmap["genre"],
           icon: inputmap["icon"],
           flyer: inputmap["flyer"],
           description: inputmap["description"],
@@ -304,6 +308,7 @@ class Event {
         other.location == location &&
         other.locationname == locationname &&
         other.minAge == minAge &&
+        other.genre == genre &&
         other.icon == icon &&
         other.flyer == flyer &&
         other.description == description &&
@@ -325,6 +330,7 @@ class Event {
         location.hashCode ^
         locationname.hashCode ^
         minAge.hashCode ^
+        genre.hashCode ^
         icon.hashCode ^
         flyer.hashCode ^
         description.hashCode ^
