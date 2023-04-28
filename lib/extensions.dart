@@ -3,6 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'dart:io' show Platform;
+import 'chatting.dart';
 
 const FILENAME = "extensions.dart";
 
@@ -151,17 +152,14 @@ extension Queriefy on List<dbc.Event> {
     });
     return outL;
   }
+}
 
-  List<dbc.Event> whereContainsString(String searchString) {
-    List<dbc.Event> outL = [];
-    forEach((dbc.Event element) {
-      if ((element.title != null && element.title!.contains(searchString)) ||
-          (element.locationname != null &&
-              element.locationname!.contains(searchString)) ||
-          (element.eventid.contains(searchString))) {
-        outL.add(element);
-      }
+extension Check on List<Message> {
+  Message? checkForIDMatch(String id) {
+    Message? returnvalue;
+    forEach((element) {
+      returnvalue = element.id == id ? element : null;
     });
-    return outL;
+    return returnvalue;
   }
 }

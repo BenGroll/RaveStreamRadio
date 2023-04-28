@@ -275,12 +275,28 @@ class DevSettingsScreen extends StatelessWidget {
                         //await rtdb.addMessage(testmessage2);
                         //await rtdb.rtdb.ref("root/Chats/${"TZTrs5BngHYohRGsm4w2"}/messages").set(["adiugh", "adoiuhd"]);
                         await rtdb.addMessageToChat(
-                            testmessage, Chat(id: "TZTrs5BngHYohRGsm4w2", members: [db.db.doc("dev.users/admin"), db.db.doc("dev.users/addmin")]));
+                            testmessage,
+                            Chat(id: "TZTrs5BngHYohRGsm4w2", members: [
+                              db.db.doc("dev.users/admin"),
+                              db.db.doc("dev.users/addmin")
+                            ]));
 
                         ScaffoldMessenger.of(context).showSnackBar(
                             hintSnackBar("Add Test Messages to RTDB"));
                       },
                       child: Text("Add Test Messages to RTDB")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        List<String> ids = [
+                          "4ye88RdGM6m9jB8DvqLq",
+                          "6buQOrfAFE0x8QQfvQE1",
+                          "RyytWkjzyZJAEmcEjL2s"
+                        ];
+                        List<Message> messages = await loadMessagesForChat("TZTrs5BngHYohRGsm4w2");
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Messages Loaded"));
+                      },
+                      child: Text("Test load Messages from IDList")),
                 ],
               ),
             ),

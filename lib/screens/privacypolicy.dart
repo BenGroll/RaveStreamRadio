@@ -15,7 +15,7 @@ class PrivacyPolicy extends StatelessWidget {
       backgroundColor: cl.darkerGrey,
       appBar: AppBar(
         backgroundColor: cl.darkerGrey,
-        title: Text("Imprint (DE)"),
+        title: Text("Privacy Policy(DE)"),
         centerTitle: true,
       ),
       body: Padding(
