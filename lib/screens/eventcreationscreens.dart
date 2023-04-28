@@ -813,6 +813,46 @@ class GeneralSettingsPage extends StatelessWidget {
                 hintStyle: TextStyle(color: Colors.grey),
               ),
             ),
+              TextFormField(
+                          
+                          onChanged: (value) async {
+                            
+                            currentEventData.value.minAge = value as int;
+                          },
+                          style: const TextStyle(color: Colors.white),
+                          cursorColor: Colors.white,
+                          decoration: InputDecoration(
+                            icon: Icon(
+                                Icons.warning,
+                                    
+                                color: Colors.white),
+                            labelText: "Min. Age",
+                            labelStyle: const TextStyle(color: Colors.white),
+                            hintText: "Put in the required age for your event!",
+                            hintStyle: const TextStyle(color: Colors.grey),
+                          ),
+                        ),
+            TextFormField(
+                          initialValue: currentEventData.value.genre,
+                          onChanged: (value) async {
+                            
+                            currentEventData.value.genre = value;
+                          },
+                          style: const TextStyle(color: Colors.white),
+                          cursorColor: Colors.white,
+                          decoration: InputDecoration(
+                            icon: Icon(
+                                Icons.music_note,
+                                    
+                                color: Colors.white),
+                            labelText: "Event Genre",
+                            labelStyle: const TextStyle(color: Colors.white),
+                            hintText: "Describe the genre of your Event!",
+                            hintStyle: const TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                        
+                        
           ],
         ));
   }

@@ -13,6 +13,8 @@ import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/extensions.dart';
 
+import '../../conv.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   final dbc.User? loggedinas;
@@ -92,7 +94,7 @@ body: SingleChildScrollView(
             Container(
               width: 150,
               child: const CircleAvatar(
-                radius: 60,
+                radius: 70,
                 /*backgroundImage: SvgPicture(pictureProvider),*/
               ),
               decoration: BoxDecoration(
@@ -103,61 +105,173 @@ body: SingleChildScrollView(
                 ),
               ),
             ),
-            const SizedBox(
-              height: 10,
+            // Avatar Editor Icon
+            SizedBox(
+              height: 30,
             ),
+
             SizedBox(
               width:  MediaQuery.of(context)
                                                                   .size
                                                                   .width ,
-              child: Row(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  
-                  Text(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                                                       SizedBox(child: IconButton(onPressed: () => cw.ProfileAliasEditor(initialValue: user.alias,
+                                            onChange: (value) {
+                                              user.alias = value;
+                                            },),
+                                  icon: Icon(Icons.edit,
+                                  color: Colors.white
+                                  ),
+                                      ),
+                                      )
+                                                      ,],),
+                  Padding(padding: EdgeInsets.all(0),
+                  child:
+                  user.alias != null
+                  ? Text(
                     user.username,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 40,
                     ),
+                  )
+                  : Container(
+                    child: Text("You don't have an alias yet!",
+                    style: TextStyle(color: Colors.white)),
+                  )
                   ),
+                  SizedBox(
+  height: 30,
+),
+ Row(
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  
+  children: [SizedBox(child: Text('Description:', 
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold),
+                                                      textAlign: TextAlign.center,
+                                                      ),
+                                                      
+                                                      ) , 
+                                                      
+                        SizedBox(child: IconButton(onPressed: () => cw.ProfileDescriptionEditor(initialValue: user.alias,
+                                            onChange: (value) {
+                                              user.alias = value;
+                                            },),
+                                  icon: Icon(Icons.edit,
+                                  color: Colors.white
+                                  ),
+                                      ),
+                                      ),]),
+                                                      
+                  SizedBox(
+                                                      child: user.
+                                                                  description !=
+                                                              null
+                                                          ? Padding(
+                                                              padding:
+                                                                  const EdgeInsets.all(
+                                                                      16.0),
+                                                              child: RichText(
+                                                                  maxLines: 50,
+                                                                  softWrap:
+                                                                      true, 
+                                                                  textAlign: TextAlign.center,
+                                                                  text: TextSpan(
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .white),
+                                                                      children: (user.description == null || user.description!.isEmpty)
+                                                                          ? null
+                                                                          : stringToTextSpanList(user.description ??
+                                                                              ""))))
+                                                          : const SizedBox(
+                                                              child: Text("Add a Description and tell something about yourself!",
+                    style: TextStyle(color: Colors.white)),),
+                                                    ),
+SizedBox(
+  height: 30,
+),
+ SizedBox(child: Text('Email Adress:', 
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold),
+                                                      textAlign: TextAlign.center,
+                                                      )) ,
+                                                    SizedBox(
+                                                      child: user.
+                                                                mail !=
+                                                              null
+                                                          ? Padding(
+                                                              padding:
+                                                                  const EdgeInsets.all(
+                                                                      16.0),
+                                                              child: RichText(
+                                                                  maxLines: 50,
+                                                                  softWrap:
+                                                                      true, 
+                                                                  textAlign: TextAlign.center,
+                                                                  text: TextSpan(
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .white),
+                                                                      children: (user.mail == null || user.mail!.isEmpty)
+                                                                          ? null
+                                                                          : stringToTextSpanList(user.mail ??
+                                                                              ""))))
+                                                          : const SizedBox(
+                                                              child: Text("Add your Email Adress!",
+                    style: TextStyle(color: Colors.white)),),
+                                                    ),SizedBox(
+  height: 30,
+),
+                                                    
+                                                    SizedBox(child: Text('Hosting Events:', 
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.bold),
+                                                      textAlign: TextAlign.center,
+                                                      )) ,
+                                                    SizedBox(
+                                                      child: user.
+                                                                  events !=
+                                                              null
+                                                          ? Padding(
+                                                              padding:
+                                                                  const EdgeInsets.all(
+                                                                      16.0),
+                                                              child: RichText(
+                                                                  maxLines: 50,
+                                                                  softWrap:
+                                                                      true, 
+                                                                  textAlign: TextAlign.center,
+                                                                  text: TextSpan(
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .white),
+                                                                      children: (user.events == null || user.events!.isEmpty)
+                                                                          ? null
+                                                                          : stringToTextSpanList(user.description ??
+                                                                              ""))))
+                                                          : const SizedBox(
+                                                          child: Text("You didn't host an event yet!",
+                    style: TextStyle(color: Colors.white)),),
+                                                    ),
+                                                   
+                                                    
                  
                 ],
               ),
             ),
             
-            const SizedBox(
-              height: 30,
-            ),
-            SizedBox(
-              height:  MediaQuery.of(context)
-                                                                  .size
-                                                                  .height,
-              width:  MediaQuery.of(context)
-                                                                  .size
-                                                                  .width ,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [
-                  cw.ProfileWidget(
-                    icon: Icons.person,
-                    title: 'Edit Profile',
-                  ),
-                  cw.ProfileWidget(
-                    icon: Icons.settings,
-                    title: 'Settings',
-                  ),
-                  
-                  
-                
-                  cw.ProfileWidget(
-                    icon: Icons.share,
-                    title: 'Share',
-                  ),
-                 
-                ],
-              ),
-            ),
+           
           ],
         ),
       ),

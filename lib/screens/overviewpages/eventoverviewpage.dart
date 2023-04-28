@@ -399,6 +399,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                             EdgeInsets.all(4.0),
                                                                         child:
                                                                             Column(
+                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                           children: [
                                                                             Text(
                                                                               'Genre',
@@ -409,16 +410,14 @@ class EventOverviewPage extends StatelessWidget {
                                                                               ),
                                                                               textAlign: TextAlign.center,
                                                                             ),
-                                                                            Padding(
-                                                                              padding: EdgeInsets.symmetric(vertical: 6.0),
-                                                                              child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: [
+                                                                            
+                                                                              
                                                                                 Text(
-                                                                                    "" //genre missing
+                                                                                    "${event.value!.genre}"
                                                                                     ,
                                                                                     style: const TextStyle(color: Colors.white)),
-                                                                                Text(''),
-                                                                              ]),
-                                                                            )
+                                            
+                                                                            Text(''),
                                                                           ],
                                                                         ),
                                                                       )) //: const SizedBox(height: 0)
@@ -427,7 +426,7 @@ class EventOverviewPage extends StatelessWidget {
                                                             padding: EdgeInsets
                                                                 .symmetric(
                                                                     vertical:
-                                                                        4.0),
+                                                                        0.0),
                                                             child: Row(
                                                                 crossAxisAlignment:
                                                                     CrossAxisAlignment

@@ -18,6 +18,6 @@ class Favourites extends StatefulWidget {
 class _FavouritesState extends State<Favourites> {
   @override
   Widget build(BuildContext context) {
-    return EventCalendar(loggedinas: currently_loggedin_as.value);
+    return EventCalendar(loggedinas: currently_loggedin_as.value, mode: CalendarMode.favourites);
   }
 }
