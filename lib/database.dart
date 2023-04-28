@@ -241,33 +241,38 @@ Future<List<dbc.Event>> getEvents() async {
 ///
 /// [lastelemEventid] is for paginating query results
 ///
-/// Provide a List<Array>[byStatus] to only include Events with a status in this array. Leaving this empty includes Events of all stati
+/// Provide a List´[byStatus] to only include Events with a status in this array. Leaving this empty includes Events of all stati
 class EventFilters {
   String? lastelemEventid;
   Timestamp? onlyAfter;
   Timestamp? onlyBefore;
   int? canGoByAge;
   String orderbyField;
-  List<String> byStatus;
+  List<String>? byStatus;
   bool onlyHostedByMe;
+  List<String>? byIDList;
   EventFilters(
       {this.lastelemEventid,
       this.onlyAfter,
       this.onlyBefore,
       this.canGoByAge = 18,
       this.orderbyField = "end",
-      required this.byStatus,
+      this.byStatus,
+      this.byIDList,
       this.onlyHostedByMe = false});
 
   @override
   String toString() {
-    return 'Filter(lastelemEventid: $lastelemEventid, onlyAfter: ${timestamp2readablestamp(onlyAfter)}, onlyBefore: ${timestamp2readablestamp(onlyBefore)}, canGoByAge: $canGoByAge, orderByField: $orderbyField, byStatus: $byStatus, onlyHostedByMe: $onlyHostedByMe)';
+    return 'Filter(lastelemEventid: $lastelemEventid, onlyAfter: ${timestamp2readablestamp(onlyAfter)}, onlyBefore: ${timestamp2readablestamp(onlyBefore)}, canGoByAge: $canGoByAge, orderByField: $orderbyField, byStatus: $byStatus, byIDList: $byIDList, onlyHostedByMe: $onlyHostedByMe)';
   }
 }
 
 /// Gets the list of events for current branch from firestore.
 Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
   String eventIndexesJson = await readEventIndexesJson();
+  //print(eventIndexesJson);
+  eventIndexesJson = eventIndexesJson.replaceAll("ÃÂÃÂÃÂÃÂ¼", "ü");
+
   List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson);
   AggregateQuery eventsInDB =
       await db.collection("${branchPrefix}events").count();
@@ -293,8 +298,14 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
 List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     [int? queryLimit]) {
   List<dbc.Event> eventList = events;
+  print("Filters: $filters");
+  print("EventListToBeFiltered: $eventList");
   //pprint(". ${eventList.length}");
   //pprint("Stati Included: ${filters.byStatus}");
+  if (filters.byIDList != null) {
+    eventList = eventList.whereIsInValues("eventid", filters.byIDList ?? []);
+  }
+  print("Event List After IDFilter: $eventList");
   if (filters.onlyAfter != null) {
     eventList =
         eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
@@ -305,10 +316,10 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
   }
   //pprint("... ${eventList.length}");
-
-  eventList = eventList.whereIsInValues("status", filters.byStatus);
-  //pprint(".... ${eventList.length}");
-
+  if (filters.byStatus != null) {
+    eventList = eventList.whereIsInValues("status", filters.byStatus ?? []);
+    //pprint(".... ${eventList.length}");
+  }
   if (filters.canGoByAge != null) {
     eventList =
         eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
@@ -689,7 +700,10 @@ Future<String> readEventIndexesJson() async {
   Reference pathReference =
       storageRef.child("indexes/${branchPrefix}eventsIndex.json");
   Uint8List? data = await pathReference.getData(100 * 1024 * 1024);
-  return String.fromCharCodes(data ?? Uint8List.fromList([0]));
+  String fromChars = String.fromCharCodes(data ?? Uint8List.fromList([0]));
+  /*print("fromChars: $fromChars");
+  print("UTF8: ${utf8.decode(utf8.encode(fromChars))}");*/
+  return fromChars;
 }
 
 /// Read the event list from a index.json in String format

@@ -8,6 +8,13 @@ import 'dart:convert';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
+/// Turns your saved Events (Later things ig) into an idlist
+List<String> mySavedEventsList() {
+  if (currently_loggedin_as.value == null ||
+      currently_loggedin_as.value!.saved_events.isEmpty) return [];
+  return currently_loggedin_as.value!.saved_events.ids();
+}
+
 /// Forces String type on all Elements of a List.
 /// Elements that can't take String type are deleted.
 List<String> forceStringType(List<dynamic> inList) {
@@ -224,7 +231,10 @@ class EventTitle extends StatelessWidget {
         future: getEventTitle(event),
         builder: ((context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return Text(snapshot.data ?? "Unknown Event", style: style);
+            return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Text(snapshot.data ?? "Unknown Event",
+                    style: style, maxLines: 1));
           }
           return const CircularProgressIndicator(color: Colors.white);
         }));
