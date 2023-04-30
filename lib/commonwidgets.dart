@@ -82,7 +82,6 @@ AppBar CalendarAppBar(
               //ScaffoldMessenger.of(context).s
             },
             icon: Icon(Icons.filter_list, color: Colors.white)),
-            
       ]);
 }
 
@@ -168,7 +167,8 @@ class OpenSidebarButton extends StatelessWidget {
         },
         icon: Padding(
           padding: EdgeInsets.all(MediaQuery.of(context).size.height / 300),
-          child: SvgPicture.asset("graphics/rsrvector.svg", color: Colors.white),
+          child:
+              SvgPicture.asset("graphics/rsrvector.svg", color: Colors.white),
         ));
   }
 }
@@ -267,7 +267,8 @@ class NavBar extends StatelessWidget {
                             ),
                           );
                         } else {
-                          return Expanded(child: LoadingIndicator(color: Colors.white));
+                          return Expanded(
+                              child: LoadingIndicator(color: Colors.white));
                         }
                       })
                   : SizedBox(),
@@ -433,67 +434,9 @@ class EventTable extends StatelessWidget {
                     builder: (BuildContext context) => LoginScreen()));
               },
               icon: Icon(Icons.login)),
-              
         ],
-        
       ),
-      drawer: Drawer(
-        backgroundColor: cl.lighterGrey,
-        child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            // ignore: prefer_const_literals_to_create_immutables
-            children: !db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)
-                ? []
-                : [
-                    ListTile(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0)),
-                      tileColor: cl.lighterGrey,
-                      onTap: () {
-                        managescreen.selectedManagementScreen.value =
-                            managescreen.ManagementScreens.Events;
-                        managescreen.scaffoldKey.currentState!.closeDrawer();
-                      },
-                      title: Text("Events",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize:
-                                  MediaQuery.of(context).size.height / 40)),
-                    ),
-                    ListTile(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0)),
-                      tileColor: cl.lighterGrey,
-                      onTap: () {
-                        managescreen.selectedManagementScreen.value =
-                            managescreen.ManagementScreens.Hosts;
-                        managescreen.scaffoldKey.currentState!.closeDrawer();
-                      },
-                      title: Text("Hosts",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize:
-                                  MediaQuery.of(context).size.height / 40)),
-                    ),
-                    ListTile(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0)),
-                      tileColor: cl.lighterGrey,
-                      onTap: () {
-                        managescreen.selectedManagementScreen.value =
-                            managescreen.ManagementScreens.Media;
-                        managescreen.scaffoldKey.currentState!.closeDrawer();
-                      },
-                      title: Text("Media",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize:
-                                  MediaQuery.of(context).size.height / 40)),
-                    ),
-                  ]),
-      ),
+      drawer: managescreen.ManagingScreensDrawer(),
       body: FutureBuilder(
           future: db.readEventIndexesJson(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -831,11 +774,14 @@ class EventTable extends StatelessWidget {
     }).toList();
   }
 }
+
 class ProfileDescriptionEditor extends StatelessWidget {
   String? initialValue;
   late String? currentValue;
   Function(String)? onChange;
-  ProfileDescriptionEditor({this.initialValue = "", key, required this.onChange}) : super(key: key);
+  ProfileDescriptionEditor(
+      {this.initialValue = "", key, required this.onChange})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     currentValue = initialValue;
@@ -851,11 +797,13 @@ class ProfileDescriptionEditor extends StatelessWidget {
     );
   }
 }
+
 class ProfileAliasEditor extends StatelessWidget {
   String? initialValue;
   late String? currentValue;
   Function(String)? onChange;
-  ProfileAliasEditor({this.initialValue = "", key, required this.onChange}) : super(key: key);
+  ProfileAliasEditor({this.initialValue = "", key, required this.onChange})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     currentValue = initialValue;
@@ -871,6 +819,7 @@ class ProfileAliasEditor extends StatelessWidget {
     );
   }
 }
+
 class ReportButton extends StatelessWidget {
   final String target;
   const ReportButton({super.key, required this.target});
@@ -1033,9 +982,8 @@ class StartChatButton extends StatelessWidget {
               builder: (BuildContext context) {
                 return Dialog(
                   backgroundColor: Colors.transparent,
-                  child: Container(
-                    child: LoadingIndicator(color: Colors.white)
-                  ),
+                  child:
+                      Container(child: LoadingIndicator(color: Colors.white)),
                 );
               });
           Beamer.of(context).beamToNamed("/");
@@ -1103,11 +1051,51 @@ class LoadingIndicator extends StatelessWidget {
         child: AspectRatio(
           aspectRatio: 1,
           child: FractionallySizedBox(
-            widthFactor: 0.66,
-            heightFactor: 0.66,
-            child: CircularProgressIndicator(color: Colors.white)),
-          ),
+              widthFactor: 0.66,
+              heightFactor: 0.66,
+              child: CircularProgressIndicator(color: Colors.white)),
+        ),
       ),
+    );
+  }
+}
+
+class SimpleStringEditDialog extends StatelessWidget {
+  ValueNotifier to_notify;
+  SimpleStringEditDialog({super.key, required this.to_notify});
+
+  @override
+  Widget build(BuildContext context) {
+    String stringcontent = to_notify.value;
+    return AlertDialog(
+      title: Text("Edit", style: TextStyle(color: Colors.white)),
+      backgroundColor: cl.lighterGrey,
+      content: TextFormField(
+        decoration: InputDecoration(
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white),
+            )),
+        style: TextStyle(color: Colors.white),
+        cursorColor: Colors.white,
+        maxLines: 1,
+        initialValue: stringcontent,
+        onChanged: (value) {
+          stringcontent = value;
+        },
+      ),
+      actions: [
+        TextButton(
+            onPressed: () {
+              if (to_notify.value != stringcontent) {
+                to_notify.value = stringcontent;
+              }
+              Navigator.of(context).pop();
+            },
+            child: Text("Confirm", style: TextStyle(color: Colors.white))),
+      ],
     );
   }
 }

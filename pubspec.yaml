@@ -50,6 +50,7 @@ dependencies:
   dropdown_search: 5.0.3
   flutter_paypal:
   firebase_database:
+  auto_size_text_field:
   
   
 dev_dependencies: 
