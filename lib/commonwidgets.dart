@@ -1071,6 +1071,7 @@ class SimpleStringEditDialog extends StatelessWidget {
       title: Text("Edit", style: TextStyle(color: Colors.white)),
       backgroundColor: cl.lighterGrey,
       content: TextFormField(
+        autofocus: true,
         decoration: InputDecoration(
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.white),

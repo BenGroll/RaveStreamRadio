@@ -163,3 +163,55 @@ extension Check on List<Message> {
     return returnvalue;
   }
 }
+
+extension CheckForIDvalidity on String {
+  bool get isValidDocumentid {
+    List<String> validChars = [
+      "_",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9"
+    ];
+    bool is_valid = true;
+    this.runes.forEach((element) {
+      String char = String.fromCharCode(element);
+      if (!validChars.contains(char)) {
+        is_valid = false;
+      }
+    });
+    return is_valid;
+  }
+}

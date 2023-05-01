@@ -752,3 +752,16 @@ Future<dbc.Host?> loadDemoHostFromDB(String id) async {
     return null;
   }
 }
+
+Future uploadHost(dbc.Host host) async {
+  DocumentReference ref = db.doc("demohosts/${host.id}");
+  await ref.set(host.toMap());
+  // Add it to the index tracker
+  DocumentSnapshot snap = await db.doc("content/indexes").get();
+  Map<String, dynamic> map =
+      forceStringDynamicMapFromObject(snap.data() as Map);
+  Map<String, dynamic> jgkh = map["templateHostIDs"];
+  jgkh[host.id] = host.name;
+  await db.doc("content/indexes").update({"templateHostIDs": jgkh});
+  return;
+}

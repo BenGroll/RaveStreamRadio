@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
@@ -108,6 +109,8 @@ class ManagingScreensDrawer extends StatelessWidget {
 
 /// Screen "Hosts" in Management Tab
 class HostScreens extends StatelessWidget {
+  ValueNotifier<Map<String, String>?> demoHosts =
+      ValueNotifier<Map<String, String>?>(null);
   List<ListTile> hostIDMapToListTileList(
       Map<String, String> hosts, BuildContext context) {
     List<ListTile> tiles = [];
@@ -116,9 +119,8 @@ class HostScreens extends StatelessWidget {
       tiles.add(ListTile(
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext context) => ViewHostPage(
-                      isEditingHostID: key,
-                    )));
+                builder: (BuildContext context) =>
+                    ViewHostPage(isEditingHostID: key, toNotify: demoHosts)));
           },
           title: Text(hosts[key] ?? "", style: TextStyle(color: Colors.white)),
           subtitle: Text("@$key",
@@ -126,11 +128,10 @@ class HostScreens extends StatelessWidget {
           trailing:
               Icon(Icons.settings, color: Color.fromARGB(255, 207, 207, 207))));
     });
-
     return tiles;
   }
 
-  const HostScreens({Key? key}) : super(key: key);
+  HostScreens({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,7 +144,8 @@ class HostScreens extends StatelessWidget {
             IconButton(
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => ViewHostPage()));
+                      builder: (BuildContext context) =>
+                          ViewHostPage(toNotify: demoHosts)));
                 },
                 icon: Icon(Icons.add, color: Colors.white))
           ],
@@ -155,12 +157,16 @@ class HostScreens extends StatelessWidget {
               if (snapshot.connectionState != ConnectionState.done) {
                 return cw.LoadingIndicator(color: Colors.white);
               } else {
-                return ListView(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: MediaQuery.of(context).size.width / 40),
-                  children:
-                      hostIDMapToListTileList(snapshot.data ?? {}, context),
-                );
+                demoHosts.value = snapshot.data;
+                return ValueListenableBuilder(
+                    valueListenable: demoHosts,
+                    builder: (context, hosts, foo) {
+                      return ListView(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: MediaQuery.of(context).size.width / 40),
+                        children: hostIDMapToListTileList(hosts ?? {}, context),
+                      );
+                    });
               }
             }));
   }
@@ -169,8 +175,8 @@ class HostScreens extends StatelessWidget {
 class ViewHostPage extends StatelessWidget {
   String? isEditingHostID;
   ValueNotifier<Host?> currentHostData = ValueNotifier(null);
-  ViewHostPage({super.key, this.isEditingHostID});
-
+  ValueNotifier toNotify;
+  ViewHostPage({super.key, this.isEditingHostID, required this.toNotify});
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -203,27 +209,173 @@ class ViewHostPage extends StatelessWidget {
                   currentHostData.value?.official_logo ?? false);
               ValueNotifier<List<Link>> links = ValueNotifier<List<Link>>(
                   currentHostData.value?.links ?? <Link>[]);
-              print(HostCategory.values.toList());
-              print(
-                  "DropDowns: ${HostCategory.values.map((e) => DropdownMenuItem(value: e, child: Text(e.name))).toList()}");
+
+              Host craftHost() {
+                return Host(
+                    id: id.value,
+                    name: name.value,
+                    links: links.value,
+                    category: category.value,
+                    permit: permit.value,
+                    official_logo: official_logo.value);
+              }
+
+              Future<List<String>> verifyHostUpload() async {
+                List<String> errors = [];
+                if (name.value.isEmpty) {
+                  errors.add("Hostname can't be empty.");
+                } else {
+                  if (isEditingHostID == null) {
+                    DocumentSnapshot snap =
+                        await db.db.doc("demohosts/${id.value}").get();
+                    if (snap.exists) {
+                      errors.add("A host with this id already exists.");
+                    }
+                  }
+                }
+                if (id.value.isEmpty) {
+                  errors.add("ID can't be empty.");
+                }
+                if (!id.value.isValidDocumentid) {
+                  errors.add("ID contains a character not a-z, 0-9 or '_'");
+                }
+                if (errors.isEmpty) {
+                  try {
+                    craftHost();
+                  } catch (e) {
+                    print("Fehler beim konvertieren von Host: $e");
+                    errors
+                        .add("Couldnt convert to Host. Contact the developer.");
+                  }
+                }
+                return errors;
+              }
+
               return Scaffold(
                 backgroundColor: cl.darkerGrey,
                 appBar: AppBar(
-                    title: Text(isEditingHostID == null
-                        ? "Create new Host"
-                        : isEditingHostID ?? "This should never display")),
+                  title: Text(isEditingHostID == null
+                      ? "Create new Host"
+                      : isEditingHostID ?? "This should never display"),
+                  actions: [
+                    IconButton(
+                        onPressed: () async {
+                          await showDialog(
+                              barrierDismissible: false,
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  backgroundColor: cl.lighterGrey,
+                                  content: FutureBuilder(
+                                      future: verifyHostUpload(),
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot<List<String>> errors) {
+                                        if (errors.connectionState !=
+                                            ConnectionState.done) {
+                                          return cw.LoadingIndicator(
+                                              color: Colors.white);
+                                        } else {
+                                          if (errors.data!.isEmpty) {
+                                            Host hostToUpload = craftHost();
+                                            return FutureBuilder(
+                                                future: Future.delayed(
+                                                        Duration(seconds: 2))
+                                                    .then((as) =>
+                                                        db.uploadHost(hostToUpload)),
+                                                builder: (context, upload) {
+                                                  if (upload.connectionState !=
+                                                      ConnectionState.done) {
+                                                    return Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: const [
+                                                        Text("Upload is valid!",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white)),
+                                                        Text(
+                                                            "Uploading now....",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white)),
+                                                        cw.LoadingIndicator(
+                                                            color: Colors.white)
+                                                      ],
+                                                    );
+                                                  } else {
+                                                    return Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          Text(
+                                                              "Upload successfull!",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white)),
+                                                          TextButton(
+                                                              onPressed: () {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop();
+                                                                toNotify.value[
+                                                                        hostToUpload
+                                                                            .id] =
+                                                                    hostToUpload
+                                                                        .name;
+                                                                toNotify
+                                                                    .notifyListeners();
+                                                              },
+                                                              child: Text(
+                                                                  "Finish",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .white)))
+                                                        ]);
+                                                  }
+                                                });
+                                          } else {
+                                            List<Widget> errorwidgets = errors
+                                                .data!
+                                                .map((e) => Text(e,
+                                                    style: TextStyle(
+                                                        color: Colors.white)))
+                                                .toList();
+                                            errorwidgets.add(TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text(
+                                                    "Press here to go back",
+                                                    style: TextStyle(
+                                                        color: Colors.white))));
+                                            return Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: errorwidgets);
+                                          }
+                                        }
+                                      }),
+                                );
+                              });
+                        },
+                        icon: Icon(Icons.save))
+                  ],
+                ),
                 body: Column(
                   children: [
                     ListTile(
                         trailing: TextButton(
                           child: ValueListenableBuilder(
-                            valueListenable: name,
-                            builder: (context, nameValue, foo) {
-                              return Text(
-                                  nameValue.isEmpty ? "No Name Set" : nameValue,
-                                  style: TextStyle(color: Colors.white));
-                            }
-                          ),
+                              valueListenable: name,
+                              builder: (context, nameValue, foo) {
+                                return Text(
+                                    nameValue.isEmpty
+                                        ? "No Name Set"
+                                        : nameValue,
+                                    style: TextStyle(color: Colors.white));
+                              }),
                           //! Continue Here
                           onPressed: () {
                             showDialog(
@@ -236,24 +388,29 @@ class ViewHostPage extends StatelessWidget {
                         title: Text("Name",
                             style: TextStyle(color: Colors.white))),
                     ListTile(
-                        trailing: isEditingHostID == null ? TextButton(
-                          child: ValueListenableBuilder(
-                            valueListenable: id,
-                            builder: (context, idValue, foo) {
-                              return Text(
-                                  idValue.isEmpty ? "No Name Set" : idValue,
-                                  style: TextStyle(color: Colors.white));
-                            }
-                          ),
-                          //! Continue Here
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                builder: (BuildContext context) =>
-                                    cw.SimpleStringEditDialog(to_notify: id));
-                          },
-                        ) : Text(id.value, style: TextStyle(color: Colors.white)),
+                        trailing: isEditingHostID == null
+                            ? TextButton(
+                                child: ValueListenableBuilder(
+                                    valueListenable: id,
+                                    builder: (context, idValue, foo) {
+                                      return Text(
+                                          idValue.isEmpty
+                                              ? "No Name Set"
+                                              : idValue,
+                                          style:
+                                              TextStyle(color: Colors.white));
+                                    }),
+                                onPressed: () {
+                                  showDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      builder: (BuildContext context) =>
+                                          cw.SimpleStringEditDialog(
+                                              to_notify: id));
+                                },
+                              )
+                            : Text(id.value,
+                                style: TextStyle(color: Colors.white)),
                         title:
                             Text("ID", style: TextStyle(color: Colors.white))),
                     ListTile(

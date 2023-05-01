@@ -207,7 +207,7 @@ class Event {
       'location': location,
       'locationname': locationname,
       'minAge': minAge,
-      'genre' : genre,
+      'genre': genre,
       'icon': icon,
       'flyer': flyer,
       'description': description,
@@ -714,6 +714,17 @@ class Host {
         logopath: map.containsKey("logopath") ? map["logopath"] : null,
         name: map["name"],
         id: map["id"]);
+  }
+  Map<String, dynamic> toMap() {
+    return {
+      "id" : id,
+      "links" : mapFromLinkList(links ?? <Link>[]),
+      "logopath" : logopath,
+      "name" : name,
+      "category": category?.name,
+      "permit": permit,
+      "official_logo" : official_logo
+    };
   }
 }
 
