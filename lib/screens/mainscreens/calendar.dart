@@ -671,9 +671,14 @@ class _CalendarEventCardBody extends StatelessWidget {
                                           const TextStyle(color: Colors.white),
                                     )
                                   : const SizedBox(height: 0),
-                              Text(
-                                "Location: ${event.locationname ?? "Unknown"}",
-                                style: const TextStyle(color: Colors.white),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Text(
+                                  "Location: ${event.locationname ?? "Unknown"}",
+                                  maxLines: 1,
+                                  softWrap: true,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                               ),
                             ],
                           ),

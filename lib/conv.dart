@@ -224,7 +224,9 @@ class EventTitle extends StatelessWidget {
         future: getEventTitle(event),
         builder: ((context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            return Text(snapshot.data ?? "Unknown Event", style: style);
+            return SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Text(snapshot.data ?? "Unknown Event", style: style, maxLines: null, softWrap: true,));
           }
           return const CircularProgressIndicator(color: Colors.white);
         }));
