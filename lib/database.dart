@@ -765,3 +765,14 @@ Future uploadHost(dbc.Host host) async {
   await db.doc("content/indexes").update({"templateHostIDs": jgkh});
   return;
 }
+
+Future deleteHost(String hostID) async {
+  await db.doc("demohosts/$hostID").delete();
+  DocumentSnapshot snap = await db.doc("content/indexes").get();
+  Map<String, dynamic> map =
+      forceStringDynamicMapFromObject(snap.data() as Map);
+  Map<String, dynamic> jgkh = map["templateHostIDs"];
+  jgkh.remove(hostID);
+  await db.doc("content/indexes").update({"templateHostIDs": jgkh});
+  return;
+}

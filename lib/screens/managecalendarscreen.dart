@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -161,10 +163,17 @@ class HostScreens extends StatelessWidget {
                 return ValueListenableBuilder(
                     valueListenable: demoHosts,
                     builder: (context, hosts, foo) {
-                      return ListView(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: MediaQuery.of(context).size.width / 40),
-                        children: hostIDMapToListTileList(hosts ?? {}, context),
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          demoHosts.value = await db.getDemoHostIDs();
+                        },
+                        child: ListView(
+                          padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width / 40),
+                          children:
+                              hostIDMapToListTileList(hosts ?? {}, context),
+                        ),
                       );
                     });
               }
@@ -258,6 +267,109 @@ class ViewHostPage extends StatelessWidget {
                       ? "Create new Host"
                       : isEditingHostID ?? "This should never display"),
                   actions: [
+                    isEditingHostID == null
+                        ? const SizedBox(width: 0)
+                        : IconButton(
+                            icon: Icon(Icons.delete, color: Colors.white),
+                            onPressed: () async {
+                              await showDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  builder: (BuildContext context) {
+                                    ValueNotifier<bool> has_confirmed =
+                                        ValueNotifier(false);
+                                    return ValueListenableBuilder(
+                                        valueListenable: has_confirmed,
+                                        builder: (BuildContext context,
+                                            bool confirm, foo) {
+                                          return AlertDialog(
+                                            backgroundColor: cl.lighterGrey,
+                                            content: confirm == false
+                                                ? Text(
+                                                    "Are you sure you want to delete @${id.value}",
+                                                    style: TextStyle(
+                                                        color: Colors.white))
+                                                : FutureBuilder(
+                                                    future:
+                                                        db.deleteHost(id.value),
+                                                    builder: (BuildContext
+                                                            context,
+                                                        AsyncSnapshot snap) {
+                                                      if (snap.connectionState !=
+                                                          ConnectionState
+                                                              .done) {
+                                                        return cw
+                                                            .LoadingIndicator(
+                                                                color: Colors
+                                                                    .white);
+                                                      } else {
+                                                        return Column(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .min,
+                                                            children: [
+                                                              const Text(
+                                                                  "Host Deleted Successfully!",
+                                                                  style: TextStyle(
+                                                                      color: Colors
+                                                                          .white)),
+                                                              TextButton(
+                                                                  onPressed:
+                                                                      () {
+                                                                    toNotify
+                                                                        .value
+                                                                        .remove(
+                                                                            id.value);
+                                                                    toNotify
+                                                                        .notifyListeners();
+                                                                    Navigator.of(
+                                                                            context)
+                                                                        .pop();
+                                                                    Navigator.of(
+                                                                            context)
+                                                                        .pop();
+                                                                  },
+                                                                  child: Text(
+                                                                      "Finish",
+                                                                      style: TextStyle(
+                                                                          color:
+                                                                              Colors.white)))
+                                                            ]);
+                                                      }
+                                                    }),
+                                            actions: confirm == false
+                                                ? [
+                                                    TextButton(
+                                                        onPressed: () {
+                                                          if (has_confirmed
+                                                                  .value ==
+                                                              false)
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                        },
+                                                        child: Text(
+                                                          "Abort",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white),
+                                                        )),
+                                                    TextButton(
+                                                        onPressed: () async {
+                                                          has_confirmed.value =
+                                                              true;
+                                                        },
+                                                        child: const Text(
+                                                            "Confirm",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white)))
+                                                  ]
+                                                : [],
+                                          );
+                                        });
+                                  });
+                            }),
                     IconButton(
                         onPressed: () async {
                           await showDialog(
@@ -280,8 +392,8 @@ class ViewHostPage extends StatelessWidget {
                                             return FutureBuilder(
                                                 future: Future.delayed(
                                                         Duration(seconds: 2))
-                                                    .then((as) =>
-                                                        db.uploadHost(hostToUpload)),
+                                                    .then((as) => db.uploadHost(
+                                                        hostToUpload)),
                                                 builder: (context, upload) {
                                                   if (upload.connectionState !=
                                                       ConnectionState.done) {
@@ -435,16 +547,30 @@ class ViewHostPage extends StatelessWidget {
                         title: Text("Category",
                             style: TextStyle(color: Colors.white))),
                     ListTile(
-                        trailing: Text(
-                            logopath.value?.replaceAll(
-                                    "gs://ravestreammobileapp.appspot.com/",
-                                    "") ??
-                                "No Logopath set.",
-                            style: TextStyle(color: Colors.white)),
                         title: Text("Logopath",
-                            maxLines: null,
-                            softWrap: true,
-                            style: TextStyle(color: Colors.white))),
+                            style: TextStyle(color: Colors.white)),
+                        trailing: TextButton(
+                          child: ValueListenableBuilder(
+                              valueListenable: logopath,
+                              builder: (context, logopathValue, foo) {
+                                return Text(
+                                    (logopathValue == null ||
+                                            logopathValue!.isEmpty)
+                                        ? "No Logopath Set"
+                                        : logopathValue!.replaceAll(
+                                            "gs://ravestreammobileapp.appspot.com/",
+                                            ""),
+                                    style: TextStyle(color: Colors.white));
+                              }),
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (BuildContext context) =>
+                                    cw.SimpleStringEditDialog(
+                                        to_notify: logopath));
+                          },
+                        )),
                     ListTile(
                         trailing: ValueListenableBuilder(
                             valueListenable: permit,

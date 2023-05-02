@@ -1066,7 +1066,7 @@ class SimpleStringEditDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String stringcontent = to_notify.value;
+    String stringcontent = to_notify.value ?? "";
     return AlertDialog(
       title: Text("Edit", style: TextStyle(color: Colors.white)),
       backgroundColor: cl.lighterGrey,
