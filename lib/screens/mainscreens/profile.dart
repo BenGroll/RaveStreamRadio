@@ -15,7 +15,6 @@ import 'package:ravestreamradioapp/extensions.dart';
 
 import '../../conv.dart';
 
-
 class ProfileScreen extends StatefulWidget {
   final dbc.User? loggedinas;
   const ProfileScreen({super.key, required this.loggedinas});
@@ -51,9 +50,9 @@ class NotLoggedInScaffold extends StatelessWidget {
               onPressed: () {
                 //Navigate to Login Screen
                 kIsWeb
-                ? Beamer.of(context).beamToNamed("/login")
-                : Navigator.of(context).push(
-                    MaterialPageRoute(builder: ((context) => LoginScreen())));
+                    ? Beamer.of(context).beamToNamed("/login")
+                    : Navigator.of(context).push(MaterialPageRoute(
+                        builder: ((context) => LoginScreen())));
               },
             ),
           )),
@@ -68,216 +67,196 @@ class LoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: cl.darkerGrey,
-      body : ProfileView());
+        backgroundColor: cl.darkerGrey,
+        body: UserView(
+          username: currently_loggedin_as.value!.username,
+        ));
   }
 }
 
-class ProfileView extends StatelessWidget {
-  const ProfileView({super.key});
-  
+class UserView extends StatelessWidget {
+  String username;
+  UserView({super.key, required this.username});
+
+  Future<dbc.User?> _getUser() async {
+    if (currently_loggedin_as.value != null) {
+      if (currently_loggedin_as.value!.username == username) {
+        return currently_loggedin_as.value;
+      }
+    }
+    return await db.getUser(username);
+  }
 
   @override
   Widget build(BuildContext context) {
-     dbc.User? user = currently_loggedin_as.value;
-  return user == null
-      ? Text('Not logged in')
- :Scaffold(
-  backgroundColor: cl.darkerGrey,
-body: SingleChildScrollView(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-         
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 150,
-              child: const CircleAvatar(
-                radius: 70,
-                /*backgroundImage: SvgPicture(pictureProvider),*/
-              ),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: cl.lighterGrey,
-                  width: 5.0,
-                ),
-              ),
-            ),
-            // Avatar Editor Icon
-            SizedBox(
-              height: 30,
-            ),
+    return FutureBuilder(
+        future: _getUser(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return cw.LoadingIndicator(color: Colors.white);
+          }
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.data == null) {
+            return Scaffold(
+                backgroundColor: cl.darkerGrey,
+                body: Center(
+                    child: Text("Couldn't load user $username",
+                        style: TextStyle(color: Colors.white))));
+          }
+          ValueNotifier<dbc.User> user =
+              ValueNotifier<dbc.User>(snapshot.data ?? dbc.demoUser);
+          bool userIsMyself = currently_loggedin_as.value != null &&
+              user.value.username == currently_loggedin_as.value!.username;
+          return Scaffold(
+              backgroundColor: cl.darkerGrey,
+              body: SingleChildScrollView(
+                  child: Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: Container(
+                                width: 150,
+                                child: const CircleAvatar(
+                                  radius: 70,
+                                  /*backgroundImage: SvgPicture(pictureProvider),*/
+                                ),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: cl.lighterGrey,
+                                    width: 5.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Avatar Editor Icon
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                if (userIsMyself)
+                                  IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(
+                                        Icons.edit,
+                                        color: cl.darkerGrey,
+                                      )),
+                                ValueListenableBuilder(
+                                    valueListenable: user,
+                                    builder: (context, userVal, foo) {
+                                      return Text(userVal.alias ?? "Alias",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  20));
+                                    }),
+                                if (userIsMyself)
+                                  IconButton(
+                                      icon: Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: () async {
+                                        ValueNotifier<String?> aliasNot =
+                                            ValueNotifier<String?>(
+                                                user.value.alias);
+                                        await showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return cw.SimpleStringEditDialog(
+                                                  to_notify: aliasNot);
+                                            });
 
-            SizedBox(
-              width:  MediaQuery.of(context)
-                                                                  .size
-                                                                  .width ,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                                                       SizedBox(child: IconButton(onPressed: () => cw.ProfileAliasEditor(initialValue: user.alias,
-                                            onChange: (value) {
-                                              user.alias = value;
-                                            },),
-                                  icon: Icon(Icons.edit,
-                                  color: Colors.white
-                                  ),
+                                        if (aliasNot.value != null &&
+                                            aliasNot.value !=
+                                                user.value.alias) {
+                                          user.value.alias = aliasNot.value;
+                                          await db.db
+                                              .doc(
+                                                  "${branchPrefix}users/${user.value.username}")
+                                              .update(
+                                                  {"alias": user.value.alias});
+                                          user.notifyListeners();
+                                        }
+                                      }),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                if (userIsMyself)
+                                  IconButton(
+                                      onPressed: () {},
+                                      icon: Icon(
+                                        Icons.edit,
+                                        color: cl.darkerGrey,
+                                      )),
+                                ValueListenableBuilder(
+                                    valueListenable: user,
+                                    builder: (context, userVal, foo) {
+                                      return Text(
+                                          userVal.description ??
+                                              "No description yet.",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  25));
+                                    }),
+                                if (userIsMyself)
+                                  IconButton(
+                                      icon: Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
                                       ),
-                                      )
-                                                      ,],),
-                  Padding(padding: EdgeInsets.all(0),
-                  child:
-                  user.alias != null
-                  ? Text(
-                    user.username,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 40,
-                    ),
-                  )
-                  : Container(
-                    child: Text("You don't have an alias yet!",
-                    style: TextStyle(color: Colors.white)),
-                  )
-                  ),
-                  SizedBox(
-  height: 30,
-),
- Row(
-  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  
-  children: [SizedBox(child: Text('Description:', 
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight: FontWeight.bold),
-                                                      textAlign: TextAlign.center,
-                                                      ),
-                                                      
-                                                      ) , 
-                                                      
-                        SizedBox(child: IconButton(onPressed: () => cw.ProfileDescriptionEditor(initialValue: user.alias,
-                                            onChange: (value) {
-                                              user.alias = value;
-                                            },),
-                                  icon: Icon(Icons.edit,
-                                  color: Colors.white
-                                  ),
-                                      ),
-                                      ),]),
-                                                      
-                  SizedBox(
-                                                      child: user.
-                                                                  description !=
-                                                              null
-                                                          ? Padding(
-                                                              padding:
-                                                                  const EdgeInsets.all(
-                                                                      16.0),
-                                                              child: RichText(
-                                                                  maxLines: 50,
-                                                                  softWrap:
-                                                                      true, 
-                                                                  textAlign: TextAlign.center,
-                                                                  text: TextSpan(
-                                                                      style: const TextStyle(
-                                                                          color: Colors
-                                                                              .white),
-                                                                      children: (user.description == null || user.description!.isEmpty)
-                                                                          ? null
-                                                                          : stringToTextSpanList(user.description ??
-                                                                              ""))))
-                                                          : const SizedBox(
-                                                              child: Text("Add a Description and tell something about yourself!",
-                    style: TextStyle(color: Colors.white)),),
-                                                    ),
-SizedBox(
-  height: 30,
-),
- SizedBox(child: Text('Email Adress:', 
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight: FontWeight.bold),
-                                                      textAlign: TextAlign.center,
-                                                      )) ,
-                                                    SizedBox(
-                                                      child: user.
-                                                                mail !=
-                                                              null
-                                                          ? Padding(
-                                                              padding:
-                                                                  const EdgeInsets.all(
-                                                                      16.0),
-                                                              child: RichText(
-                                                                  maxLines: 50,
-                                                                  softWrap:
-                                                                      true, 
-                                                                  textAlign: TextAlign.center,
-                                                                  text: TextSpan(
-                                                                      style: const TextStyle(
-                                                                          color: Colors
-                                                                              .white),
-                                                                      children: (user.mail == null || user.mail!.isEmpty)
-                                                                          ? null
-                                                                          : stringToTextSpanList(user.mail ??
-                                                                              ""))))
-                                                          : const SizedBox(
-                                                              child: Text("Add your Email Adress!",
-                    style: TextStyle(color: Colors.white)),),
-                                                    ),SizedBox(
-  height: 30,
-),
-                                                    
-                                                    SizedBox(child: Text('Hosting Events:', 
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight: FontWeight.bold),
-                                                      textAlign: TextAlign.center,
-                                                      )) ,
-                                                    SizedBox(
-                                                      child: user.
-                                                                  events !=
-                                                              null
-                                                          ? Padding(
-                                                              padding:
-                                                                  const EdgeInsets.all(
-                                                                      16.0),
-                                                              child: RichText(
-                                                                  maxLines: 50,
-                                                                  softWrap:
-                                                                      true, 
-                                                                  textAlign: TextAlign.center,
-                                                                  text: TextSpan(
-                                                                      style: const TextStyle(
-                                                                          color: Colors
-                                                                              .white),
-                                                                      children: (user.events == null || user.events!.isEmpty)
-                                                                          ? null
-                                                                          : stringToTextSpanList(user.description ??
-                                                                              ""))))
-                                                          : const SizedBox(
-                                                          child: Text("You didn't host an event yet!",
-                    style: TextStyle(color: Colors.white)),),
-                                                    ),
-                                                   
-                                                    
-                 
-                ],
-              ),
-            ),
-            
-           
-          ],
-        ),
-      ),
-    ),
-    );
-     
-      
+                                      onPressed: () async {
+                                        ValueNotifier<String?> descriptionNot =
+                                            ValueNotifier<String?>(
+                                                user.value.description);
+                                        await showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return cw.SimpleStringEditDialog(
+                                                  to_notify: descriptionNot);
+                                            });
+
+                                        if (descriptionNot.value != null &&
+                                            descriptionNot.value !=
+                                                user.value.alias) {
+                                          user.value.description =
+                                              descriptionNot.value;
+                                          await db.db
+                                              .doc(
+                                                  "${branchPrefix}users/${user.value.username}")
+                                              .update({
+                                            "description":
+                                                user.value.description
+                                          });
+                                          user.notifyListeners();
+                                        }
+                                      }),
+                              ],
+                            ),
+                            TextButton(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      cw.hintSnackBar(
+                                          "Viewing of Event-List is WIP."));
+                                },
+                                child: Text(
+                                    "Hosted events: ${user.value.events.length}", style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  25)))
+                          ]))));
+        });
   }
 }

@@ -783,3 +783,14 @@ Future deleteHost(String hostID) async {
   await db.doc("content/indexes").update({"templateHostIDs": jgkh});
   return;
 }
+
+Future<dbc.Group?> getGroup(String groupID) async {
+  DocumentSnapshot snap = await db.doc("${branchPrefix}groups/$groupID").get();
+  if (snap.exists && snap.data() != null) {
+    Map<String, dynamic> data = forceStringDynamicMapFromObject(snap.data() as Map);
+    data = forceStringDynamicMapFromObject(data);
+    return dbc.Group.fromMap(data);
+  } else {
+    return null;
+  }
+}

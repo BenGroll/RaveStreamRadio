@@ -345,12 +345,12 @@ class Event {
 
 /// Template class for Groups to avoid type and valueerrors
 class Group {
-  final String? title;
-  final String groupid;
-  final dynamic design;
-  final Map<String, MaterialColor>? custom_roles;
-  final Map<DocumentReference, dynamic>? members_roles;
-  final List<DocumentReference> events;
+  String? title;
+  String groupid;
+  dynamic design;
+  Map<String, MaterialColor>? custom_roles;
+  Map<DocumentReference, dynamic>? members_roles;
+  List<DocumentReference> events;
   Group({
     this.title,
     required this.groupid,
