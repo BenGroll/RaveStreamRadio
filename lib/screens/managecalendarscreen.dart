@@ -225,6 +225,7 @@ class ViewHostPage extends StatelessWidget {
                     name: name.value,
                     links: links.value,
                     category: category.value,
+                    logopath: logopath.value,
                     permit: permit.value,
                     official_logo: official_logo.value);
               }
@@ -388,7 +389,10 @@ class ViewHostPage extends StatelessWidget {
                                               color: Colors.white);
                                         } else {
                                           if (errors.data!.isEmpty) {
+                                            print(
+                                                "Logopath: ${logopath.value}");
                                             Host hostToUpload = craftHost();
+                                            print("Host: $hostToUpload");
                                             return FutureBuilder(
                                                 future: Future.delayed(
                                                         Duration(seconds: 2))

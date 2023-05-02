@@ -98,6 +98,18 @@ class DevSettingsScreen extends StatelessWidget {
                   ),
                   ElevatedButton(
                     onPressed: (() async {
+                      //! Continue here
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(hintSnackBar("Added testevents"));
+                    }),
+                    child: ValueListenableBuilder(
+                        valueListenable: selectedbranch,
+                        builder: (context, branch, foo) {
+                          return Text("Remove all events from $branch");
+                        }),
+                  ),
+                  ElevatedButton(
+                    onPressed: (() async {
                       String toCopy = "";
                       String toCopyTo = "";
                       bool continuE = false;

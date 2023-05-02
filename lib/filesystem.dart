@@ -12,8 +12,7 @@ import 'colors.dart' as cl;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'shared_state.dart' as shs;
 import 'package:ravestreamradioapp/extensions.dart';
-
-
+import 'package:ravestreamradioapp/database.dart' as db;
 
 /// Error Image with white logo and transparent background.
 const errorWhiteImage =
@@ -39,7 +38,7 @@ Future<File> get _usersettingsfile async {
 }
 
 /// Reference to the file where the login-credentials are saved.
-/// 
+///
 /// To be replaced with Hash
 Future<File> get _logindatafile async {
   final path = await _localPath;
@@ -59,7 +58,7 @@ Future<UserSettings> readUserSettingsMobile() async {
 }
 
 /// Write login credentials to the devices long-term storage to allow remembering them
-/// 
+///
 /// To be replaced with Hash
 Future<File> writeLoginDataMobile(String username, String password) async {
   final file = await _logindatafile;
@@ -68,8 +67,7 @@ Future<File> writeLoginDataMobile(String username, String password) async {
   return file.writeAsString(datatowrite);
 }
 
-
-/// Read login credentials to the devices long-term storage to allow remembering them 
+/// Read login credentials to the devices long-term storage to allow remembering them
 Future<Map> readLoginDataMobile() async {
   final file = await _logindatafile;
   if (file.existsSync()) {
@@ -103,7 +101,7 @@ Future<Map> readLoginDataWeb() async {
 }
 
 /// Get Image from the Google Cloud storage.
-/// 
+///
 /// Returns error image if file doesnt exists, so nullsafe
 Future<Widget?> getImage(String imagepath) async {
   if (imagepath.isEmpty) {
@@ -139,11 +137,11 @@ Future<Widget?> getImage(String imagepath) async {
 }
 
 /// get Icon of Event.
-/// 
+///
 /// If event has no specified Icon, instead returns profile picture of the host.
-/// 
+///
 /// If host has no specified Picture either, displays common Event Image
-/// 
+///
 /// Common Image path: graphics\DefaultEventTemplate.jpg
 Future<Widget> getEventIcon(dbc.Event event) async {
   if (event.icon != null) {
@@ -151,6 +149,16 @@ Future<Widget> getEventIcon(dbc.Event event) async {
     return await getImage(event.icon ?? "") ?? errorWhiteImage;
   } else {
     if (event.hostreference == null) {
+      if (event.templateHostID != null) {
+        String? imageLocation = await db.db
+            .doc("demohosts/${event.templateHostID}")
+            .get()
+            .then((value) => value.data()?["logopath"]);
+        if (imageLocation != null && imageLocation.isNotEmpty) {
+          return await getImage(imageLocation.replaceAll(
+              "gs://ravestreammobileapp.appspot.com/", "")) ?? errorWhiteImage;
+        }
+      }
       //pprint("@fs : No Host specified.");
       return const Image(
           image: AssetImage("graphics/DefaultEventTemplate.jpg"));
@@ -184,7 +192,7 @@ Future<Widget> getEventIcon(dbc.Event event) async {
 }
 
 /// Gets Flyer of Event
-/// 
+///
 /// If the event has no specified Flyer, the Icon gets returned instead.
 Future<Widget> getEventFlyer(dbc.Event event) async {
   if (event.flyer != null) {
