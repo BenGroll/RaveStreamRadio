@@ -41,7 +41,8 @@ class EventFilterBottomSheet extends StatelessWidget {
         backgroundColor: cl.lighterGrey,
         automaticallyImplyLeading: false,
         leading: null,
-        title: Text("Filters", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text("Filters",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         actions: [IconButton(onPressed: () {}, icon: Icon(Icons.undo))],
       ),
       body: ValueListenableBuilder(
@@ -219,13 +220,16 @@ class EventFilterBottomSheet extends StatelessWidget {
   }
 }
 
-enum CalendarMode { normal, drafts, favourites}
+enum CalendarMode { normal, drafts, favourites }
 
 class EventCalendar extends StatefulWidget {
   final dbc.User? loggedinas;
   final CalendarMode mode;
-  EventCalendar(
-      {super.key, required this.loggedinas, this.mode = CalendarMode.normal, });
+  EventCalendar({
+    super.key,
+    required this.loggedinas,
+    this.mode = CalendarMode.normal,
+  });
 
   @override
   _EventCalendarState createState() => _EventCalendarState();
@@ -233,9 +237,6 @@ class EventCalendar extends StatefulWidget {
 
 class _EventCalendarState extends State<EventCalendar> {
   late Future<List<dbc.Event>> events;
-  String searchString = "";
-
-
   @override
   void initState() {
     super.initState();
@@ -246,9 +247,11 @@ class _EventCalendarState extends State<EventCalendar> {
   Widget build(BuildContext context) {
     CalendarMode mode = widget.mode;
     ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
-        byStatus: mode == CalendarMode.normal ? ["public"] : (mode == CalendarMode.drafts ? ["draft"] :["public"] )));
+        byStatus: mode == CalendarMode.normal
+            ? ["public"]
+            : (mode == CalendarMode.drafts ? ["draft"] : ["public"])));
     print("OnCreate filters: $filters");
-      
+
     event_data = [];
     totalelements = 0;
     current_page.value = 0;
@@ -299,20 +302,15 @@ class _EventCalendarState extends State<EventCalendar> {
                     ],
                   ),
                   child: Row(
-                    
                     children: <Widget>[
                       Expanded(
-                        
                         child: TextField(
-                          
                           style: TextStyle(color: Colors.white),
                           onChanged: (value) {
-                            setState(() {
-                              searchString = value.toLowerCase();
-                            });
+                            filters.value.searchString = value;
+                            filters.notifyListeners();
                           },
                           decoration: InputDecoration(
-                            
                             hintText: "Search",
                             hintStyle: TextStyle(
                               color: Colors.white,
@@ -353,19 +351,25 @@ class _EventCalendarState extends State<EventCalendar> {
                                       db.EventFilters filters, foo) {
                                     List<dbc.Event> events =
                                         snapshot.data ?? [];
-                                    return mode == CalendarMode.favourites ?
-                                    ListView(
-                                      children: db
-                                      .queriefyEventList(saved_events, filters)
-                                      .map((e) => CalendarEventCard(e))
-                                      .toList(),
-                                    )
-                                    : ListView(
-                                      children: db
-                                          .queriefyEventList(events, filters,)
-                                          .map((e) => CalendarEventCard(e))
-                                          .toList(),
-                                    );
+                                    return mode == CalendarMode.favourites
+                                        ? ListView(
+                                            children: db
+                                                .queriefyEventList(
+                                                    saved_events, filters)
+                                                .map(
+                                                    (e) => CalendarEventCard(e))
+                                                .toList(),
+                                          )
+                                        : ListView(
+                                            children: db
+                                                .queriefyEventList(
+                                                  events,
+                                                  filters,
+                                                )
+                                                .map(
+                                                    (e) => CalendarEventCard(e))
+                                                .toList(),
+                                          );
                                   });
                             }
                           }));
@@ -374,7 +378,9 @@ class _EventCalendarState extends State<EventCalendar> {
       appBar: CalendarAppBar(
         context,
         filters,
-        title: mode == CalendarMode.drafts ? "Your Drafts" : (mode == CalendarMode.normal ? "Events" : "Favourites"),
+        title: mode == CalendarMode.drafts
+            ? "Your Drafts"
+            : (mode == CalendarMode.normal ? "Events" : "Favourites"),
       ),
     );
 

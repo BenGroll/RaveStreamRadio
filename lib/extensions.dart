@@ -152,6 +152,21 @@ extension Queriefy on List<dbc.Event> {
     });
     return outL;
   }
+
+  List<dbc.Event> whereContainsString(String searchString) {
+    List<dbc.Event> outL = [];
+    forEach((element) {
+      if ((element.locationname != null &&
+              element.locationname!.contains(searchString)) ||
+          (element.eventid.contains(searchString)) ||
+          (element.title != null && element.title!.contains(searchString)) ||
+          (element.templateHostID != null &&
+              element.templateHostID!.contains(searchString))) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
 }
 
 extension Check on List<Message> {
