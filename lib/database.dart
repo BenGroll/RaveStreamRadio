@@ -241,38 +241,35 @@ Future<List<dbc.Event>> getEvents() async {
 ///
 /// [lastelemEventid] is for paginating query results
 ///
-/// Provide a List´[byStatus] to only include Events with a status in this array. Leaving this empty includes Events of all stati
+/// Provide a List<Array>[byStatus] to only include Events with a status in this array. Leaving this empty includes Events of all stati
 class EventFilters {
   String? lastelemEventid;
   Timestamp? onlyAfter;
   Timestamp? onlyBefore;
   int? canGoByAge;
   String orderbyField;
-  List<String>? byStatus;
+  List<String> byStatus;
   bool onlyHostedByMe;
-  List<String>? byIDList;
+  String? searchString;
   EventFilters(
       {this.lastelemEventid,
       this.onlyAfter,
       this.onlyBefore,
       this.canGoByAge = 18,
       this.orderbyField = "end",
-      this.byStatus,
-      this.byIDList,
-      this.onlyHostedByMe = false});
+      required this.byStatus,
+      this.onlyHostedByMe = false,
+      this.searchString});
 
   @override
   String toString() {
-    return 'Filter(lastelemEventid: $lastelemEventid, onlyAfter: ${timestamp2readablestamp(onlyAfter)}, onlyBefore: ${timestamp2readablestamp(onlyBefore)}, canGoByAge: $canGoByAge, orderByField: $orderbyField, byStatus: $byStatus, byIDList: $byIDList, onlyHostedByMe: $onlyHostedByMe)';
+    return 'Filter(lastelemEventid: $lastelemEventid, onlyAfter: ${timestamp2readablestamp(onlyAfter)}, onlyBefore: ${timestamp2readablestamp(onlyBefore)}, canGoByAge: $canGoByAge, orderByField: $orderbyField, byStatus: $byStatus, onlyHostedByMe: $onlyHostedByMe, searchString: $searchString)';
   }
 }
 
 /// Gets the list of events for current branch from firestore.
 Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
   String eventIndexesJson = await readEventIndexesJson();
-  //print(eventIndexesJson);
-  eventIndexesJson = eventIndexesJson.replaceAll("ÃÂÃÂÃÂÃÂ¼", "ü");
-
   List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson);
   AggregateQuery eventsInDB =
       await db.collection("${branchPrefix}events").count();
@@ -298,14 +295,13 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
 List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     [int? queryLimit]) {
   List<dbc.Event> eventList = events;
-  print("Filters: $filters");
-  print("EventListToBeFiltered: $eventList");
+  print("QueryFilters: $filters");
   //pprint(". ${eventList.length}");
   //pprint("Stati Included: ${filters.byStatus}");
-  if (filters.byIDList != null) {
-    eventList = eventList.whereIsInValues("eventid", filters.byIDList ?? []);
+  if (filters.searchString != null) {
+    eventList = eventList.whereContainsString(filters.searchString ?? "");
   }
-  print("Event List After IDFilter: $eventList");
+
   if (filters.onlyAfter != null) {
     eventList =
         eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
@@ -316,10 +312,10 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
   }
   //pprint("... ${eventList.length}");
-  if (filters.byStatus != null) {
-    eventList = eventList.whereIsInValues("status", filters.byStatus ?? []);
-    //pprint(".... ${eventList.length}");
-  }
+
+  eventList = eventList.whereIsInValues("status", filters.byStatus);
+  //pprint(".... ${eventList.length}");
+
   if (filters.canGoByAge != null) {
     eventList =
         eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
@@ -700,10 +696,7 @@ Future<String> readEventIndexesJson() async {
   Reference pathReference =
       storageRef.child("indexes/${branchPrefix}eventsIndex.json");
   Uint8List? data = await pathReference.getData(100 * 1024 * 1024);
-  String fromChars = String.fromCharCodes(data ?? Uint8List.fromList([0]));
-  /*print("fromChars: $fromChars");
-  print("UTF8: ${utf8.decode(utf8.encode(fromChars))}");*/
-  return fromChars;
+  return String.fromCharCodes(data ?? Uint8List.fromList([0]));
 }
 
 /// Read the event list from a index.json in String format
@@ -754,4 +747,50 @@ Future<List<dbc.Report>> getAllReports() async {
     reports.add(dbc.Report.fromMap(map));
   });
   return reports;
+}
+
+Future<dbc.Host?> loadDemoHostFromDB(String id) async {
+  DocumentSnapshot docRef = await db.doc("demohosts/$id").get();
+  if (docRef.exists && docRef.data() != null) {
+    Map<String, dynamic> map =
+        forceStringDynamicMapFromObject(docRef.data() ?? {});
+    return dbc.Host.fromMap(map);
+  } else {
+    return null;
+  }
+}
+
+Future uploadHost(dbc.Host host) async {
+  DocumentReference ref = db.doc("demohosts/${host.id}");
+  await ref.set(host.toMap());
+  // Add it to the index tracker
+  DocumentSnapshot snap = await db.doc("content/indexes").get();
+  Map<String, dynamic> map =
+      forceStringDynamicMapFromObject(snap.data() as Map);
+  Map<String, dynamic> jgkh = map["templateHostIDs"];
+  jgkh[host.id] = host.name;
+  await db.doc("content/indexes").update({"templateHostIDs": jgkh});
+  return;
+}
+
+Future deleteHost(String hostID) async {
+  await db.doc("demohosts/$hostID").delete();
+  DocumentSnapshot snap = await db.doc("content/indexes").get();
+  Map<String, dynamic> map =
+      forceStringDynamicMapFromObject(snap.data() as Map);
+  Map<String, dynamic> jgkh = map["templateHostIDs"];
+  jgkh.remove(hostID);
+  await db.doc("content/indexes").update({"templateHostIDs": jgkh});
+  return;
+}
+
+Future<dbc.Group?> getGroup(String groupID) async {
+  DocumentSnapshot snap = await db.doc("${branchPrefix}groups/$groupID").get();
+  if (snap.exists && snap.data() != null) {
+    Map<String, dynamic> data = forceStringDynamicMapFromObject(snap.data() as Map);
+    data = forceStringDynamicMapFromObject(data);
+    return dbc.Group.fromMap(data);
+  } else {
+    return null;
+  }
 }

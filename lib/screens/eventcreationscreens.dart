@@ -817,10 +817,11 @@ class GeneralSettingsPage extends StatelessWidget {
                           
                           onChanged: (value) async {
                             
-                            currentEventData.value.minAge = value as int;
+                            currentEventData.value.minAge = int.parse(value);
                           },
                           style: const TextStyle(color: Colors.white),
                           cursorColor: Colors.white,
+                          keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                             icon: Icon(
                                 Icons.warning,

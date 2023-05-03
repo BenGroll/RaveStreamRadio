@@ -152,6 +152,21 @@ extension Queriefy on List<dbc.Event> {
     });
     return outL;
   }
+
+  List<dbc.Event> whereContainsString(String searchString) {
+    List<dbc.Event> outL = [];
+    forEach((element) {
+      if ((element.locationname != null &&
+              element.locationname!.contains(searchString)) ||
+          (element.eventid.contains(searchString)) ||
+          (element.title != null && element.title!.contains(searchString)) ||
+          (element.templateHostID != null &&
+              element.templateHostID!.contains(searchString))) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
 }
 
 extension Check on List<Message> {
@@ -161,5 +176,57 @@ extension Check on List<Message> {
       returnvalue = element.id == id ? element : null;
     });
     return returnvalue;
+  }
+}
+
+extension CheckForIDvalidity on String {
+  bool get isValidDocumentid {
+    List<String> validChars = [
+      "_",
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "x",
+      "y",
+      "z",
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9"
+    ];
+    bool is_valid = true;
+    this.runes.forEach((element) {
+      String char = String.fromCharCode(element);
+      if (!validChars.contains(char)) {
+        is_valid = false;
+      }
+    });
+    return is_valid;
   }
 }

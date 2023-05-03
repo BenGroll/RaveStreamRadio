@@ -4,6 +4,7 @@ import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/conv.dart';
+import 'package:ravestreamradioapp/screens/mainscreens/profile.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
@@ -32,8 +33,8 @@ class UserOverviewPage extends StatelessWidget {
                     cw.StartChatButton(other_person_username: username)
                   ],
                 ),
-                body:  
-                  Text('bla'),
+                body: UserView(username: username)  
+                  
   
               );
             } else {

@@ -158,71 +158,55 @@ class EventFilterBottomSheet extends StatelessWidget {
                           children: [
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        (enabledFilters.byStatus != null &&
-                                                enabledFilters.byStatus!
-                                                    .contains("public"))
-                                            ? cl.darkerGrey
-                                            : cl.lighterGrey),
+                                    backgroundColor: (enabledFilters.byStatus
+                                            .contains("public"))
+                                        ? cl.darkerGrey
+                                        : cl.lighterGrey),
                                 onPressed: () {
-                                  filters.value.byStatus != null &&
-                                          filters.value.byStatus!
-                                              .contains("public")
-                                      ? filters.value.byStatus!.remove("public")
-                                      : filters.value.byStatus!.add("public");
+                                  filters.value.byStatus.contains("public")
+                                      ? filters.value.byStatus.remove("public")
+                                      : filters.value.byStatus.add("public");
                                   filters.notifyListeners();
                                 },
                                 child: Text("Public")),
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        (enabledFilters.byStatus != null &&
-                                                enabledFilters.byStatus!
-                                                    .contains("friendlist"))
-                                            ? cl.darkerGrey
-                                            : cl.lighterGrey),
+                                    backgroundColor: (enabledFilters.byStatus
+                                            .contains("friendlist"))
+                                        ? cl.darkerGrey
+                                        : cl.lighterGrey),
                                 onPressed: () {
-                                  filters.value.byStatus != null &&
-                                          filters.value.byStatus!
-                                              .contains("friendlist")
-                                      ? filters.value.byStatus!
+                                  filters.value.byStatus.contains("friendlist")
+                                      ? filters.value.byStatus
                                           .remove("friendlist")
-                                      : filters.value.byStatus!
+                                      : filters.value.byStatus
                                           .add("friendlist");
                                   filters.notifyListeners();
                                 },
                                 child: Text("Friendlist")),
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        (enabledFilters.byStatus != null &&
-                                                enabledFilters.byStatus!
-                                                    .contains("frozen"))
-                                            ? cl.darkerGrey
-                                            : cl.lighterGrey),
+                                    backgroundColor: (enabledFilters.byStatus
+                                            .contains("frozen"))
+                                        ? cl.darkerGrey
+                                        : cl.lighterGrey),
                                 onPressed: () {
-                                  filters.value.byStatus != null &&
-                                          filters.value.byStatus!
-                                              .contains("frozen")
-                                      ? filters.value.byStatus!.remove("frozen")
-                                      : filters.value.byStatus!.add("frozen");
+                                  filters.value.byStatus.contains("frozen")
+                                      ? filters.value.byStatus.remove("frozen")
+                                      : filters.value.byStatus.add("frozen");
                                   filters.notifyListeners();
                                 },
                                 child: Text("Frozen")),
                             ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        (enabledFilters.byStatus != null &&
-                                                enabledFilters.byStatus!
-                                                    .contains("draft"))
-                                            ? cl.darkerGrey
-                                            : cl.lighterGrey),
+                                    backgroundColor: (enabledFilters.byStatus
+                                            .contains("draft"))
+                                        ? cl.darkerGrey
+                                        : cl.lighterGrey),
                                 onPressed: () {
-                                  filters.value.byStatus != null &&
-                                          filters.value.byStatus!
-                                              .contains("draft")
-                                      ? filters.value.byStatus!.remove("draft")
-                                      : filters.value.byStatus!.add("draft");
+                                  filters.value.byStatus.contains("draft")
+                                      ? filters.value.byStatus.remove("draft")
+                                      : filters.value.byStatus.add("draft");
                                   filters.notifyListeners();
                                 },
                                 child: Text("Drafts")),
@@ -253,37 +237,19 @@ class EventCalendar extends StatefulWidget {
 
 class _EventCalendarState extends State<EventCalendar> {
   late Future<List<dbc.Event>> events;
-  String searchString = "";
-
   @override
   void initState() {
     super.initState();
-    //events =db.fetchEventsFromIndexFile(); Uncommenting this leads to events being fetched twice on first open, making load-time longer and putting double the strain on the db api numbers
-  }
-
-  /// Maps the calendar's mode to appropriate EventState
-  List<String>? modeToStatus(CalendarMode mode) {
-    switch (mode) {
-      case CalendarMode.drafts:
-        return ["draft"];
-        break;
-      case CalendarMode.normal:
-        return ["public"];
-        break;
-      case CalendarMode.favourites:
-        return null;
-      default:
-        return ["public"];
-    }
+    //events =db.fetchEventsFromIndexFile();
   }
 
   @override
   Widget build(BuildContext context) {
     CalendarMode mode = widget.mode;
     ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
-        byStatus: modeToStatus(mode),
-        byIDList:
-            mode == CalendarMode.favourites ? mySavedEventsList() : null));
+        byStatus: mode == CalendarMode.normal
+            ? ["public"]
+            : (mode == CalendarMode.drafts ? ["draft"] : ["public"])));
     print("OnCreate filters: $filters");
 
     event_data = [];
@@ -341,9 +307,8 @@ class _EventCalendarState extends State<EventCalendar> {
                         child: TextField(
                           style: TextStyle(color: Colors.white),
                           onChanged: (value) {
-                            setState(() {
-                              searchString = value.toLowerCase();
-                            });
+                            filters.value.searchString = value;
+                            filters.notifyListeners();
                           },
                           decoration: InputDecoration(
                             hintText: "Search",
@@ -380,7 +345,6 @@ class _EventCalendarState extends State<EventCalendar> {
                                 ConnectionState.done) {
                               return cw.LoadingIndicator(color: Colors.white);
                             } else {
-                              //print("Fetched Events: ${snapshot.data}");
                               return ValueListenableBuilder(
                                   valueListenable: filters,
                                   builder: (BuildContext context,
@@ -391,9 +355,9 @@ class _EventCalendarState extends State<EventCalendar> {
                                         ? ListView(
                                             children: db
                                                 .queriefyEventList(
-                                                    events, filters)
-                                                .map((e) =>
-                                                    CalendarEventCard(e, mode))
+                                                    saved_events, filters)
+                                                .map(
+                                                    (e) => CalendarEventCard(e))
                                                 .toList(),
                                           )
                                         : ListView(
@@ -402,8 +366,8 @@ class _EventCalendarState extends State<EventCalendar> {
                                                   events,
                                                   filters,
                                                 )
-                                                .map((e) =>
-                                                    CalendarEventCard(e, mode))
+                                                .map(
+                                                    (e) => CalendarEventCard(e))
                                                 .toList(),
                                           );
                                   });
@@ -426,8 +390,7 @@ class _EventCalendarState extends State<EventCalendar> {
 
 class CalendarEventCard extends StatelessWidget {
   late dbc.Event event;
-  final CalendarMode modeOfParentCalendar;
-  CalendarEventCard(dbc.Event this.event, this.modeOfParentCalendar) {
+  CalendarEventCard(dbc.Event event) {
     this.event = event;
   }
   @override
@@ -448,10 +411,6 @@ class CalendarEventCard extends StatelessWidget {
                       cw.hintSnackBar("Deleted event from favorites."))
                   : ScaffoldMessenger.of(context).showSnackBar(
                       cw.hintSnackBar("Added event to favorites."));
-              if (modeOfParentCalendar == CalendarMode.favourites) {
-                print("Calendar mode is favourite");
-                reloadEventPage();
-              }
             }
             if (direction == DismissDirection.endToStart) {
               // Open Editing Screen vor Event
@@ -528,10 +487,6 @@ class CalendarEventCard extends StatelessWidget {
                       cw.hintSnackBar("Deleted event from favorites."))
                   : ScaffoldMessenger.of(context).showSnackBar(
                       cw.hintSnackBar("Added event to favorites."));
-              if (modeOfParentCalendar == CalendarMode.favourites) {
-                print("Calendar mode is favourite");
-                reloadEventPage();
-              }
             }
             return false;
           },
@@ -546,8 +501,8 @@ class CalendarEventCard extends StatelessWidget {
 }
 
 double getAspectRatioForEventCard(dbc.Event event) {
-  const double SINGLELINESIZE = 0.2;
-  const double CARDSIZEWOTEXTS = 2;
+  const double SINGLELINESIZE = 0.25;
+  const double CARDSIZEWOTEXTS = 2.4;
   double finalaspect = CARDSIZEWOTEXTS;
   if (event.minAge != 0) finalaspect -= SINGLELINESIZE;
   if (event.locationname != null) finalaspect -= SINGLELINESIZE;
@@ -722,9 +677,14 @@ class _CalendarEventCardBody extends StatelessWidget {
                                           const TextStyle(color: Colors.white),
                                     )
                                   : const SizedBox(height: 0),
-                              Text(
-                                "Location: ${event.locationname ?? "Unknown"}",
-                                style: const TextStyle(color: Colors.white),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Text(
+                                  "Location: ${event.locationname ?? "Unknown"}",
+                                  maxLines: 1,
+                                  softWrap: true,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                               ),
                             ],
                           ),
