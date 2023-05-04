@@ -100,7 +100,7 @@ class DevSettingsScreen extends StatelessWidget {
                     onPressed: (() async {
                       //! Continue here
                       ScaffoldMessenger.of(context)
-                          .showSnackBar(hintSnackBar("Added testevents"));
+                          .showSnackBar(hintSnackBar("Removed Events"));
                     }),
                     child: ValueListenableBuilder(
                         valueListenable: selectedbranch,

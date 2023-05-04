@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, non_constant_identifier_names, use_build_context_synchronously
+// ignore_for_file: prefer_const_constructors, non_constant_identifier_names, use_build_context_synchronously, invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
 
 import 'dart:io';
 
@@ -1096,6 +1096,153 @@ class SimpleStringEditDialog extends StatelessWidget {
               Navigator.of(context).pop();
             },
             child: Text("Confirm", style: TextStyle(color: Colors.white))),
+      ],
+    );
+  }
+}
+
+class LinkEditingDialog extends StatelessWidget {
+  ValueNotifier<List<dbc.Link>> to_Notify;
+  LinkEditingDialog({super.key, required this.to_Notify});
+
+  List<Widget> buildListTiles(ValueNotifier<List<dbc.Link>> links, context) {
+    List<Widget> widgets = [
+      TextButton(
+          onPressed: () async {
+            ValueNotifier<String> title = ValueNotifier<String>("");
+            ValueNotifier<String> url = ValueNotifier<String>("");
+            await showDialog(
+                context: context,
+                builder: (context) =>
+                    _SingleLinkEditDialog(title: title, url: url));
+            if (url.value.isNotEmpty) {
+              List<dbc.Link> linkbuffer = links.value;
+              linkbuffer.add(dbc.Link(
+                  title: title.value.isEmpty ? "Link" : title.value,
+                  url: url.value));
+              links.value = linkbuffer;
+              links.notifyListeners();
+            }
+          },
+          child: Text("Add new Link", style: TextStyle(color: Colors.white)))
+    ];
+    int i = 0;
+    for(int i = 0; i < links.value.length; i++) {
+      widgets.add(ListTile(
+          title: Text(links.value[i].title, style: TextStyle(color: Colors.white)),
+          trailing: Text("$i", style: TextStyle(color: Colors.white)),
+          onTap: () async {
+            int index = i;
+            ValueNotifier<String> title = ValueNotifier<String>(links.value[i].title);
+            ValueNotifier<String> url = ValueNotifier<String>(links.value[i].url);
+            await showDialog(
+                context: context,
+                builder: (context) =>
+                    _SingleLinkEditDialog(title: title, url: url));
+            if (url.value.isNotEmpty) {
+              List<dbc.Link> linkbuffer = links.value;
+              linkbuffer[i] = dbc.Link(
+                  title: title.value.isEmpty ? "Link" : title.value,
+                  url: url.value);
+              links.value = linkbuffer;
+              links.notifyListeners();
+            }
+          }));
+    }
+    return widgets;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ValueNotifier<List<dbc.Link>> currentLinkList =
+        ValueNotifier<List<dbc.Link>>(to_Notify.value);
+    return AlertDialog(
+      backgroundColor: cl.lighterGrey,
+      title: Text("Edit Links", style: TextStyle(color: Colors.white)),
+      content: ValueListenableBuilder(
+          valueListenable: currentLinkList,
+          builder: (context, linklist, foo) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: buildListTiles(currentLinkList, context),
+            );
+          }),
+      actions: [
+        TextButton(
+          child: Text("Cancel", style: TextStyle(color: Colors.white)),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        TextButton(
+            child: Text("Save", style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              to_Notify.value = currentLinkList.value;
+              Navigator.of(context).pop();
+              to_Notify.notifyListeners();
+            })
+      ],
+    );
+  }
+}
+
+class _SingleLinkEditDialog extends StatelessWidget {
+  ValueNotifier<String> title;
+  ValueNotifier<String> url;
+  _SingleLinkEditDialog({super.key, required this.title, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    String titleS = title.value;
+    String urlS = url.value;
+    return AlertDialog(
+      backgroundColor: cl.lighterGrey,
+      title: Text(
+          (title != "" || url != "") ? "Edit ${titleS}" : "Add new Link",
+          style: TextStyle(color: Colors.white)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            initialValue: titleS,
+            autofocus: true,
+            style: TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+                hintText: "Label, e.g 'Instagram'",
+                hintStyle: TextStyle(color: Colors.white)),
+            onChanged: (value) {
+              titleS = value;
+            },
+            maxLines: null,
+          ),
+          TextFormField(
+            initialValue: title.value,
+            autofocus: true,
+            style: TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+                hintText: "URL", hintStyle: TextStyle(color: Colors.white)),
+            onChanged: (value) {
+              urlS = value;
+            },
+            maxLines: null,
+          )
+        ],
+      ),
+      actions: [
+        ElevatedButton(
+            onPressed: () {
+              title.value = "";
+              url.value = "";
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancel", style: TextStyle(color: Colors.white))),
+        ElevatedButton(
+            onPressed: () {
+              title.value = titleS;
+              url.value = urlS;
+              Navigator.of(context).pop();
+            },
+            child: Text("Save", style: TextStyle(color: Colors.white)))
       ],
     );
   }
