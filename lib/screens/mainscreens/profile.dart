@@ -146,7 +146,7 @@ class UserView extends StatelessWidget {
                                 ValueListenableBuilder(
                                     valueListenable: user,
                                     builder: (context, userVal, foo) {
-                                      return Text(userVal.alias ?? "Alias",
+                                      return Text((userVal.alias == null || userVal.alias!.isEmpty) ? "No Alias created." : userVal.alias ?? "No Alias created.",
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
@@ -200,8 +200,8 @@ class UserView extends StatelessWidget {
                                     valueListenable: user,
                                     builder: (context, userVal, foo) {
                                       return Text(
-                                          userVal.description ??
-                                              "No description yet.",
+                                          (userVal.description == null || userVal.description!.isEmpty) ?
+                                              "No description yet." : userVal.description ?? "No description yet.",
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: MediaQuery.of(context)

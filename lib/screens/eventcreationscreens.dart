@@ -813,47 +813,36 @@ class GeneralSettingsPage extends StatelessWidget {
                 hintStyle: TextStyle(color: Colors.grey),
               ),
             ),
-              TextFormField(
-                          
-                          onChanged: (value) async {
-                            
-                            currentEventData.value.minAge = int.parse(value);
-                          },
-                          style: const TextStyle(color: Colors.white),
-                          cursorColor: Colors.white,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            icon: Icon(
-                                Icons.warning,
-                                    
-                                color: Colors.white),
-                            labelText: "Min. Age",
-                            labelStyle: const TextStyle(color: Colors.white),
-                            hintText: "Put in the required age for your event!",
-                            hintStyle: const TextStyle(color: Colors.grey),
-                          ),
-                        ),
             TextFormField(
-                          initialValue: currentEventData.value.genre,
-                          onChanged: (value) async {
-                            
-                            currentEventData.value.genre = value;
-                          },
-                          style: const TextStyle(color: Colors.white),
-                          cursorColor: Colors.white,
-                          decoration: InputDecoration(
-                            icon: Icon(
-                                Icons.music_note,
-                                    
-                                color: Colors.white),
-                            labelText: "Event Genre",
-                            labelStyle: const TextStyle(color: Colors.white),
-                            hintText: "Describe the genre of your Event!",
-                            hintStyle: const TextStyle(color: Colors.grey),
-                          ),
-                        ),
-                        
-                        
+              onChanged: (value) async {
+                currentEventData.value.minAge = int.parse(value);
+              },
+              style: const TextStyle(color: Colors.white),
+              cursorColor: Colors.white,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                icon: Icon(Icons.warning, color: Colors.white),
+                labelText: "Min. Age",
+                labelStyle: const TextStyle(color: Colors.white),
+                hintText: "Put in the required age for your event!",
+                hintStyle: const TextStyle(color: Colors.grey),
+              ),
+            ),
+            TextFormField(
+              initialValue: currentEventData.value.genre,
+              onChanged: (value) async {
+                currentEventData.value.genre = value;
+              },
+              style: const TextStyle(color: Colors.white),
+              cursorColor: Colors.white,
+              decoration: InputDecoration(
+                icon: Icon(Icons.music_note, color: Colors.white),
+                labelText: "Event Genre",
+                labelStyle: const TextStyle(color: Colors.white),
+                hintText: "Describe the genre of your Event!",
+                hintStyle: const TextStyle(color: Colors.grey),
+              ),
+            ),
           ],
         ));
   }
@@ -1175,8 +1164,9 @@ class MediaEditingScreen extends StatelessWidget {
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
                   onChanged: (value) {
-                    currentEventData.value.icon = value.replaceAll(
+                    String newS = value.replaceAll(
                         "gs://ravestreammobileapp.appspot.com/", "");
+                    currentEventData.value.icon = newS.isEmpty ? null : newS;
                   },
                 ),
                 const Text(

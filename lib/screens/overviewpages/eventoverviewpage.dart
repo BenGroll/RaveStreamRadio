@@ -36,7 +36,7 @@ class EventOverviewPage extends StatelessWidget {
                 },
                 child: SafeArea(
                   minimum: EdgeInsets.fromLTRB(
-                      0, MediaQuery.of(context).size.height / 50, 0, 0),
+                      0, DISPLAY_LONG_SIDE(context) / 50, 0, 0),
                   child: event.value == null
                       ? Container(
                           child: Text("Couldn't load Event",
@@ -140,9 +140,7 @@ class EventOverviewPage extends StatelessWidget {
                                               body: Padding(
                                                   padding: EdgeInsets.symmetric(
                                                       horizontal:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width /
+                                                          DISPLAY_SHORT_SIDE(context) /
                                                               30,
                                                       vertical: 8.0),
                                                   child: ListView(children: [
@@ -154,10 +152,7 @@ class EventOverviewPage extends StatelessWidget {
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .white,
-                                                                fontSize: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .height /
+                                                                fontSize: DISPLAY_LONG_SIDE(context) /
                                                                     20))),
                                                     Row(children: [
                                                       Expanded(
@@ -167,7 +162,7 @@ class EventOverviewPage extends StatelessWidget {
                                                               child: ClipRRect(
                                                                   borderRadius:
                                                                       BorderRadius.circular(
-                                                                          MediaQuery.of(context).size.width /
+                                                                          DISPLAY_SHORT_SIDE(context) /
                                                                               30),
                                                                   child: FutureImageBuilder(
                                                                       futureImage:
@@ -199,9 +194,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                   TextStyle(
                                                                     color: Colors
                                                                         .white,
-                                                                    fontSize: MediaQuery.of(context)
-                                                                            .size
-                                                                            .height /
+                                                                    fontSize: DISPLAY_LONG_SIDE(context) /
                                                                         45,
                                                                   ))
                                                               : TemplateHostLinkButton(id: event.value!.templateHostID)
@@ -248,13 +241,9 @@ class EventOverviewPage extends StatelessWidget {
                                                             event.value!.locationname !=
                                                                     null
                                                                 ? Container(
-                                                                    width: MediaQuery.of(context)
-                                                                            .size
-                                                                            .width /
+                                                                    width: DISPLAY_SHORT_SIDE(context) /
                                                                         2.4,
-                                                                    height: MediaQuery.of(context)
-                                                                            .size
-                                                                            .width /
+                                                                    height: DISPLAY_SHORT_SIDE(context) /
                                                                         3,
                                                                     decoration: BoxDecoration(
                                                                         borderRadius:
@@ -298,13 +287,9 @@ class EventOverviewPage extends StatelessWidget {
                                                                             .end !=
                                                                         null
                                                                 ? Container(
-                                                                    width: MediaQuery.of(context)
-                                                                            .size
-                                                                            .width /
+                                                                    width: DISPLAY_SHORT_SIDE(context) /
                                                                         2.4,
-                                                                    height: MediaQuery.of(context)
-                                                                            .size
-                                                                            .width /
+                                                                    height: DISPLAY_SHORT_SIDE(context) /
                                                                         3,
                                                                     decoration: BoxDecoration(
                                                                         borderRadius:
@@ -327,10 +312,10 @@ class EventOverviewPage extends StatelessWidget {
                                                                               style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                                                                           Text(
                                                                               "Begin: ${timestamp2readablestamp(event.value!.begin)}",
-                                                                              style: TextStyle(fontSize: MediaQuery.of(context).size.width / 30, color: Colors.white)),
+                                                                              style: TextStyle(fontSize: DISPLAY_SHORT_SIDE(context) / 30, color: Colors.white)),
                                                                           Text(
                                                                               "End:    ${timestamp2readablestamp(event.value!.end)}",
-                                                                              style: TextStyle(fontSize: MediaQuery.of(context).size.width / 30, color: Colors.white)),
+                                                                              style: TextStyle(fontSize: DISPLAY_SHORT_SIDE(context) / 30, color: Colors.white)),
                                                                           Text(
                                                                               ''),
                                                                         ],
@@ -356,9 +341,9 @@ class EventOverviewPage extends StatelessWidget {
                                                                   event.value!.minAge !=
                                                                           null
                                                                       ? Container(
-                                                                          width: MediaQuery.of(context).size.width /
+                                                                          width: DISPLAY_SHORT_SIDE(context) /
                                                                               2.4,
-                                                                          height: MediaQuery.of(context).size.width /
+                                                                          height: DISPLAY_SHORT_SIDE(context) /
                                                                               3,
                                                                           decoration: BoxDecoration(
                                                                               borderRadius: BorderRadius.circular(
@@ -381,12 +366,10 @@ class EventOverviewPage extends StatelessWidget {
                                                                               0),
                                                                   // Condition for genre missing
                                                                   Container(
-                                                                      width: MediaQuery.of(context)
-                                                                              .size
-                                                                              .width /
+                                                                      width: DISPLAY_SHORT_SIDE(context) /
                                                                           2.4,
                                                                       height:
-                                                                          MediaQuery.of(context).size.width /
+                                                                          DISPLAY_SHORT_SIDE(context) /
                                                                               3,
                                                                       decoration: BoxDecoration(
                                                                           borderRadius: BorderRadius.circular(
@@ -438,9 +421,9 @@ class EventOverviewPage extends StatelessWidget {
                                                                   linkButtons !=
                                                                           []
                                                                       ? Container(
-                                                                          width: MediaQuery.of(context).size.width -
+                                                                          width: DISPLAY_SHORT_SIDE(context) -
                                                                               61,
-                                                                          height: MediaQuery.of(context).size.width /
+                                                                          height: DISPLAY_SHORT_SIDE(context) /
                                                                               3,
                                                                           decoration: BoxDecoration(
                                                                               borderRadius: BorderRadius.circular(

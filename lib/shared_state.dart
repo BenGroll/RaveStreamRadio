@@ -17,6 +17,18 @@ const bool DISABLE_MESSAGE_SENDING = true;
 
 late FirebaseApp app;
 
+double DISPLAY_LONG_SIDE(context) {
+  return MediaQuery.of(context).size.height > MediaQuery.of(context).size.width
+      ? MediaQuery.of(context).size.height
+      : MediaQuery.of(context).size.width;
+}
+
+double DISPLAY_SHORT_SIDE(context) {
+  return MediaQuery.of(context).size.height < MediaQuery.of(context).size.width
+      ? MediaQuery.of(context).size.height
+      : MediaQuery.of(context).size.width;
+}
+
 /// Enum of Different Database Branches
 enum ServerBranches { public, test, develop }
 

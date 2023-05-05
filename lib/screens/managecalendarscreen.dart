@@ -7,6 +7,7 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/databaseclasses.dart';
+import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:beamer/beamer.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
@@ -626,10 +627,23 @@ class ViewHostPage extends StatelessWidget {
                         title: Text("Official Logo",
                             style: TextStyle(color: Colors.white))),
                     ListTile(
-                        trailing: Text("${links.value.length} link(s).",
-                            style: TextStyle(color: Colors.white)),
-                        title: Text("Links",
-                            style: TextStyle(color: Colors.white)))
+                      trailing: ValueListenableBuilder(
+                        valueListenable: links,
+                        builder: (context, linklist, foo) {
+                          return Text("${linklist.length} link(s).",
+                              style: TextStyle(color: Colors.white));
+                        }
+                      ),
+                      title:
+                          Text("Links", style: TextStyle(color: Colors.white)),
+                      onTap: () async {
+                        await showDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (context) => cw.LinkEditingDialog(to_Notify: links) 
+                        );
+                      },
+                    )
                   ],
                 ),
               );
