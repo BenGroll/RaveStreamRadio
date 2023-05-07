@@ -104,35 +104,39 @@ Future<Map> readLoginDataWeb() async {
 ///
 /// Returns error image if file doesnt exists, so nullsafe
 Future<Widget?> getImage(String imagepath) async {
-  if (imagepath.isEmpty) {
-    return null;
-  } else {
-    if (saved_pictures.keys.contains(imagepath)) {
-      return saved_pictures[imagepath];
+  try {
+    if (imagepath.isEmpty) {
+      return null;
     } else {
-      try {
-        Reference test = firebasestorage.ref().child(imagepath);
-        Uint8List? raw_image_data = await test.getData();
-        if (raw_image_data == null) {
-          return null;
-        }
+      if (saved_pictures.keys.contains(imagepath)) {
+        return saved_pictures[imagepath];
+      } else {
+        try {
+          Reference test = firebasestorage.ref().child(imagepath);
+          Uint8List? raw_image_data = await test.getData();
+          if (raw_image_data == null) {
+            return null;
+          }
 
-        //Save Image for later use in
-        Widget createdImage = errorWhiteImage;
-        if (imagepath.endsWith("svg")) {
-          Widget createdImage = SvgPicture.asset(
-            imagepath,
-            color: Colors.white,
-          );
-        } else {
-          createdImage = Image.memory(raw_image_data);
+          //Save Image for later use in
+          Widget createdImage = errorWhiteImage;
+          if (imagepath.endsWith("svg")) {
+            Widget createdImage = SvgPicture.asset(
+              imagepath,
+              color: Colors.white,
+            );
+          } else {
+            createdImage = Image.memory(raw_image_data);
+          }
+          saved_pictures[imagepath] = createdImage;
+          return createdImage;
+        } catch (e) {
+          return errorWhiteImage;
         }
-        saved_pictures[imagepath] = createdImage;
-        return createdImage;
-      } catch (e) {
-        return errorWhiteImage;
       }
     }
+  } catch (e) {
+    return errorWhiteImage;
   }
 }
 
@@ -156,7 +160,8 @@ Future<Widget> getEventIcon(dbc.Event event) async {
             .then((value) => value.data()?["logopath"]);
         if (imageLocation != null && imageLocation.isNotEmpty) {
           return await getImage(imageLocation.replaceAll(
-              "gs://ravestreammobileapp.appspot.com/", "")) ?? errorWhiteImage;
+                  "gs://ravestreammobileapp.appspot.com/", "")) ??
+              errorWhiteImage;
         }
       }
       //pprint("@fs : No Host specified.");
