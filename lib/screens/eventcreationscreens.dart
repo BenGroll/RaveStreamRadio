@@ -1,5 +1,3 @@
-// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-
 import 'dart:io';
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,179 +24,133 @@ enum Screen { general, description, links, media }
 /// Loading Animation
 const loader = cw.LoadingIndicator(color: Colors.white);
 
+bool isOpenedByRSRTeamMember = false;
+ValueNotifier<Screen> current_screen = ValueNotifier<Screen>(Screen.general);
+ValueNotifier<bool> eventtitleIsEmpty = ValueNotifier<bool>(true);
+ValueNotifier<bool> is_awaiting_upload = ValueNotifier(false);
+bool block_upload = false;
+bool is_overriding_existing_event = false;
+
+ValueNotifier<dbc.Event> currentEventData = ValueNotifier<dbc.Event>(dbc.Event(
+    eventid: "", title: "", locationname: "", description: "", links: {}));
+//String? templateHostID;
+
+/// if it returns an empty list, the validate is without error.
+///
+/// The List contains the seperate error messages
+Future<List<String>> validateUpload() async {
+  dbc.Event toValidate = currentEventData.value;
+  bool eventIdEmpty = true;
+  List<String> errormessages = [];
+  if (toValidate.templateHostID == null && toValidate.hostreference == null) {
+    errormessages.add("Event needs a host specified.");
+  }
+  if (toValidate.templateHostID == HOST_YOURSELF_ID) {
+    currentEventData.value.hostreference = db.db
+        .doc("${branchPrefix}users/${currently_loggedin_as.value!.username}");
+    toValidate.templateHostID = null;
+  }
+  if (validateEventIDFieldLight(currentEventData.value.eventid) != null) {
+    errormessages
+        .add(validateEventIDFieldLight(currentEventData.value.eventid)!);
+  } else {
+    eventIdEmpty = false;
+  }
+
+  if (toValidate.templateHostID != null) {
+    DocumentSnapshot hostDocRef =
+        await db.db.doc("demohosts/${toValidate.templateHostID}").get();
+    if (!hostDocRef.exists) {
+      errormessages
+          .add("Templatehost ${toValidate.templateHostID} does not exist.");
+    }
+  }
+  if (is_overriding_existing_event) {
+  } else {
+    if (!eventIdEmpty) {
+      if (await validateEventIDFieldDB(currentEventData.value.eventid) !=
+          null) {
+        errormessages.add("EventID is taken. Choose another one");
+      }
+    }
+  }
+  if (currentEventData.value.title == null ||
+      currentEventData.value.title!.isEmpty) {
+    errormessages.add("You have to give your event a title.");
+  }
+  return errormessages;
+}
+
+/// Takes List<dbc.Link>
+///
+/// Returns {title : url} map
+Map<String, String> linkListToDBMap(List<dbc.Link> list) {
+  Map<String, String> outmap = {};
+  list.forEach((element) {
+    outmap[element.title] = element.url;
+  });
+  return outmap;
+}
+
+Widget mapScreenToWidget(Screen selection) {
+  switch (selection) {
+    case Screen.general:
+      {
+        return GeneralSettingsPage();
+      }
+    case Screen.description:
+      {
+        return DescriptionEditingPage(onChange: (String value) {
+          currentEventData.value.description = value;
+        });
+      }
+    case Screen.links:
+      {
+        return const LinkEditingScreen();
+      }
+    case Screen.media:
+      {
+        return const MediaEditingScreen();
+      }
+    default:
+      return Container();
+  }
+}
+
+String? validateEventIDFieldLight(String content) {
+  if (content.isEmpty) {
+    return "EventID: Can't be empty.";
+  }
+  String allowed = "abcdefghijklmnopqrstuvwxyz0123456789";
+  bool notallowed = false;
+  content.characters.forEach((element) {
+    if (!allowed.contains(element)) {
+      notallowed = true;
+    }
+  });
+  if (notallowed) {
+    return "EventID: Only a-z and 0-9 allowed.";
+  }
+  return null;
+}
+
+Future<String?> validateEventIDFieldDB(String content) async {
+  if (content.isEmpty) return "";
+  bool isFree = await db.db
+      .collection("${branchPrefix}events")
+      .doc(content)
+      .get()
+      .then((value) => !value.exists);
+  return isFree ? null : "Eventid: Already taken.";
+}
+
 class EventCreationScreen extends StatelessWidget {
   final String? eventIDToBeEdited;
-
-  /// PIADGPIDW
-  ValueNotifier<Screen> current_screen = ValueNotifier<Screen>(Screen.general);
-  ValueNotifier<bool> is_awaiting_upload = ValueNotifier(false);
-  bool block_upload = false;
-
-  ValueNotifier<dbc.Event> currentEventData = ValueNotifier<dbc.Event>(
-      dbc.Event(
-          eventid: "",
-          title: "",
-          locationname: "",
-          description: "",
-          links: {}));
-
-  List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
-    List<dbc.Link> bufferlist = links.reversed.toList().reversed.toList();
-    for (int i = 0; i < links.length; i++) {
-      if (links[i] == searchlink) {
-        bufferlist[i].title = searchlink.title;
-        bufferlist[i].url = searchlink.url;
-        return bufferlist;
-      }
-    }
-    return bufferlist;
-  }
-
-  List<Widget> getLinkList(BuildContext context, List<dbc.Link> links) {
-    List<Widget> linkso = [];
-    links.forEach((element) {
-      linkso.add(LinkListCard(link: element, parent: this));
-    });
-    linkso.add(AddLinkButton(parent: this));
-    return linkso;
-  }
-
-  Future uploadEvent(dbc.Event event, BuildContext context) async {
-    print(event.hostreference);
-    is_awaiting_upload.value = true;
-    if (event.templateHostID != null && event.templateHostID!.isNotEmpty) {
-      event.hostreference = null;
-    }
-    await db.uploadEventToDatabase(event);
-    await Future.delayed(Duration(seconds: 1));
-    kIsWeb ? Beamer.of(context).popToNamed("/") : Navigator.of(context).pop();
-    if (kIsWeb) {
-      eventIDToBeEdited != null
-          ? ScaffoldMessenger.of(context)
-              .showSnackBar(cw.hintSnackBar("Event edited successfully!"))
-          : ScaffoldMessenger.of(context)
-              .showSnackBar(cw.hintSnackBar("Event created successfully!"));
-    }
-    currently_selected_screen.notifyListeners();
-    is_awaiting_upload.value = false;
-    Navigator.of(context).pop();
-  }
-
-  /// if it returns an empty list, the validate is without error.
-  ///
-  /// The List contains the seperate error messages
-  Future<List<String>> validateUpload() async {
-    dbc.Event toValidate = currentEventData.value;
-    bool eventIdEmpty = true;
-    List<String> errormessages = [];
-    if (toValidate.templateHostID == null && toValidate.hostreference == null) {
-      errormessages.add("Event needs a host specified.");
-    }
-    if (toValidate.templateHostID == HOST_YOURSELF_ID) {
-      currentEventData.value.hostreference = db.db
-          .doc("${branchPrefix}users/${currently_loggedin_as.value!.username}");
-      toValidate.templateHostID = null;
-    }
-    if (validateEventIDFieldLight(currentEventData.value.eventid) != null) {
-      errormessages
-          .add(validateEventIDFieldLight(currentEventData.value.eventid)!);
-    } else {
-      eventIdEmpty = false;
-    }
-
-    if (toValidate.templateHostID != null) {
-      DocumentSnapshot hostDocRef =
-          await db.db.doc("demohosts/${toValidate.templateHostID}").get();
-      if (!hostDocRef.exists) {
-        errormessages
-            .add("Templatehost ${toValidate.templateHostID} does not exist.");
-      }
-    }
-    if (eventIDToBeEdited != null) {
-    } else {
-      if (!eventIdEmpty) {
-        if (await validateEventIDFieldDB(currentEventData.value.eventid) !=
-            null) {
-          errormessages.add("EventID is taken. Choose another one");
-        }
-      }
-    }
-    if (currentEventData.value.title == null ||
-        currentEventData.value.title!.isEmpty) {
-      errormessages.add("You have to give your event a title.");
-    }
-    return errormessages;
-  }
-
-  /// Takes List<dbc.Link>
-  ///
-  /// Returns {title : url} map
-  Map<String, String> linkListToDBMap(List<dbc.Link> list) {
-    Map<String, String> outmap = {};
-    list.forEach((element) {
-      outmap[element.title] = element.url;
-    });
-    return outmap;
-  }
-
-  Widget mapScreenToWidget(Screen selection) {
-    switch (selection) {
-      case Screen.general:
-        {
-          return GeneralSettingsPage(parent: this);
-        }
-      case Screen.description:
-        {
-          return DescriptionEditingPage(
-              initialValue: currentEventData.value.description ?? "empty",
-              onChange: (String value) {
-                currentEventData.value.description = value;
-              });
-        }
-      case Screen.links:
-        {
-          return LinkEditingScreen(parent: this);
-        }
-      case Screen.media:
-        {
-          return MediaEditingScreen(parent: this);
-        }
-      default:
-        return Container();
-    }
-  }
-
-  String? validateEventIDFieldLight(String content) {
-    if (content.isEmpty) {
-      return "EventID: Can't be empty.";
-    }
-    String allowed = "abcdefghijklmnopqrstuvwxyz0123456789";
-    bool notallowed = false;
-    content.characters.forEach((element) {
-      if (!allowed.contains(element)) {
-        notallowed = true;
-      }
-    });
-    if (notallowed) {
-      return "EventID: Only a-z and 0-9 allowed.";
-    }
-    return null;
-  }
-
-  Future<String?> validateEventIDFieldDB(String content) async {
-    if (content.isEmpty) return "";
-    bool isFree = await db.db
-        .collection("${branchPrefix}events")
-        .doc(content)
-        .get()
-        .then((value) => !value.exists);
-    return isFree ? null : "Eventid: Already taken.";
-  }
-
   EventCreationScreen({super.key, this.eventIDToBeEdited = null});
   @override
   Widget build(BuildContext context) {
     current_screen.value = Screen.general;
+    eventtitleIsEmpty.value = true;
     currentEventData.value = dbc.Event(
         eventid: "", title: "", locationname: "", description: "", links: {});
     // Add decision tree
@@ -206,9 +158,13 @@ class EventCreationScreen extends StatelessWidget {
       return const cw.ErrorScreen(
           errormessage: "You have to be logged in to create or edit events.");
     } else {
+      //String docref = "${branchPrefix}users/${currently_loggedin_as.value!.username}";
       currentEventData.value.hostreference = db.db
           .doc("${branchPrefix}users/${currently_loggedin_as.value!.username}");
       if (eventIDToBeEdited == null) {
+        // Check if user is calendar manager
+        isOpenedByRSRTeamMember =
+            db.doIHavePermission(GlobalPermission.MANAGE_EVENTS);
         // Open Create new event eventcreationscreen
         return DefaultTabController(
           length: 4,
@@ -253,14 +209,13 @@ class EventCreationScreen extends StatelessWidget {
                                       barrierDismissible: false,
                                       context: context,
                                       builder: (context) =>
-                                          UploadEventDialog(parent: this));
+                                          const UploadEventDialog());
                                 } else {
                                   showDialog(
                                     barrierDismissible: true,
                                     context: context,
                                     builder: (context) => UploadingErrorDialog(
-                                        errormessages: errorcontent,
-                                        parent: this),
+                                        errormessages: errorcontent),
                                   );
                                 }
                               }
@@ -271,12 +226,12 @@ class EventCreationScreen extends StatelessWidget {
                     ),
                     body: TabBarView(
                       children: [
-                        GeneralSettingsPage(parent: this),
+                        GeneralSettingsPage(),
                         DescriptionEditingPage(onChange: (String value) {
                           currentEventData.value.description = value;
                         }),
-                        LinkEditingScreen(parent: this),
-                        MediaEditingScreen(parent: this)
+                        LinkEditingScreen(),
+                        MediaEditingScreen()
                       ],
                     ));
               }),
@@ -294,7 +249,7 @@ class EventCreationScreen extends StatelessWidget {
                 } else {
                   if (canEditSnap.data!) {
                     // User has permission to edit event
-                    print("lol0");
+                    is_overriding_existing_event = true;
                     return DefaultTabController(
                       length: 4,
                       child: FutureBuilder(
@@ -308,26 +263,14 @@ class EventCreationScreen extends StatelessWidget {
                                 dbc.Event event = existingEventDataSnap.data!;
                                 currentEventData.value = event;
                                 // / Load existing values
+                                isOpenedByRSRTeamMember = db.doIHavePermission(
+                                    GlobalPermission.MANAGE_EVENTS);
                                 return ValueListenableBuilder(
                                     valueListenable: current_screen,
                                     builder: (context, screen, child) {
                                       return Scaffold(
                                           backgroundColor: cl.darkerGrey,
                                           appBar: AppBar(
-                                            bottom: TabBar(tabs: [
-                                              Tab(
-                                                child: Text("General"),
-                                              ),
-                                              Tab(
-                                                child: Text("Desc."),
-                                              ),
-                                              Tab(
-                                                child: Text("Links"),
-                                              ),
-                                              Tab(
-                                                child: Text("Media"),
-                                              ),
-                                            ]),
                                             actions: [
                                               TextButton(
                                                   onPressed: () async {
@@ -351,9 +294,7 @@ class EventCreationScreen extends StatelessWidget {
                                                                 false,
                                                             context: context,
                                                             builder: (context) =>
-                                                                UploadEventDialog(
-                                                                    parent:
-                                                                        this));
+                                                                const UploadEventDialog());
                                                       } else {
                                                         showDialog(
                                                           barrierDismissible:
@@ -362,8 +303,7 @@ class EventCreationScreen extends StatelessWidget {
                                                           builder: (context) =>
                                                               UploadingErrorDialog(
                                                                   errormessages:
-                                                                      errorcontent,
-                                                                  parent: this),
+                                                                      errorcontent),
                                                         );
                                                       }
                                                     }
@@ -373,21 +313,7 @@ class EventCreationScreen extends StatelessWidget {
                                                           color: Colors.white)))
                                             ],
                                           ),
-                                          body: TabBarView(
-                                            children: [
-                                              GeneralSettingsPage(parent: this),
-                                              DescriptionEditingPage(
-                                                  initialValue: currentEventData
-                                                          .value.description ??
-                                                      "",
-                                                  onChange: (String value) {
-                                                    currentEventData.value
-                                                        .description = value;
-                                                  }),
-                                              LinkEditingScreen(parent: this),
-                                              MediaEditingScreen(parent: this)
-                                            ],
-                                          ));
+                                          body: mapScreenToWidget(screen));
                                     });
                               } else {
                                 return cw.ErrorScreen(
@@ -419,16 +345,11 @@ class EventCreationScreen extends StatelessWidget {
 class GeneralSettingsPage extends StatelessWidget {
   ValueNotifier<String?> eventidvalidator =
       ValueNotifier<String?>("!EventID can't be empty");
-  EventCreationScreen parent;
-  GeneralSettingsPage({super.key, required this.parent});
+  GeneralSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    eventidvalidator.value =
-        parent.eventIDToBeEdited == null ? "!EventID can't be empty" : null;
-    ValueNotifier<bool> isEventTitleEmpty = ValueNotifier<bool>(
-        parent.currentEventData.value.title == null ||
-            parent.currentEventData.value.title!.isEmpty);
+    eventidvalidator.value = "!EventID can't be empty";
     return Padding(
         padding: EdgeInsets.symmetric(
             horizontal: MediaQuery.of(context).size.width / 25),
@@ -457,7 +378,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                       color:
                                           Color.fromARGB(255, 179, 179, 179)))
                             ]),
-                        !db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)
+                        !isOpenedByRSRTeamMember
                             ? SizedBox(height: 0)
                             : FutureBuilder(
                                 future: db.getDemoHostIDs(),
@@ -478,23 +399,27 @@ class GeneralSettingsPage extends StatelessWidget {
                                             flex: 6,
                                             child: ValueListenableBuilder(
                                                 valueListenable:
-                                                    parent.currentEventData,
+                                                    currentEventData,
                                                 builder: (context,
                                                     eventDatacurrent, foo) {
+                                                  pprint(
+                                                      "NewBuild: ${currentEventData.value.templateHostID}");
+                                                  pprint(
+                                                      "@ecs ${currentEventData.value.templateHostID} TemplateHostID");
+                                                  pprint(
+                                                      "@ecs ${snapshot.data} Snapshot Data");
                                                   return DropdownSearch(
                                                     selectedItem: snapshot
                                                             .data!.keys
-                                                            .contains(parent
-                                                                .currentEventData
+                                                            .contains(
+                                                                currentEventData
+                                                                    .value
+                                                                    .templateHostID)
+                                                        ? snapshot.data![
+                                                            currentEventData
                                                                 .value
-                                                                .templateHostID)
-                                                        ? snapshot.data![parent
-                                                            .currentEventData
-                                                            .value
-                                                            .templateHostID]
-                                                        : parent
-                                                            .currentEventData
-                                                            .value
+                                                                .templateHostID]
+                                                        : currentEventData.value
                                                             .templateHostID,
                                                     onChanged: (value) {
                                                       pprint(
@@ -502,23 +427,18 @@ class GeneralSettingsPage extends StatelessWidget {
                                                       print(value);
                                                       if (value ==
                                                           HOST_YOURSELF_ID) {
-                                                        parent
-                                                                .currentEventData
-                                                                .value
+                                                        currentEventData.value
                                                                 .templateHostID =
                                                             HOST_YOURSELF_ID;
                                                       } else {
-                                                        parent
-                                                                .currentEventData
-                                                                .value
+                                                        currentEventData.value
                                                                 .templateHostID =
                                                             getKeyMatchingValueFromMap(
                                                                 snapshot.data ??
                                                                     {},
                                                                 value);
                                                       }
-                                                      pprint(parent
-                                                          .currentEventData
+                                                      pprint(currentEventData
                                                           .value
                                                           .templateHostID);
                                                     },
@@ -585,36 +505,41 @@ class GeneralSettingsPage extends StatelessWidget {
                                   }
                                 },
                               ), // Continue Here After DropDownSearch
-                        SizedBox(
-                            height: MediaQuery.of(context).size.height / 50),
-                        parent.eventIDToBeEdited != null
-                            ? Center(
-                                child: Text(
-                                  "EventID: ${parent.eventIDToBeEdited}",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize:
-                                          MediaQuery.of(context).size.height /
-                                              50),
-                                ),
+
+                        is_overriding_existing_event
+                            ? Text(
+                                "EventID: ${currentEventData.value.eventid}",
+                                style: TextStyle(color: Colors.white),
                               )
                             : TextFormField(
-                                initialValue:
-                                    parent.currentEventData.value.eventid,
+                                initialValue: currentEventData.value.eventid,
                                 onChanged: (value) async {
+                                  pprint(
+                                      "onCH tH: ${currentEventData.value.templateHostID}");
                                   eventidvalidator.value =
-                                      parent.validateEventIDFieldLight(value);
-                                  parent.currentEventData.value.eventid = value;
+                                      validateEventIDFieldLight(value);
+                                  pprint(
+                                      "onCH tH2: ${currentEventData.value.templateHostID}");
+                                  currentEventData.value.eventid = value;
                                 },
                                 onFieldSubmitted: (value) async {
-                                  eventidvalidator.value = await parent
-                                      .validateEventIDFieldDB(value);
-                                  parent.currentEventData.value.eventid = value;
+                                  pprint(
+                                      "onFS tH: ${currentEventData.value.templateHostID}");
+                                  eventidvalidator.value =
+                                      await validateEventIDFieldDB(value);
+                                  pprint(
+                                      "onFS tH2: ${currentEventData.value.templateHostID}");
+                                  currentEventData.value.eventid = value;
                                 },
                                 onSaved: (newValue) async {
-                                  eventidvalidator.value = await parent
-                                      .validateEventIDFieldDB(newValue ?? "");
-                                  parent.currentEventData.value.eventid =
+                                  pprint(
+                                      "onS tH: ${currentEventData.value.templateHostID}");
+                                  eventidvalidator.value =
+                                      await validateEventIDFieldDB(
+                                          newValue ?? "");
+                                  pprint(
+                                      "onS tH2: ${currentEventData.value.templateHostID}");
+                                  currentEventData.value.eventid =
                                       newValue ?? "";
                                 },
                                 style: const TextStyle(color: Colors.white),
@@ -633,7 +558,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                       const TextStyle(color: Colors.grey),
                                 ),
                               ),
-                        parent.eventIDToBeEdited == null
+                        is_overriding_existing_event
                             ? SizedBox(height: 0)
                             : Text(
                                 eventidvalidatedstring ?? "",
@@ -642,8 +567,8 @@ class GeneralSettingsPage extends StatelessWidget {
                       ]));
                 }),
             ValueListenableBuilder(
-                valueListenable: isEventTitleEmpty,
-                builder: ((context, eventTitleEmpty, child) {
+                valueListenable: eventtitleIsEmpty,
+                builder: ((context, isEventTitleEmpty, child) {
                   return Padding(
                     padding: EdgeInsets.symmetric(
                         vertical: MediaQuery.of(context).size.height / 100,
@@ -651,16 +576,16 @@ class GeneralSettingsPage extends StatelessWidget {
                     child: Column(
                       children: [
                         TextFormField(
-                          initialValue: parent.currentEventData.value.title,
+                          initialValue: currentEventData.value.title,
                           onChanged: (value) async {
-                            isEventTitleEmpty.value = value.isEmpty;
-                            parent.currentEventData.value.title = value;
+                            eventtitleIsEmpty.value = value.isEmpty;
+                            currentEventData.value.title = value;
                           },
                           style: const TextStyle(color: Colors.white),
                           cursorColor: Colors.white,
                           decoration: InputDecoration(
                             icon: Icon(
-                                eventTitleEmpty
+                                isEventTitleEmpty
                                     ? Icons.highlight_off
                                     : Icons.check_circle_outline,
                                 color: Colors.white),
@@ -671,7 +596,7 @@ class GeneralSettingsPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          eventTitleEmpty ? "Can't be empty" : "",
+                          isEventTitleEmpty ? "Can't be empty" : "",
                           style: const TextStyle(color: Colors.grey),
                         ),
                         const Divider(color: Color.fromARGB(255, 66, 66, 66)),
@@ -698,13 +623,11 @@ class GeneralSettingsPage extends StatelessWidget {
                                     TextButton(
                                         onPressed: () async {
                                           DateTime? initialDate;
-                                          if (parent.currentEventData.value
-                                                  .begin !=
+                                          if (currentEventData.value.begin !=
                                               null) {
                                             initialDate = DateTime
                                                 .fromMillisecondsSinceEpoch(
-                                                    parent
-                                                        .currentEventData
+                                                    currentEventData
                                                         .value
                                                         .begin!
                                                         .millisecondsSinceEpoch);
@@ -713,13 +636,11 @@ class GeneralSettingsPage extends StatelessWidget {
                                               .pick_date(context, initialDate);
                                           print(picked_date);
                                           if (picked_date != null) {
-                                            parent.currentEventData.value
-                                                    .begin =
+                                            currentEventData.value.begin =
                                                 Timestamp.fromDate(picked_date);
-                                            pprint(parent
-                                                .currentEventData.value.begin);
-                                            parent.currentEventData
-                                                .notifyListeners();
+                                            pprint(
+                                                currentEventData.value.begin);
+                                            currentEventData.notifyListeners();
                                           }
                                         },
                                         child: const Text(
@@ -729,14 +650,12 @@ class GeneralSettingsPage extends StatelessWidget {
                                     TextButton(
                                         onPressed: () async {
                                           TimeOfDay? initialTime;
-                                          if (parent.currentEventData.value
-                                                  .begin !=
+                                          if (currentEventData.value.begin !=
                                               null) {
                                             initialTime =
                                                 TimeOfDay.fromDateTime(DateTime
                                                     .fromMillisecondsSinceEpoch(
-                                                        parent
-                                                            .currentEventData
+                                                        currentEventData
                                                             .value
                                                             .begin!
                                                             .millisecondsSinceEpoch));
@@ -745,25 +664,21 @@ class GeneralSettingsPage extends StatelessWidget {
                                           TimeOfDay? picked_time = await cw
                                               .pick_time(context, initialTime);
                                           if (picked_time != null) {
-                                            DateTime currentTime = parent
-                                                        .currentEventData
-                                                        .value
-                                                        .begin ==
-                                                    null
-                                                ? DateTime.now()
-                                                : parent.currentEventData.value
-                                                    .begin!
-                                                    .toDate();
-                                            parent.currentEventData.value
-                                                    .begin =
+                                            DateTime currentTime =
+                                                currentEventData.value.begin ==
+                                                        null
+                                                    ? DateTime.now()
+                                                    : currentEventData
+                                                        .value.begin!
+                                                        .toDate();
+                                            currentEventData.value.begin =
                                                 Timestamp.fromDate(DateTime(
                                                     currentTime.year,
                                                     currentTime.month,
                                                     currentTime.day,
                                                     picked_time.hour,
                                                     picked_time.minute));
-                                            parent.currentEventData
-                                                .notifyListeners();
+                                            currentEventData.notifyListeners();
                                           }
                                         },
                                         child: const Text(
@@ -793,28 +708,22 @@ class GeneralSettingsPage extends StatelessWidget {
                                     TextButton(
                                         onPressed: () async {
                                           DateTime? initialDate;
-                                          if (parent
-                                                  .currentEventData.value.end !=
+                                          if (currentEventData.value.end !=
                                               null) {
                                             initialDate = DateTime
                                                 .fromMillisecondsSinceEpoch(
-                                                    parent
-                                                        .currentEventData
-                                                        .value
-                                                        .end!
+                                                    currentEventData.value.end!
                                                         .millisecondsSinceEpoch);
                                           }
 
                                           DateTime? picked_date = await cw
                                               .pick_date(context, initialDate);
                                           if (picked_date != null) {
-                                            parent.currentEventData.value.end =
+                                            currentEventData.value.end =
                                                 Timestamp.fromDate(picked_date);
                                             pprint(timestamp2readablestamp(
-                                                parent.currentEventData.value
-                                                    .end));
-                                            parent.currentEventData
-                                                .notifyListeners();
+                                                currentEventData.value.end));
+                                            currentEventData.notifyListeners();
                                           }
                                         },
                                         child: const Text(
@@ -825,33 +734,30 @@ class GeneralSettingsPage extends StatelessWidget {
                                         onPressed: () async {
                                           TimeOfDay initialTime =
                                               TimeOfDay.fromDateTime(DateTime
-                                                  .fromMillisecondsSinceEpoch(parent
-                                                      .currentEventData
-                                                      .value
-                                                      .begin!
-                                                      .millisecondsSinceEpoch));
+                                                  .fromMillisecondsSinceEpoch(
+                                                      currentEventData
+                                                          .value
+                                                          .begin!
+                                                          .millisecondsSinceEpoch));
 
                                           TimeOfDay? picked_time = await cw
                                               .pick_time(context, initialTime);
                                           if (picked_time != null) {
-                                            DateTime currentTime = parent
-                                                        .currentEventData
-                                                        .value
-                                                        .end ==
-                                                    null
-                                                ? DateTime.now()
-                                                : parent
-                                                    .currentEventData.value.end!
-                                                    .toDate();
-                                            parent.currentEventData.value.end =
+                                            DateTime currentTime =
+                                                currentEventData.value.end ==
+                                                        null
+                                                    ? DateTime.now()
+                                                    : currentEventData
+                                                        .value.end!
+                                                        .toDate();
+                                            currentEventData.value.end =
                                                 Timestamp.fromDate(DateTime(
                                                     currentTime.year,
                                                     currentTime.month,
                                                     currentTime.day,
                                                     picked_time.hour,
                                                     picked_time.minute));
-                                            parent.currentEventData
-                                                .notifyListeners();
+                                            currentEventData.notifyListeners();
                                           }
                                         },
                                         child: const Text(
@@ -863,7 +769,7 @@ class GeneralSettingsPage extends StatelessWidget {
                           ],
                         ),
                         ValueListenableBuilder(
-                          valueListenable: parent.currentEventData,
+                          valueListenable: currentEventData,
                           builder: (context, eventData, child) {
                             return eventData.begin == null &&
                                     eventData.end == null
@@ -878,7 +784,7 @@ class GeneralSettingsPage extends StatelessWidget {
                           },
                         ),
                         ValueListenableBuilder(
-                          valueListenable: parent.currentEventData,
+                          valueListenable: currentEventData,
                           builder: (context, event, child) {
                             return event.end == null
                                 ? SizedBox(height: 0)
@@ -893,9 +799,9 @@ class GeneralSettingsPage extends StatelessWidget {
                   );
                 })),
             TextFormField(
-              initialValue: parent.currentEventData.value.locationname,
+              initialValue: currentEventData.value.locationname,
               onChanged: (value) {
-                parent.currentEventData.value.locationname = value;
+                currentEventData.value.locationname = value;
               },
               style: const TextStyle(color: Colors.white),
               cursorColor: Colors.white,
@@ -908,9 +814,9 @@ class GeneralSettingsPage extends StatelessWidget {
               ),
             ),
             TextFormField(
-              initialValue: parent.currentEventData.value.minAge.toString(),
+              initialValue: currentEventData.value.minAge.toString(),
               onChanged: (value) async {
-                parent.currentEventData.value.minAge = int.parse(value);
+                currentEventData.value.minAge = int.parse(value);
               },
               style: const TextStyle(color: Colors.white),
               cursorColor: Colors.white,
@@ -924,9 +830,9 @@ class GeneralSettingsPage extends StatelessWidget {
               ),
             ),
             TextFormField(
-              initialValue: parent.currentEventData.value.genre,
+              initialValue: currentEventData.value.genre,
               onChanged: (value) async {
-                parent.currentEventData.value.genre = value;
+                currentEventData.value.genre = value;
               },
               style: const TextStyle(color: Colors.white),
               cursorColor: Colors.white,
@@ -943,11 +849,19 @@ class GeneralSettingsPage extends StatelessWidget {
   }
 }
 
+List<Widget> getLinkList(BuildContext context, List<dbc.Link> links) {
+  List<Widget> linkso = [];
+  links.forEach((element) {
+    linkso.add(LinkListCard(link: element));
+  });
+  linkso.add(AddLinkButton());
+  return linkso;
+}
+
 class AddLinkButton extends StatelessWidget {
   String label = "";
   String url = "";
-  EventCreationScreen parent;
-  AddLinkButton({super.key, required this.parent});
+  AddLinkButton({super.key});
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
@@ -957,26 +871,24 @@ class AddLinkButton extends StatelessWidget {
                 borderRadius: BorderRadiusDirectional.circular(8.0))),
         onPressed: () {
           showDialog(
-              context: context,
-              builder: (context) => LinkCreateDialog(parent: parent));
+              context: context, builder: (context) => LinkCreateDialog());
         },
         child: Text("Add new link"));
   }
 }
 
 class LinkEditingScreen extends StatelessWidget {
-  EventCreationScreen parent;
-  LinkEditingScreen({Key? key, required this.parent}) : super(key: key);
+  const LinkEditingScreen({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-        valueListenable: parent.currentEventData,
+        valueListenable: currentEventData,
         builder: (context, eventdata, foo) {
           return ListView(
             padding: EdgeInsets.symmetric(
                 vertical: MediaQuery.of(context).size.height / 50,
                 horizontal: MediaQuery.of(context).size.width / 50),
-            children: parent.getLinkList(
+            children: getLinkList(
                 context, dbc.linkListFromMap(eventdata.links ?? {})),
           );
         });
@@ -985,15 +897,14 @@ class LinkEditingScreen extends StatelessWidget {
 
 class LinkListCard extends StatelessWidget {
   dbc.Link link;
-  EventCreationScreen parent;
-  LinkListCard({required this.link, required this.parent});
+  LinkListCard({required this.link});
   @override
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
         showDialog(
             context: context,
-            builder: ((context) => LinkEditDialog(link: link, parent: parent)));
+            builder: ((context) => LinkEditDialog(link: link)));
       },
       tileColor: Colors.black,
       title: Center(
@@ -1005,8 +916,7 @@ class LinkListCard extends StatelessWidget {
 class LinkCreateDialog extends StatelessWidget {
   String label = "";
   String url = "";
-  EventCreationScreen parent;
-  LinkCreateDialog({super.key, required this.parent});
+  LinkCreateDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1056,13 +966,12 @@ class LinkCreateDialog extends StatelessWidget {
       actions: [
         TextButton(
             onPressed: () {
-              List<dbc.Link> formerlist = dbc
-                  .linkListFromMap(parent.currentEventData.value.links ?? {});
+              List<dbc.Link> formerlist =
+                  dbc.linkListFromMap(currentEventData.value.links ?? {});
               formerlist.add(dbc.Link(title: label, url: url));
               Navigator.of(context).pop();
-              parent.currentEventData.value.links =
-                  dbc.mapFromLinkList(formerlist);
-              parent.currentEventData.notifyListeners();
+              currentEventData.value.links = dbc.mapFromLinkList(formerlist);
+              currentEventData.notifyListeners();
             },
             child: Text("Add link to event",
                 style: TextStyle(color: Colors.white)))
@@ -1073,8 +982,7 @@ class LinkCreateDialog extends StatelessWidget {
 
 class LinkEditDialog extends StatelessWidget {
   dbc.Link link;
-  EventCreationScreen parent;
-  LinkEditDialog({super.key, required this.link, required this.parent});
+  LinkEditDialog({super.key, required this.link});
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -1109,11 +1017,11 @@ class LinkEditDialog extends StatelessWidget {
       actions: [
         ElevatedButton(
             onPressed: () {
-              List<dbc.Link> formerlist = dbc
-                  .linkListFromMap(parent.currentEventData.value.links ?? {});
+              List<dbc.Link> formerlist =
+                  dbc.linkListFromMap(currentEventData.value.links ?? {});
               Navigator.of(context).pop();
-              parent.currentEventData.value.links =
-                  dbc.mapFromLinkList(parent.editLinkInList(formerlist, link));
+              currentEventData.value.links =
+                  dbc.mapFromLinkList(editLinkInList(formerlist, link));
             },
             child: Text("Save changes to Link",
                 style: TextStyle(color: Colors.white)))
@@ -1122,13 +1030,45 @@ class LinkEditDialog extends StatelessWidget {
   }
 }
 
+List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
+  List<dbc.Link> bufferlist = links.reversed.toList().reversed.toList();
+  for (int i = 0; i < links.length; i++) {
+    if (links[i] == searchlink) {
+      bufferlist[i].title = searchlink.title;
+      bufferlist[i].url = searchlink.url;
+      return bufferlist;
+    }
+  }
+  return bufferlist;
+}
+
+Future uploadEvent(dbc.Event event, BuildContext context) async {
+  print(event.hostreference);
+  is_awaiting_upload.value = true;
+  if (event.templateHostID != null && event.templateHostID!.isNotEmpty) {
+    event.hostreference = null;
+  }
+  await db.uploadEventToDatabase(event);
+  await Future.delayed(Duration(seconds: 1));
+  kIsWeb ? Beamer.of(context).popToNamed("/") : Navigator.of(context).pop();
+  if (kIsWeb) {
+    is_overriding_existing_event
+        ? ScaffoldMessenger.of(context)
+            .showSnackBar(cw.hintSnackBar("Event edited successfully!"))
+        : ScaffoldMessenger.of(context)
+            .showSnackBar(cw.hintSnackBar("Event created successfully!"));
+  }
+  currently_selected_screen.notifyListeners();
+  is_awaiting_upload.value = false;
+  Navigator.of(context).pop();
+}
+
 class UploadEventDialog extends StatelessWidget {
-  EventCreationScreen parent;
-  UploadEventDialog({super.key, required this.parent});
+  const UploadEventDialog({super.key});
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-        valueListenable: parent.is_awaiting_upload,
+        valueListenable: is_awaiting_upload,
         builder: (context, uploading, foo) {
           return AlertDialog(
             backgroundColor: cl.darkerGrey,
@@ -1147,24 +1087,20 @@ class UploadEventDialog extends StatelessWidget {
                       child: Text("Discard",
                           style: TextStyle(color: Colors.white)),
                       onPressed: () {
-                        uploading = false;
-                        parent.block_upload = false;
                         Navigator.of(context).pop();
                       },
                     ),
                     TextButton(
                         onPressed: () {
-                          dbc.Event newEventData =
-                              parent.currentEventData.value;
+                          dbc.Event newEventData = currentEventData.value;
                           newEventData.status = EventStatus.draft.name;
-                          parent.uploadEvent(newEventData, context);
+                          uploadEvent(newEventData, context);
                         },
                         child: Text("Save(TBA)",
                             style: TextStyle(color: Colors.white))),
                     TextButton(
                         onPressed: () {
-                          parent.uploadEvent(
-                              parent.currentEventData.value, context);
+                          uploadEvent(currentEventData.value, context);
                         },
                         child: Text("Publish",
                             style: TextStyle(color: Colors.white))),
@@ -1176,9 +1112,7 @@ class UploadEventDialog extends StatelessWidget {
 
 class UploadingErrorDialog extends StatelessWidget {
   final List<Widget> errormessages;
-  EventCreationScreen parent;
-  UploadingErrorDialog(
-      {super.key, required this.errormessages, required this.parent});
+  const UploadingErrorDialog({super.key, required this.errormessages});
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -1186,7 +1120,7 @@ class UploadingErrorDialog extends StatelessWidget {
       title:
           Text("Couldn't upload Event", style: TextStyle(color: Colors.white)),
       content: FutureBuilder(
-          future: parent.validateUpload(),
+          future: validateUpload(),
           builder: (context, snapshot) {
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -1198,8 +1132,7 @@ class UploadingErrorDialog extends StatelessWidget {
 }
 
 class MediaEditingScreen extends StatelessWidget {
-  EventCreationScreen parent;
-  MediaEditingScreen({super.key, required this.parent});
+  const MediaEditingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1207,7 +1140,7 @@ class MediaEditingScreen extends StatelessWidget {
       padding: EdgeInsets.symmetric(
           horizontal: MediaQuery.of(context).size.width / 30,
           vertical: MediaQuery.of(context).size.height / 40),
-      child: db.doIHavePermission(GlobalPermission.MANAGE_EVENTS)
+      child: isOpenedByRSRTeamMember
           ? Column(
               children: [
                 const Text(
@@ -1218,7 +1151,7 @@ class MediaEditingScreen extends StatelessWidget {
                 TextFormField(
                   maxLines: 3,
                   style: const TextStyle(color: Colors.white),
-                  initialValue: parent.currentEventData.value.icon,
+                  initialValue: currentEventData.value.icon,
                   cursorColor: Colors.white,
                   decoration: const InputDecoration(
                     /*icon: Icon(
@@ -1234,8 +1167,7 @@ class MediaEditingScreen extends StatelessWidget {
                   onChanged: (value) {
                     String newS = value.replaceAll(
                         "gs://ravestreammobileapp.appspot.com/", "");
-                    parent.currentEventData.value.icon =
-                        newS.isEmpty ? null : newS;
+                    currentEventData.value.icon = newS.isEmpty ? null : newS;
                   },
                 ),
                 const Text(
@@ -1246,7 +1178,7 @@ class MediaEditingScreen extends StatelessWidget {
                 TextFormField(
                   maxLines: 3,
                   style: const TextStyle(color: Colors.white),
-                  initialValue: parent.currentEventData.value.icon,
+                  initialValue: currentEventData.value.icon,
                   cursorColor: Colors.white,
                   decoration: const InputDecoration(
                     /*icon: Icon(
@@ -1260,7 +1192,7 @@ class MediaEditingScreen extends StatelessWidget {
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
                   onChanged: (value) {
-                    parent.currentEventData.value.flyer = value.replaceAll(
+                    currentEventData.value.flyer = value.replaceAll(
                         "gs://ravestreammobileapp.appspot.com/", "");
                   },
                 )

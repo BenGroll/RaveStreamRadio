@@ -156,8 +156,7 @@ Future<Widget> getEventIcon(dbc.Event event) async {
             .then((value) => value.data()?["logopath"]);
         if (imageLocation != null && imageLocation.isNotEmpty) {
           return await getImage(imageLocation.replaceAll(
-                  "gs://ravestreammobileapp.appspot.com/", "")) ??
-              errorWhiteImage;
+              "gs://ravestreammobileapp.appspot.com/", "")) ?? errorWhiteImage;
         }
       }
       //pprint("@fs : No Host specified.");
