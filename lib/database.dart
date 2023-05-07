@@ -341,12 +341,12 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
   //pprint("...... ${eventList.length}");
 
   eventList.sort((a, b) {
-    dynamic sort_a = a.toMap().keys.contains(filters.orderbyField)
-        ? a.toMap()[filters.orderbyField]
-        : 0;
-    dynamic sort_b = a.toMap().keys.contains(filters.orderbyField)
-        ? a.toMap()[filters.orderbyField]
-        : 0;
+    int sort_a = a.end == null
+        ? (a.begin == null ? 0 : a.begin!.millisecondsSinceEpoch)
+        : a.end!.millisecondsSinceEpoch;
+    int sort_b = b.end == null
+        ? (b.begin == null ? 0 : b.begin!.millisecondsSinceEpoch)
+        : b.end!.millisecondsSinceEpoch;
     return sort_a.compareTo(sort_b);
   });
   //pprint("....... ${eventList.length}");
@@ -799,7 +799,8 @@ Future deleteHost(String hostID) async {
   List<Future> futures = [
     db.doc("demohosts/$hostID").delete(),
     db.doc("content/indexes").update({"templateHostIDs": jgkh}),
-    addLogEntry("Deleted Host $hostID", category: LogEntryCategory.host, action: LogEntryAction.delete)
+    addLogEntry("Deleted Host $hostID",
+        category: LogEntryCategory.host, action: LogEntryAction.delete)
   ];
   return;
 }

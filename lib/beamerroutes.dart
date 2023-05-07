@@ -73,7 +73,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
     final eventid = state.pathParameters["eventid"]!;
     return BeamPage(
         key: ValueKey("EditEvent - $eventid"),
-        //popToNamed: "/events",
+        popToNamed: "/events",
         type: BeamPageType.scaleTransition,
         child: eventid.isEmpty
             ? const Text("Event not found")
