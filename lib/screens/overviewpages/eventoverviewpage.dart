@@ -67,7 +67,15 @@ class EventOverviewPage extends StatelessWidget {
                                                       color: Colors.grey)));
                                             }
                                           });
+                                          GlobalKey<ScaffoldState> _key =
+                                              GlobalKey();
                                           return Scaffold(
+                                            key: _key,
+                                              endDrawer: event.value != null
+                                                  ? cw.EventOverviewpageSideDrawer(
+                                                      event: event.value ??
+                                                          dbc.demoEvent)
+                                                  : null,
                                               backgroundColor: cl.darkerGrey,
                                               appBar: AppBar(
                                                 backgroundColor: cl.lighterGrey,
@@ -76,71 +84,44 @@ class EventOverviewPage extends StatelessWidget {
                                                     event.value!.eventid,
                                                     maxLines: 2),
                                                 actions: [
-                                                  ReportButton(
-                                                      target:
-                                                          "${branchPrefix}events/$eventid"),
-                                                  currently_loggedin_as.value ==
-                                                          null
-                                                      ? const SizedBox()
-                                                      : IconButton(
-                                                          onPressed: () async {
-                                                            List<DocumentReference>
-                                                                saved_events =
-                                                                currently_loggedin_as
-                                                                    .value!
-                                                                    .saved_events;
-                                                            if (eventUserSpecificData
-                                                                        .value![
-                                                                    "user_has_saved"] ??
-                                                                false) {
-                                                              saved_events.remove(
-                                                                  db.db.doc(
-                                                                      "${branchPrefix}events/${event.value!.eventid}"));
-                                                            } else {
-                                                              saved_events.add(
-                                                                  db.db.doc(
-                                                                      "${branchPrefix}events/${event.value!.eventid}"));
-                                                            }
-                                                            Map<String, dynamic>
-                                                                currentUserData =
-                                                                currently_loggedin_as
-                                                                    .value!
-                                                                    .toMap();
-                                                            currentUserData[
-                                                                    "saved_events"] =
-                                                                saved_events;
-                                                            db.db
-                                                                .doc(
-                                                                    "${branchPrefix}users/${currently_loggedin_as.value!.username}")
-                                                                .set(
-                                                                    currentUserData);
-                                                            currently_loggedin_as
-                                                                    .value!
-                                                                    .saved_events =
-                                                                saved_events;
-                                                            eventUserSpecificData
-                                                                    .value =
-                                                                await db.getEventUserspecificData(
-                                                                    event.value ??
-                                                                        dbc
-                                                                            .demoEvent,
-                                                                    currently_loggedin_as
-                                                                        .value);
-                                                          },
-                                                          icon: eventUserSpecificData
-                                                                          .value![
-                                                                      "user_has_saved"] ??
-                                                                  false
-                                                              ? const Icon(Icons
-                                                                  .favorite)
-                                                              : const Icon(Icons
-                                                                  .favorite_border_outlined)),
+                                                  IconButton(
+                                                    onPressed: () async {
+                                                          List<DocumentReference> saved_events =
+                                                              currently_loggedin_as.value!.saved_events;
+                                                          if (saved_events.contains(db.db.doc("${branchPrefix}events/${event.value!.eventid}"))) {
+                                                            saved_events.remove(db.db
+                                                                .doc("${branchPrefix}events/${event.value!.eventid}"));
+                                                          } else {
+                                                            saved_events.add(db.db
+                                                                .doc("${branchPrefix}events/${event.value!.eventid}"));
+                                                          }
+                                                          Map<String, dynamic> currentUserData =
+                                                              currently_loggedin_as.value!.toMap();
+                                                          currentUserData["saved_events"] = saved_events;
+                                                          db.db
+                                                              .doc(
+                                                                  "${branchPrefix}users/${currently_loggedin_as.value!.username}")
+                                                              .set(currentUserData);
+                                                          currently_loggedin_as.value!.saved_events = saved_events;
+
+                                                        }, icon: eventUserSpecificData.value!["user_has_event_saved"] ?? false
+                                                        ? Icon(Icons.bookmark, color: Colors.white)
+                                                        : Icon(Icons.bookmark_border)
+                                                        ),
+                                                  IconButton(
+                                                      onPressed: () {
+                                                        _key.currentState!
+                                                            .openEndDrawer();
+                                                      },
+                                                      icon: Icon(Icons.menu,
+                                                          color: Colors.white))
                                                 ],
                                               ),
                                               body: Padding(
                                                   padding: EdgeInsets.symmetric(
                                                       horizontal:
-                                                          DISPLAY_SHORT_SIDE(context) /
+                                                          DISPLAY_SHORT_SIDE(
+                                                                  context) /
                                                               30,
                                                       vertical: 8.0),
                                                   child: ListView(children: [
@@ -152,8 +133,10 @@ class EventOverviewPage extends StatelessWidget {
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .white,
-                                                                fontSize: DISPLAY_LONG_SIDE(context) /
-                                                                    20))),
+                                                                fontSize:
+                                                                    DISPLAY_LONG_SIDE(
+                                                                            context) /
+                                                                        20))),
                                                     Row(children: [
                                                       Expanded(
                                                           flex: 3,
@@ -175,13 +158,15 @@ class EventOverviewPage extends StatelessWidget {
                                                           horizontal: 16.0,
                                                           vertical: 8.0),
                                                       child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
                                                                 .start,
                                                         children: [
                                                           SizedBox.shrink(
-                                                            child: const Text("by",
+                                                            child: const Text(
+                                                                "by",
                                                                 style: TextStyle(
                                                                     color: Colors
                                                                         .white)),
@@ -194,10 +179,14 @@ class EventOverviewPage extends StatelessWidget {
                                                                   TextStyle(
                                                                     color: Colors
                                                                         .white,
-                                                                    fontSize: DISPLAY_LONG_SIDE(context) /
-                                                                        45,
+                                                                    fontSize:
+                                                                        DISPLAY_LONG_SIDE(context) /
+                                                                            45,
                                                                   ))
-                                                              : TemplateHostLinkButton(id: event.value!.templateHostID)
+                                                              : TemplateHostLinkButton(
+                                                                  id: event
+                                                                      .value!
+                                                                      .templateHostID)
                                                         ],
                                                       ),
                                                     ),
@@ -241,10 +230,12 @@ class EventOverviewPage extends StatelessWidget {
                                                             event.value!.locationname !=
                                                                     null
                                                                 ? Container(
-                                                                    width: DISPLAY_SHORT_SIDE(context) /
+                                                                    width: DISPLAY_SHORT_SIDE(
+                                                                            context) /
                                                                         2.4,
-                                                                    height: DISPLAY_SHORT_SIDE(context) /
-                                                                        3,
+                                                                    height:
+                                                                        DISPLAY_SHORT_SIDE(context) /
+                                                                            3,
                                                                     decoration: BoxDecoration(
                                                                         borderRadius:
                                                                             BorderRadius.circular(
@@ -287,10 +278,12 @@ class EventOverviewPage extends StatelessWidget {
                                                                             .end !=
                                                                         null
                                                                 ? Container(
-                                                                    width: DISPLAY_SHORT_SIDE(context) /
+                                                                    width: DISPLAY_SHORT_SIDE(
+                                                                            context) /
                                                                         2.4,
-                                                                    height: DISPLAY_SHORT_SIDE(context) /
-                                                                        3,
+                                                                    height:
+                                                                        DISPLAY_SHORT_SIDE(context) /
+                                                                            3,
                                                                     decoration: BoxDecoration(
                                                                         borderRadius:
                                                                             BorderRadius.circular(
@@ -366,7 +359,8 @@ class EventOverviewPage extends StatelessWidget {
                                                                               0),
                                                                   // Condition for genre missing
                                                                   Container(
-                                                                      width: DISPLAY_SHORT_SIDE(context) /
+                                                                      width: DISPLAY_SHORT_SIDE(
+                                                                              context) /
                                                                           2.4,
                                                                       height:
                                                                           DISPLAY_SHORT_SIDE(context) /
@@ -382,7 +376,8 @@ class EventOverviewPage extends StatelessWidget {
                                                                             EdgeInsets.all(4.0),
                                                                         child:
                                                                             Column(
-                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.spaceBetween,
                                                                           children: [
                                                                             Text(
                                                                               'Genre',
@@ -393,13 +388,8 @@ class EventOverviewPage extends StatelessWidget {
                                                                               ),
                                                                               textAlign: TextAlign.center,
                                                                             ),
-                                                                            
-                                                                              
-                                                                                Text(
-                                                                                    "${event.value!.genre}"
-                                                                                    ,
-                                                                                    style: const TextStyle(color: Colors.white)),
-                                            
+                                                                            Text("${event.value!.genre}",
+                                                                                style: const TextStyle(color: Colors.white)),
                                                                             Text(''),
                                                                           ],
                                                                         ),
@@ -464,7 +454,8 @@ class EventOverviewPage extends StatelessWidget {
                                   } else {
                                     return Scaffold(
                                         backgroundColor: cl.lighterGrey,
-                                        body: cw.LoadingIndicator(color: Colors.white));
+                                        body: cw.LoadingIndicator(
+                                            color: Colors.white));
                                   }
                                 });
                           }),

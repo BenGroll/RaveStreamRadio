@@ -347,7 +347,7 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     int sort_b = b.begin == null
         ? (b.end == null ? 0 : b.end!.millisecondsSinceEpoch)
         : b.begin!.millisecondsSinceEpoch;
-  return sort_a.compareTo(sort_b);
+    return sort_a.compareTo(sort_b);
   });
   //pprint("....... ${eventList.length}");
 
@@ -911,4 +911,9 @@ Future addLogEntry(String changes,
       ]
     });
   }
+}
+
+Future deleteEvent(String eventID) async {
+  await Future.delayed(Duration(seconds: 1));
+  return await db.doc("${branchPrefix}events/$eventID").delete();
 }
