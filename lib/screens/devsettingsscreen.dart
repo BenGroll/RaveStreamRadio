@@ -304,11 +304,27 @@ class DevSettingsScreen extends StatelessWidget {
                           "6buQOrfAFE0x8QQfvQE1",
                           "RyytWkjzyZJAEmcEjL2s"
                         ];
-                        List<Message> messages = await loadMessagesForChat("TZTrs5BngHYohRGsm4w2");
+                        List<Message> messages =
+                            await loadMessagesForChat("TZTrs5BngHYohRGsm4w2");
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Messages Loaded"));
                       },
                       child: Text("Test load Messages from IDList")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(currentLogFilePath);
+                        print(currentLogFileDay);
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Messages Loaded"));
+                      },
+                      child: Text("Log Timestamp Test")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await db.addLogEntry("'changedAttribute': 1 -> 2", category: db.LogEntryCategory.unknown, action: db.LogEntryAction.unknown);
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Messages Loaded"));
+                      },
+                      child: Text("Log Adding Test")),
                 ],
               ),
             ),

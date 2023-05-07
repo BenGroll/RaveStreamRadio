@@ -59,7 +59,7 @@ Future<List<String>> validateUpload() async {
 
   if (toValidate.templateHostID != null) {
     DocumentSnapshot hostDocRef =
-        await db.db.doc("templatehosts/${toValidate.templateHostID}").get();
+        await db.db.doc("demohosts/${toValidate.templateHostID}").get();
     if (!hostDocRef.exists) {
       errormessages
           .add("Templatehost ${toValidate.templateHostID} does not exist.");
@@ -814,13 +814,14 @@ class GeneralSettingsPage extends StatelessWidget {
               ),
             ),
             TextFormField(
+              initialValue: currentEventData.value.minAge.toString(),
               onChanged: (value) async {
                 currentEventData.value.minAge = int.parse(value);
               },
               style: const TextStyle(color: Colors.white),
               cursorColor: Colors.white,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 icon: Icon(Icons.warning, color: Colors.white),
                 labelText: "Min. Age",
                 labelStyle: const TextStyle(color: Colors.white),
@@ -1048,7 +1049,7 @@ Future uploadEvent(dbc.Event event, BuildContext context) async {
     event.hostreference = null;
   }
   await db.uploadEventToDatabase(event);
-  await Future.delayed(Duration(seconds: 2));
+  await Future.delayed(Duration(seconds: 1));
   kIsWeb ? Beamer.of(context).popToNamed("/") : Navigator.of(context).pop();
   if (kIsWeb) {
     is_overriding_existing_event

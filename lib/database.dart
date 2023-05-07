@@ -78,28 +78,28 @@ Future uploadEventToDatabase(dbc.Event event) async {
     List hostedevents = hostdata["events"];
     hostedevents.add(db.doc("${branchPrefix}events/${event.eventid}"));
     hostdata["events"] = hostedevents;
-    await event.hostreference!.set(hostdata);
+    event.hostreference!.set(hostdata);
   }
   Map eventIndexFile = await json.decode(await readEventIndexesJson());
+  dbc.Event? eventBefore = eventIndexFile.containsKey(event.eventid)
+      ? dbc.Event.fromMap(eventIndexFile[event.eventid])
+      : null;
   eventIndexFile[event.eventid] = event.toJsonCompatibleMap();
-  // Conversions necessary for Json encoding
-  /*
-  if (eventIndexFile[event.eventid]["begin"] != null) {
-    eventIndexFile[event.eventid]["begin"] =
-        eventIndexFile[event.eventid]["begin"].millisecondsSinceEpoch;
+  List<Future> futures = [];
+  futures.add(storage.ref("indexes/${branchPrefix}eventsIndex.json").putString(
+      eventMapToJson(forceStringDynamicMapFromObject(eventIndexFile))));
+  if (eventBefore != null) {
+    futures.add(addLogEntry(
+        "Updated Event ${eventBefore.toString()} => ${eventIndexFile[event.eventid].toString()}",
+        category: LogEntryCategory.event,
+        action: LogEntryAction.update));
+  } else {
+    futures.add(addLogEntry(
+        "Added Event ${eventIndexFile[event.eventid].toString()}",
+        category: LogEntryCategory.event,
+        action: LogEntryAction.add));
   }
-  if (eventIndexFile[event.eventid]["end"] != null) {
-    eventIndexFile[event.eventid]["end"] =
-        eventIndexFile[event.eventid]["end"].millisecondsSinceEpoch;
-  }
-  if (eventIndexFile[event.eventid]["hostreference"] != null) {
-    // Convert Hostreference from DocRef to String (json)
-    eventIndexFile[event.eventid]["hostreference"] =
-        eventIndexFile[event.eventid]["hostreference"].path;
-  }*/
-  await storage.ref("indexes/${branchPrefix}eventsIndex.json").putString(
-      eventMapToJson(forceStringDynamicMapFromObject(eventIndexFile)));
-  return Future.delayed(Duration.zero);
+  return await Future.wait(futures);
 }
 
 /// Adds demoevents, demousers and demogroups to current branch.
@@ -762,35 +762,152 @@ Future<dbc.Host?> loadDemoHostFromDB(String id) async {
 
 Future uploadHost(dbc.Host host) async {
   DocumentReference ref = db.doc("demohosts/${host.id}");
-  await ref.set(host.toMap());
+  DocumentSnapshot snap = await ref.get();
+  Map? beforeHost = snap.exists ? snap.data() as Map : null;
   // Add it to the index tracker
-  DocumentSnapshot snap = await db.doc("content/indexes").get();
+  DocumentSnapshot snap2 = await db.doc("content/indexes").get();
   Map<String, dynamic> map =
-      forceStringDynamicMapFromObject(snap.data() as Map);
+      forceStringDynamicMapFromObject(snap2.data() as Map);
   Map<String, dynamic> jgkh = map["templateHostIDs"];
   jgkh[host.id] = host.name;
-  await db.doc("content/indexes").update({"templateHostIDs": jgkh});
-  return;
+
+  List<Future> futures = [];
+  futures.add(ref.set(host.toMap()));
+  futures.add(db.doc("content/indexes").update({"templateHostIDs": jgkh}));
+  if (beforeHost != null) {
+    pprint("122");
+    dbc.Host before =
+        dbc.Host.fromMap(forceStringDynamicMapFromObject(beforeHost));
+    pprint("123");
+    futures.add(addLogEntry(
+        "Updated Host : ${before.toString()} => ${host.toMap()}",
+        category: LogEntryCategory.host,
+        action: LogEntryAction.update));
+  } else {
+    futures.add(addLogEntry("Added Host : ${host.toMap()}",
+        category: LogEntryCategory.host, action: LogEntryAction.add));
+  }
+  return Future.wait(futures);
 }
 
 Future deleteHost(String hostID) async {
-  await db.doc("demohosts/$hostID").delete();
   DocumentSnapshot snap = await db.doc("content/indexes").get();
   Map<String, dynamic> map =
       forceStringDynamicMapFromObject(snap.data() as Map);
   Map<String, dynamic> jgkh = map["templateHostIDs"];
   jgkh.remove(hostID);
-  await db.doc("content/indexes").update({"templateHostIDs": jgkh});
+  List<Future> futures = [
+    db.doc("demohosts/$hostID").delete(),
+    db.doc("content/indexes").update({"templateHostIDs": jgkh}),
+    addLogEntry("Deleted Host $hostID", category: LogEntryCategory.host, action: LogEntryAction.delete)
+  ];
   return;
 }
 
 Future<dbc.Group?> getGroup(String groupID) async {
   DocumentSnapshot snap = await db.doc("${branchPrefix}groups/$groupID").get();
   if (snap.exists && snap.data() != null) {
-    Map<String, dynamic> data = forceStringDynamicMapFromObject(snap.data() as Map);
+    Map<String, dynamic> data =
+        forceStringDynamicMapFromObject(snap.data() as Map);
     data = forceStringDynamicMapFromObject(data);
     return dbc.Group.fromMap(data);
   } else {
     return null;
+  }
+}
+
+enum LogEntryCategory { host, media, event, report, unknown }
+
+enum LogEntryAction { add, delete, update, unknown }
+
+LogEntryAction string2Act(String name) {
+  switch (name) {
+    case "add":
+      return LogEntryAction.add;
+    case "delete":
+      return LogEntryAction.delete;
+    case "update":
+      return LogEntryAction.update;
+    default:
+      return LogEntryAction.unknown;
+  }
+}
+
+LogEntryCategory string2Cat(String name) {
+  switch (name) {
+    case "host":
+      return LogEntryCategory.host;
+    case "media":
+      return LogEntryCategory.media;
+    case "event":
+      return LogEntryCategory.event;
+    case "report":
+      return LogEntryCategory.report;
+    default:
+      return LogEntryCategory.unknown;
+  }
+}
+
+class LogEntry {
+  String changes;
+  Timestamp exact_time;
+  String user;
+  LogEntryCategory category;
+  LogEntryAction action;
+  LogEntry(
+      {required this.changes,
+      required this.exact_time,
+      required this.user,
+      required this.category,
+      required this.action});
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'changes': changes,
+      'exact_time': exact_time.millisecondsSinceEpoch,
+      'user': user,
+      'category': category.name,
+      'action': action.name
+    };
+  }
+
+  factory LogEntry.fromMap(Map<String, dynamic> map) {
+    return LogEntry(
+        changes: map["changes"],
+        exact_time: map["exact_time"].fromMillisecondsSinceEpoch,
+        user: map["user"],
+        category: string2Cat(map["category"]),
+        action: string2Act(map["action"]));
+  }
+}
+
+Future addLogEntry(String changes,
+    {LogEntryCategory category = LogEntryCategory.unknown,
+    LogEntryAction action = LogEntryAction.unknown}) async {
+  DocumentReference ref = db.doc(currentLogFilePath);
+  bool logWeekExists = await ref.get().then((value) => value.exists);
+  if (logWeekExists) {
+    return await ref.update({
+      currentLogFileDay.replaceAll(".", "_"): FieldValue.arrayUnion([
+        LogEntry(
+                action: action,
+                category: category,
+                changes: changes,
+                exact_time: Timestamp.now(),
+                user: currently_loggedin_as.value!.username)
+            .toMap()
+      ])
+    });
+  } else {
+    return await ref.set({
+      currentLogFileDay.replaceAll(".", "_"): [
+        LogEntry(
+                action: action,
+                category: category,
+                changes: changes,
+                exact_time: Timestamp.now(),
+                user: currently_loggedin_as.value!.username)
+            .toMap()
+      ]
+    });
   }
 }
