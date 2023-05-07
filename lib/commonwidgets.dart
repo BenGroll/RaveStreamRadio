@@ -685,9 +685,9 @@ class EventTable extends StatelessWidget {
                         ? null
                         : () async {
                             //pprint(eventid);
-                            String description = await db
-                                .getEvent(eventid)
-                                .then((value) => value?.description ?? "");
+                            ValueNotifier<dbc.Event> ev = ValueNotifier<dbc.Event>(await db
+                                .getEvent(eventid).then((value) => value ?? dbc.demoEvent)
+                                );
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (BuildContext context) => WillPopScope(
                                       onWillPop: () async {
@@ -708,7 +708,7 @@ class EventTable extends StatelessWidget {
                                                                 "${branchPrefix}events/$eventid")
                                                             .update({
                                                           "description":
-                                                              description
+                                                              ev.value!.description
                                                         });
 
                                                         Navigator.of(context)
@@ -741,10 +741,7 @@ class EventTable extends StatelessWidget {
                                             title: Text("Edit Description"),
                                           ),
                                           body: DescriptionEditingPage(
-                                            initialValue: description,
-                                            onChange: (value) {
-                                              description = value;
-                                            },
+                                          to_Notify: ev
                                           )),
                                     )));
                           },
