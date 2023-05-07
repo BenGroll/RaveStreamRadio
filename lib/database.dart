@@ -914,6 +914,7 @@ Future addLogEntry(String changes,
 }
 
 Future deleteEvent(String eventID) async {
-  await Future.delayed(Duration(seconds: 1));
-  return await db.doc("${branchPrefix}events/$eventID").delete();
+  await db.doc("${branchPrefix}events/$eventID").delete();
+  await addLogEntry("Deleted Event: $eventID", action: LogEntryAction.delete, category: LogEntryCategory.event);
+  return;
 }

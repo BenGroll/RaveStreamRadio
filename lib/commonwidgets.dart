@@ -1288,7 +1288,8 @@ class DeleteEventIconButton extends StatelessWidget {
                   builder: (context) {
                     return AlertDialog(
                       backgroundColor: cl.lighterGrey,
-                      title: Text("Are you sure?"),
+                      title: Text("Are you sure?",
+                          style: TextStyle(color: Colors.white)),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -1337,6 +1338,8 @@ class DeleteEventIconButton extends StatelessWidget {
                                                   if (snap.connectionState !=
                                                       ConnectionState.done) {
                                                     return AlertDialog(
+                                                        backgroundColor:
+                                                            cl.lighterGrey,
                                                         content:
                                                             cw.LoadingIndicator(
                                                                 color: Colors
@@ -1357,9 +1360,9 @@ class DeleteEventIconButton extends StatelessWidget {
                                                                   color: Colors
                                                                       .white)),
                                                           onPressed: () {
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop();
+                                                            Beamer.of(context)
+                                                                .beamToNamed(
+                                                                    "/events");
                                                           },
                                                         )
                                                       ],
@@ -1417,85 +1420,100 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
     return Drawer(
       backgroundColor: cl.lighterGrey,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: DISPLAY_SHORT_SIDE(context) / 30, vertical: DISPLAY_LONG_SIDE(context) / 60),
+        padding: EdgeInsets.symmetric(
+            horizontal: DISPLAY_SHORT_SIDE(context) / 30,
+            vertical: DISPLAY_LONG_SIDE(context) / 60),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-          ListTile(
-            title: Text("Report",style: TextStyle(color: Colors.white, fontSize: DISPLAY_SHORT_SIDE(context) / 20)),
-            onTap: () {
-              String desc = "";
-              showModalBottomSheet(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadiusDirectional.circular(8.0)),
-                  backgroundColor: cl.darkerGrey,
-                  context: context,
-                  builder: (BuildContext context) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: TextFormField(
-                            onChanged: (value) {
-                              desc = value;
-                            },
-                            minLines: 5,
-                            maxLines: 2000,
-                            decoration: InputDecoration(
-                                filled: true,
-                                fillColor: cl.lighterGrey,
-                                labelText: "Tell us more about this report...",
-                                labelStyle: TextStyle(color: Colors.white),
-                                enabledBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: cl.lighterGrey),
-                                    borderRadius: BorderRadius.circular(8.0))),
-                            style: TextStyle(color: Colors.white),
-                            cursorColor: Colors.white,
-                            showCursor: true,
-                          ),
-                        ),
-                        TextButton(
-                            style: TextButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0)),
-                                backgroundColor: cl.lighterGrey),
-                            onPressed: () async {
-                              DocumentReference newRep = await db.db
-                                  .collection("${branchPrefix}reports")
-                                  .add({
-                                "description": desc,
-                                "issuer": db.db.doc(
-                                    "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
-                                "target": event.eventid,
-                                "timestamp": Timestamp.now(),
-                                "state": "filed"
-                              });
-                              await newRep.update({"id": newRep.id});
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  hintSnackBar("Report was sent!"));
-                              Navigator.of(context).pop();
-                            },
-                            child: Text(
-                              "Report",
-                              style: TextStyle(color: Colors.white),
-                            ))
-                      ],
-                    );
-                  });},
-            trailing: Icon(Icons.report_outlined, color: Colors.white)
-          ),
-          db.hasPermissionToEditEventObject(event) 
-           ? ListTile(
-              title: Text("Edit",style: TextStyle(color: Colors.white, fontSize: DISPLAY_SHORT_SIDE(context) / 20)),
-              trailing: Icon(Icons.edit, color: Colors.white),
-              onTap: () {Beamer.of(context).beamToNamed("/editevent/${event.eventid}");},
-           )
-           : SizedBox(height: 0)
-          
-        ]),
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              ListTile(
+                  title: Text("Report",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: DISPLAY_SHORT_SIDE(context) / 20)),
+                  onTap: () {
+                    String desc = "";
+                    showModalBottomSheet(
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadiusDirectional.circular(8.0)),
+                        backgroundColor: cl.darkerGrey,
+                        context: context,
+                        builder: (BuildContext context) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: TextFormField(
+                                  onChanged: (value) {
+                                    desc = value;
+                                  },
+                                  minLines: 5,
+                                  maxLines: 2000,
+                                  decoration: InputDecoration(
+                                      filled: true,
+                                      fillColor: cl.lighterGrey,
+                                      labelText:
+                                          "Tell us more about this report...",
+                                      labelStyle:
+                                          TextStyle(color: Colors.white),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: cl.lighterGrey),
+                                          borderRadius:
+                                              BorderRadius.circular(8.0))),
+                                  style: TextStyle(color: Colors.white),
+                                  cursorColor: Colors.white,
+                                  showCursor: true,
+                                ),
+                              ),
+                              TextButton(
+                                  style: TextButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0)),
+                                      backgroundColor: cl.lighterGrey),
+                                  onPressed: () async {
+                                    DocumentReference newRep = await db.db
+                                        .collection("${branchPrefix}reports")
+                                        .add({
+                                      "description": desc,
+                                      "issuer": db.db.doc(
+                                          "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
+                                      "target": event.eventid,
+                                      "timestamp": Timestamp.now(),
+                                      "state": "filed"
+                                    });
+                                    await newRep.update({"id": newRep.id});
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        hintSnackBar("Report was sent!"));
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text(
+                                    "Report",
+                                    style: TextStyle(color: Colors.white),
+                                  ))
+                            ],
+                          );
+                        });
+                  },
+                  trailing: Icon(Icons.report_outlined, color: Colors.white)),
+              db.hasPermissionToEditEventObject(event)
+                  ? ListTile(
+                      title: Text("Edit",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: DISPLAY_SHORT_SIDE(context) / 20)),
+                      trailing: Icon(Icons.edit, color: Colors.white),
+                      onTap: () {
+                        Beamer.of(context)
+                            .beamToNamed("/editevent/${event.eventid}");
+                      },
+                    )
+                  : SizedBox(height: 0)
+            ]),
       ),
     );
   }

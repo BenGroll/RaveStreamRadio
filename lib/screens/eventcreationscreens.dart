@@ -201,9 +201,11 @@ class EventCreationScreen extends StatelessWidget {
                         ),
                       ]),
                       actions: [
+                        eventIDToBeEdited != null
+                        ? cw.DeleteEventIconButton(event: currentEventData.value)
+                        : const SizedBox(width: 0),
                         TextButton(
                             onPressed: () async {
-                              print(block_upload);
                               if (!block_upload) {
                                 block_upload = true;
                                 List<Widget> errorcontent =
@@ -283,7 +285,24 @@ class EventCreationScreen extends StatelessWidget {
                                       return Scaffold(
                                           backgroundColor: cl.darkerGrey,
                                           appBar: AppBar(
+                                            bottom: const TabBar(tabs: [
+                                                Tab(
+                                                  child: Text("General"),
+                                                ),
+                                                Tab(
+                                                  child: Text("Desc."),
+                                                ),
+                                                Tab(
+                                                  child: Text("Links"),
+                                                ),
+                                                Tab(
+                                                  child: Text("Media"),
+                                                ),
+                                              ]),
                                             actions: [
+                                              eventIDToBeEdited != null
+                                                  ? cw.DeleteEventIconButton(event: currentEventData.value)
+                                                  : const SizedBox(width: 0),
                                               TextButton(
                                                   onPressed: () async {
                                                     if (!block_upload) {
