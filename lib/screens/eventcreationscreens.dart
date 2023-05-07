@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+
 import 'dart:io';
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -111,7 +113,7 @@ class EventCreationScreen extends StatelessWidget {
         {
           return DescriptionEditingPage(
             to_Notify: currentEventData,
-              );
+          );
         }
       case Screen.links:
         {
@@ -156,7 +158,7 @@ class EventCreationScreen extends StatelessWidget {
   EventCreationScreen({super.key, this.eventIDToBeEdited = null});
   @override
   Widget build(BuildContext context) {
-  dynamic logger = ValueListenableBuilder(
+    dynamic logger = ValueListenableBuilder(
         valueListenable: currentEventData,
         builder: (BuildContext context, dbc.Event val, foo) {
           print(val.toString());
@@ -238,8 +240,8 @@ class EventCreationScreen extends StatelessWidget {
                       children: [
                         GeneralSettingsPage(parent: this),
                         DescriptionEditingPage(
-                            to_Notify: currentEventData,
-                            ),
+                          to_Notify: currentEventData,
+                        ),
                         LinkEditingScreen(parent: this),
                         MediaEditingScreen(parent: this)
                       ],
@@ -894,7 +896,7 @@ class GeneralSettingsPage extends StatelessWidget {
 class AddLinkButton extends StatelessWidget {
   EventCreationScreen parent;
   String label = "";
-  String url = "";
+  String urlS = "";
   AddLinkButton({super.key, required this.parent});
   @override
   Widget build(BuildContext context) {
@@ -903,10 +905,23 @@ class AddLinkButton extends StatelessWidget {
             backgroundColor: cl.darkerGrey,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadiusDirectional.circular(8.0))),
-        onPressed: () {
-          showDialog(
+        onPressed: () async {
+          ValueNotifier<String> title = ValueNotifier<String>("");
+          ValueNotifier<String> url = ValueNotifier<String>("");
+          await showDialog(
+              barrierDismissible: false,
               context: context,
-              builder: (context) => LinkCreateDialog(parent: parent));
+              builder: (context) =>
+                  cw.SingleLinkEditDialog(title: title, url: url));
+          if (url.value.isNotEmpty) {
+            if (parent.currentEventData.value.links != null) {
+              parent.currentEventData.value.links![title.value] = url.value;
+              parent.currentEventData.notifyListeners();
+            } else {
+              parent.currentEventData.value.links = {title.value: url.value};
+              parent.currentEventData.notifyListeners();
+            }
+          }
         },
         child: Text("Add new link"));
   }
@@ -947,10 +962,37 @@ class LinkListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
-        showDialog(
+      onTap: () async {
+        ValueNotifier<String> title = ValueNotifier<String>(link.title);
+        ValueNotifier<String> url = ValueNotifier<String>(link.url);
+        await showDialog(
+            barrierDismissible: false,
             context: context,
-            builder: ((context) => LinkEditDialog(link: link, parent: parent)));
+            builder: (context) =>
+                cw.SingleLinkEditDialog(title: title, url: url));
+        if (url.value.isNotEmpty) {
+          if (url.value == "DeleteThisLink-12345678912062g53f4v8p0h" &&
+              title.value == "DeleteThisLink-12345678912062g53f4v8p0h") {
+            if (parent.currentEventData.value.links!.containsKey(link.title)) {
+              parent.currentEventData.value.links!.remove(link.title);
+              parent.currentEventData.notifyListeners();
+            }
+          } else {
+            if (parent.currentEventData.value.links != null) {
+              if (parent.currentEventData.value.links!
+                  .containsKey(link.title)) {
+                parent.currentEventData.value.links!.remove(link.title);
+                parent.currentEventData.notifyListeners();
+              }
+              parent.currentEventData.value.links![title.value] = url.value;
+
+              parent.currentEventData.notifyListeners();
+            } else {
+              parent.currentEventData.value.links = {title.value: url.value};
+              parent.currentEventData.notifyListeners();
+            }
+          }
+        }
       },
       tileColor: Colors.black,
       title: Center(

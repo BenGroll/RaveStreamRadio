@@ -14,6 +14,7 @@ import 'package:ravestreamradioapp/chatting.dart';
 const bool DISABLE_EVENT_EDITING = false;
 const bool DISABLE_CHATWINDOW = false;
 const bool DISABLE_MESSAGE_SENDING = true;
+const int DEFAULT_MINAGE = 18;
 
 late FirebaseApp app;
 

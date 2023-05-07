@@ -1112,7 +1112,7 @@ class LinkEditingDialog extends StatelessWidget {
                 barrierDismissible: false,
                 context: context,
                 builder: (context) =>
-                    _SingleLinkEditDialog(title: title, url: url));
+                    SingleLinkEditDialog(title: title, url: url));
             if (url.value.isNotEmpty) {
               List<dbc.Link> linkbuffer = links.value;
               linkbuffer.add(dbc.Link(
@@ -1140,7 +1140,7 @@ class LinkEditingDialog extends StatelessWidget {
                 barrierDismissible: false,
                 context: context,
                 builder: (context) =>
-                    _SingleLinkEditDialog(title: title, url: url));
+                    SingleLinkEditDialog(title: title, url: url));
             if (url.value.isNotEmpty) {
               List<dbc.Link> linkbuffer = links.value;
               if (title.value == "DeleteThisLink-12345678912062g53f4v8p0h" &&
@@ -1196,10 +1196,10 @@ class LinkEditingDialog extends StatelessWidget {
   }
 }
 
-class _SingleLinkEditDialog extends StatelessWidget {
+class SingleLinkEditDialog extends StatelessWidget {
   ValueNotifier<String> title;
   ValueNotifier<String> url;
-  _SingleLinkEditDialog({super.key, required this.title, required this.url});
+  SingleLinkEditDialog({super.key, required this.title, required this.url});
 
   @override
   Widget build(BuildContext context) {
@@ -1212,6 +1212,7 @@ class _SingleLinkEditDialog extends StatelessWidget {
         children: [
           Text((title != "" || url != "") ? "Edit ${titleS}" : "Add new Link",
               style: TextStyle(color: Colors.white)),
+          titleS.isEmpty && urlS.isEmpty ? Container() : 
           IconButton(
             icon: Icon(Icons.delete, color: Colors.white),
             onPressed: () {

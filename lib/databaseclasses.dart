@@ -142,7 +142,7 @@ class Event {
     this.end = null,
     this.location = null,
     this.locationname,
-    this.minAge = 0,
+    this.minAge = DEFAULT_MINAGE,
     this.genre = null,
     this.icon = null,
     this.flyer = null,
