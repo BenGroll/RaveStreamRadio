@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/database.dart' as db;
+import 'package:ravestreamradioapp/screens/mainscreens/groups.dart';
+import 'package:ravestreamradioapp/shared_state.dart';
 import 'dart:io' show Platform;
 import 'chatting.dart';
 
@@ -179,6 +181,48 @@ extension Check on List<Message> {
   }
 }
 
+extension QueryData on List<QueryEntry> {
+  List<QueryEntry> matchesString(String search) {
+    List<QueryEntry> matching = [];
+    forEach((element) {
+      if (element.id.contains(search) || element.name.contains(search)) {
+        matching.add(element);
+      }
+    });
+    return matching;
+  }
+}
+
+extension Query on List<dbc.Group> {
+  List<dbc.Group> queryStringMatch(String searchString) {
+    List<dbc.Group> outL = [];
+    forEach((element) {
+      if (element.groupid.contains(searchString) ||
+          (element.title != null && element.title!.contains(searchString))) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
+
+  List<dbc.Group> get pinnedFirst {
+    List<dbc.Group> outP = [];
+    List<dbc.Group> outNP = [];
+    forEach((element) {
+      if (currently_loggedin_as.value == null
+          ? false
+          : db.hasGroupPinned(
+              element, currently_loggedin_as.value ?? dbc.demoUser)) {
+        outP.add(element);
+      } else {
+        outNP.add(element);
+      }
+    });
+    outP.addAll(outNP);
+    return outP;
+  }
+}
+
 extension CheckForIDvalidity on String {
   bool get isValidDocumentid {
     List<String> validChars = [
@@ -230,4 +274,3 @@ extension CheckForIDvalidity on String {
     return is_valid;
   }
 }
-

@@ -12,6 +12,7 @@ import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'testdbscenario.dart';
 import 'package:ravestreamradioapp/extensions.dart' show Queriefy, pprint;
+import 'dart:convert';
 
 var db = FirebaseFirestore.instance;
 
@@ -915,6 +916,91 @@ Future addLogEntry(String changes,
 
 Future deleteEvent(String eventID) async {
   await db.doc("${branchPrefix}events/$eventID").delete();
-  await addLogEntry("Deleted Event: $eventID", action: LogEntryAction.delete, category: LogEntryCategory.event);
+  await addLogEntry("Deleted Event: $eventID",
+      action: LogEntryAction.delete, category: LogEntryCategory.event);
   return;
+}
+
+Future<List<dbc.Group>> queryGroups() async {
+  if (currently_loggedin_as.value == null) return [];
+  List<DocumentReference> joined_groups =
+      currently_loggedin_as.value!.joined_groups;
+  List<DocumentReference> followed_groups =
+      currently_loggedin_as.value!.followed_groups;
+  List<DocumentReference> allGroups = joined_groups..addAll(followed_groups);
+  print("AllGroups: $allGroups");
+  List<Future<DocumentSnapshot>> futures = [];
+  allGroups.forEach((element) {
+    futures.add(element.get());
+  });
+  List<DocumentSnapshot> snaps = await Future.wait(futures);
+  List<dbc.Group> groups = snaps
+      .map((e) =>
+          dbc.Group.fromMap(forceStringDynamicMapFromObject(e.data() as Map)))
+      .toList();
+  return groups;
+}
+
+Future createUserIndexFiles() async {
+  QuerySnapshot snaps = await db.collection("${branchPrefix}users").get();
+  List<dbc.User> list = snaps.docs
+      .map((QueryDocumentSnapshot e) =>
+          dbc.User.fromMap(forceStringDynamicMapFromObject(e.data() as Map)))
+      .toList();
+  Map<String, String> strings = {};
+  list.forEach((element) {
+    strings[element.username] = element.alias ?? element.username;
+  });
+  Reference ref =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}users.json");
+  await ref.putString(json.encode(strings));
+}
+
+Future createGroupIndexFiles() async {
+  QuerySnapshot snaps = await db.collection("${branchPrefix}groups").get();
+  List<dbc.Group> list = snaps.docs
+      .map((QueryDocumentSnapshot e) =>
+          dbc.Group.fromMap(forceStringDynamicMapFromObject(e.data() as Map)))
+      .toList();
+  Map<String, String> strings = {};
+  list.forEach((element) {
+    strings[element.groupid] = element.title ?? element.groupid;
+  });
+  Reference ref =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}groups.json");
+  await ref.putString(json.encode(strings));
+}
+
+Future createEventIndexFiles() async {
+  QuerySnapshot snaps = await db.collection("${branchPrefix}events").get();
+  List<dbc.Event> list = snaps.docs
+      .map((QueryDocumentSnapshot e) =>
+          dbc.Event.fromMap(forceStringDynamicMapFromObject(e.data() as Map)))
+      .toList();
+  Map<String, String> strings = {};
+  list.forEach((element) {
+    strings[element.eventid] = element.title ?? element.eventid;
+  });
+  Reference ref =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}events.json");
+  await ref.putString(json.encode(strings));
+}
+
+Future<List<Map>> getIndexedEntitys() async {
+  Reference groups =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}groups.json");
+  Reference users =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}users.json");
+  Reference events =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}events.json");
+  List<Future<Uint8List>> futures = [
+    groups
+        .getData(4096 * 4096)
+        .then((value) => value ?? Uint8List.fromList([])),
+    users.getData(4096 * 4096).then((value) => value ?? Uint8List.fromList([])),
+    events.getData(4096 * 4096).then((value) => value ?? Uint8List.fromList([]))
+  ];
+  List<Uint8List> lists = await Future.wait(futures);
+  List<String> strings = lists.map((e) => String.fromCharCodes(e)).toList();
+  return strings.map((e) => jsonDecode(e) as Map).toList();
 }

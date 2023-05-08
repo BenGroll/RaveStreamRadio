@@ -99,16 +99,7 @@ AppBar FavouritesAppBar(BuildContext context) {
 /// TabBar for the Social Tab of the homescreens
 
 /// AppBar for the Groups homescreen
-AppBar GroupsAppBar(BuildContext context) {
-  return AppBar(
-    leading: const OpenSidebarButton(),
-    elevation: 8,
-    backgroundColor: cl.lighterGrey,
-    title: Text("Groups", style: TextStyle(color: Colors.white)),
-    centerTitle: true,
-    actions: [OpenChatButton(context: context)],
-  );
-}
+
 
 /// AppBar for the Profile homescreen
 AppBar ProfileAppBar(BuildContext context) {
