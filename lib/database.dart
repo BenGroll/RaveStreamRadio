@@ -100,6 +100,7 @@ Future uploadEventToDatabase(dbc.Event event) async {
         category: LogEntryCategory.event,
         action: LogEntryAction.add));
   }
+  futures.add(addEventToIndexFile(event));
   return await Future.wait(futures);
 }
 
@@ -915,10 +916,12 @@ Future addLogEntry(String changes,
 }
 
 Future deleteEvent(String eventID) async {
-  await db.doc("${branchPrefix}events/$eventID").delete();
-  await addLogEntry("Deleted Event: $eventID",
-      action: LogEntryAction.delete, category: LogEntryCategory.event);
-  return;
+  return Future.wait([
+   db.doc("${branchPrefix}events/$eventID").delete(),
+   addLogEntry("Deleted Event: $eventID",
+      action: LogEntryAction.delete, category: LogEntryCategory.event),
+   removeEventFromIndexFile(null, eventID)
+  ]);
 }
 
 Future<List<dbc.Group>> queryGroups() async {
@@ -954,6 +957,78 @@ Future createUserIndexFiles() async {
   Reference ref =
       FirebaseStorage.instance.ref("/indexes/${branchPrefix}users.json");
   await ref.putString(json.encode(strings));
+}
+
+Future addEventToIndexFile(dbc.Event event) async {
+  Reference events =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}events.json");
+  String da = await events
+      .getData(4096 * 4096)
+      .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
+  Map eventMap = jsonDecode(da);
+  eventMap[event.eventid] = event.title ?? event.eventid;
+  return await events.putString(json.encode(eventMap));
+}
+
+Future removeEventFromIndexFile([dbc.Event? event, String? id]) async {
+  Reference events =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}events.json");
+  String da = await events
+      .getData(4096 * 4096)
+      .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
+  Map eventMap = jsonDecode(da);
+  if (eventMap.keys.contains(event?.eventid ?? id)) {
+    eventMap.remove(event?.eventid ?? id);
+  }
+  return await events.putString(json.encode(eventMap));
+}
+
+Future addUserToIndexFile(dbc.User user) async {
+  Reference users =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}users.json");
+  String da = await users
+      .getData(4096 * 4096)
+      .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
+  Map eventMap = jsonDecode(da);
+  eventMap[user.username] = user.alias ?? user.username;
+  return await users.putString(json.encode(eventMap));
+}
+
+Future removeUserFromIndexFile([dbc.User? user, String? id]) async {
+  Reference users =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}users.json");
+  String da = await users
+      .getData(4096 * 4096)
+      .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
+  Map eventMap = jsonDecode(da);
+  if (eventMap.keys.contains(user?.username ?? id)) {
+    eventMap.remove(user?.username ?? id);
+  }
+  return await users.putString(json.encode(eventMap));
+}
+
+Future addGroupToIndexFile(dbc.Group group) async {
+  Reference users =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}groups.json");
+  String da = await users
+      .getData(4096 * 4096)
+      .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
+  Map eventMap = jsonDecode(da);
+  eventMap[group.groupid] = group.title ?? group.groupid;
+  return await users.putString(json.encode(eventMap));
+}
+
+Future removeGroupFromIndexFile([dbc.Group? group, String? id]) async {
+  Reference users =
+      FirebaseStorage.instance.ref("/indexes/${branchPrefix}groups.json");
+  String da = await users
+      .getData(4096 * 4096)
+      .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
+  Map eventMap = jsonDecode(da);
+  if (eventMap.keys.contains(group?.groupid ?? id)) {
+    eventMap.remove(group?.groupid ?? id);
+  }
+  return await users.putString(json.encode(eventMap));
 }
 
 Future createGroupIndexFiles() async {

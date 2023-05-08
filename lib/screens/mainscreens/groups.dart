@@ -232,7 +232,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                   ? [
                                       const Center(
                                           child: Text(
-                                              "Enter a search to see results",
+                                              "Search for Events, Groups and Users.",
                                               style: TextStyle(
                                                   color: Colors.white)))
                                     ]

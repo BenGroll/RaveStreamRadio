@@ -353,6 +353,13 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("Events Loaded"));
                       },
                       child: Text("Read Indexed Entitys")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await db.addEventToIndexFile(demoEvent);
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Events read"));
+                      },
+                      child: Text("Read Eventindex")),
                 ],
               ),
             ),

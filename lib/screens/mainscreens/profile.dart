@@ -146,7 +146,12 @@ class UserView extends StatelessWidget {
                                 ValueListenableBuilder(
                                     valueListenable: user,
                                     builder: (context, userVal, foo) {
-                                      return Text((userVal.alias == null || userVal.alias!.isEmpty) ? "No Alias created." : userVal.alias ?? "No Alias created.",
+                                      return Text(
+                                          (userVal.alias == null ||
+                                                  userVal.alias!.isEmpty)
+                                              ? "No Alias created."
+                                              : userVal.alias ??
+                                                  "No Alias created.",
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
@@ -181,6 +186,8 @@ class UserView extends StatelessWidget {
                                                   "${branchPrefix}users/${user.value.username}")
                                               .update(
                                                   {"alias": user.value.alias});
+                                          await db
+                                              .addUserToIndexFile(user.value);
                                           user.notifyListeners();
                                         }
                                       }),
@@ -200,8 +207,11 @@ class UserView extends StatelessWidget {
                                     valueListenable: user,
                                     builder: (context, userVal, foo) {
                                       return Text(
-                                          (userVal.description == null || userVal.description!.isEmpty) ?
-                                              "No description yet." : userVal.description ?? "No description yet.",
+                                          (userVal.description == null ||
+                                                  userVal.description!.isEmpty)
+                                              ? "No description yet."
+                                              : userVal.description ??
+                                                  "No description yet.",
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: MediaQuery.of(context)
@@ -238,6 +248,8 @@ class UserView extends StatelessWidget {
                                             "description":
                                                 user.value.description
                                           });
+                                          await db
+                                              .addUserToIndexFile(user.value);
                                           user.notifyListeners();
                                         }
                                       }),
@@ -250,12 +262,12 @@ class UserView extends StatelessWidget {
                                           "Viewing of Event-List is WIP."));
                                 },
                                 child: Text(
-                                    "Hosted events: ${user.value.events.length}", style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  25)))
+                                    "Hosted events: ${user.value.events.length}",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width /
+                                                25)))
                           ]))));
         });
   }
