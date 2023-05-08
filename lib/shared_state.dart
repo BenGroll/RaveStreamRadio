@@ -11,7 +11,7 @@ import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/chatting.dart';
 
 /// ++++++++++++++ DEBUG SETTINGS ++++++++++++ //
-const bool DISABLE_EVENT_EDITING = true;
+const bool DISABLE_EVENT_EDITING = false;
 const bool DISABLE_CHATWINDOW = false;
 const bool DISABLE_MESSAGE_SENDING = true;
 
@@ -136,4 +136,17 @@ String get branchPrefix {
   } else {
     throw Exception("Prefix for selected Branch not set.");
   }
+}
+
+String get currentLogFilePath {
+  DateTime now = DateTime.now();
+  DateTime logFileStartTimestamp =
+      now.subtract(Duration(days: now.weekday - 1));
+  DateTime logFileEndTimestamp = now.add(Duration(days: 7 - now.weekday));
+  return "logs/${logFileStartTimestamp.day.toString().padLeft(2, '0')}.${logFileStartTimestamp.month.toString().padLeft(2, '0')}.${logFileStartTimestamp.year.toString().padLeft(2, '0')}-${logFileEndTimestamp.day.toString().padLeft(2, '0')}.${logFileEndTimestamp.month.toString().padLeft(2, '0')}.${logFileEndTimestamp.year.toString().padLeft(2, '0')}";
+}
+
+String get currentLogFileDay {
+  DateTime now = DateTime.now();
+  return "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year.toString().padLeft(2, '0')}";
 }

@@ -1112,6 +1112,7 @@ class LinkEditingDialog extends StatelessWidget {
             ValueNotifier<String> title = ValueNotifier<String>("");
             ValueNotifier<String> url = ValueNotifier<String>("");
             await showDialog(
+                barrierDismissible: false,
                 context: context,
                 builder: (context) =>
                     _SingleLinkEditDialog(title: title, url: url));
@@ -1127,25 +1128,36 @@ class LinkEditingDialog extends StatelessWidget {
           child: Text("Add new Link", style: TextStyle(color: Colors.white)))
     ];
     int i = 0;
-    for(int i = 0; i < links.value.length; i++) {
+    for (int i = 0; i < links.value.length; i++) {
       widgets.add(ListTile(
-          title: Text(links.value[i].title, style: TextStyle(color: Colors.white)),
+          title:
+              Text(links.value[i].title, style: TextStyle(color: Colors.white)),
           trailing: Text("$i", style: TextStyle(color: Colors.white)),
           onTap: () async {
             int index = i;
-            ValueNotifier<String> title = ValueNotifier<String>(links.value[i].title);
-            ValueNotifier<String> url = ValueNotifier<String>(links.value[i].url);
+            ValueNotifier<String> title =
+                ValueNotifier<String>(links.value[i].title);
+            ValueNotifier<String> url =
+                ValueNotifier<String>(links.value[i].url);
             await showDialog(
+                barrierDismissible: false,
                 context: context,
                 builder: (context) =>
                     _SingleLinkEditDialog(title: title, url: url));
             if (url.value.isNotEmpty) {
               List<dbc.Link> linkbuffer = links.value;
-              linkbuffer[i] = dbc.Link(
-                  title: title.value.isEmpty ? "Link" : title.value,
-                  url: url.value);
-              links.value = linkbuffer;
-              links.notifyListeners();
+              if (title.value == "DeleteThisLink-12345678912062g53f4v8p0h" &&
+                  url.value == "DeleteThisLink-12345678912062g53f4v8p0h") {
+                linkbuffer.removeAt(i);
+                links.value = linkbuffer;
+                links.notifyListeners();
+              } else {
+                linkbuffer[i] = dbc.Link(
+                    title: title.value.isEmpty ? "Link" : title.value,
+                    url: url.value);
+                links.value = linkbuffer;
+                links.notifyListeners();
+              }
             }
           }));
     }
@@ -1177,6 +1189,7 @@ class LinkEditingDialog extends StatelessWidget {
         TextButton(
             child: Text("Save", style: TextStyle(color: Colors.white)),
             onPressed: () {
+              print(currentLinkList.value);
               to_Notify.value = currentLinkList.value;
               Navigator.of(context).pop();
               to_Notify.notifyListeners();
@@ -1197,9 +1210,21 @@ class _SingleLinkEditDialog extends StatelessWidget {
     String urlS = url.value;
     return AlertDialog(
       backgroundColor: cl.lighterGrey,
-      title: Text(
-          (title != "" || url != "") ? "Edit ${titleS}" : "Add new Link",
-          style: TextStyle(color: Colors.white)),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text((title != "" || url != "") ? "Edit ${titleS}" : "Add new Link",
+              style: TextStyle(color: Colors.white)),
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.white),
+            onPressed: () {
+              title.value = "DeleteThisLink-12345678912062g53f4v8p0h";
+              url.value = "DeleteThisLink-12345678912062g53f4v8p0h";
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1216,7 +1241,7 @@ class _SingleLinkEditDialog extends StatelessWidget {
             maxLines: null,
           ),
           TextFormField(
-            initialValue: title.value,
+            initialValue: urlS,
             autofocus: true,
             style: TextStyle(color: Colors.white),
             decoration: InputDecoration(

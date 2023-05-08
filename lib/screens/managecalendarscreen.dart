@@ -639,7 +639,7 @@ class ViewHostPage extends StatelessWidget {
                       onTap: () async {
                         await showDialog(
                           context: context,
-                          barrierDismissible: true,
+                          barrierDismissible: false,
                           builder: (context) => cw.LinkEditingDialog(to_Notify: links) 
                         );
                       },
