@@ -13,6 +13,7 @@ import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/extensions.dart';
 
+import '../../commonwidgets.dart';
 import '../../conv.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -255,19 +256,20 @@ class UserView extends StatelessWidget {
                                       }),
                               ],
                             ),
-                            TextButton(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      cw.hintSnackBar(
-                                          "Viewing of Event-List is WIP."));
-                                },
-                                child: Text(
+                            Text(
                                     "Hosted events: ${user.value.events.length}",
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize:
                                             MediaQuery.of(context).size.width /
-                                                25)))
+                                                25)),
+                                                 ListView(
+                                                  
+                                            children: db.queriefyEventList(events, filters)
+                                                .map(
+                                                    (e) => hostedEventCard(e))
+                                                    .toList()
+                                                ,),
                           ]))));
         });
   }

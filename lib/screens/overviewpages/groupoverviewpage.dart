@@ -31,6 +31,7 @@ class GroupOverviewPage extends StatelessWidget {
                     return Scaffold(
                         backgroundColor: cl.darkerGrey,
                         appBar: AppBar(
+                          backgroundColor: cl.lighterGrey,
                           centerTitle: true,
                           title: Text(
                               "Group: ${group?.groupid ?? 'Not Loadable'}"),
@@ -153,32 +154,39 @@ class GroupView extends StatelessWidget {
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            TextButton(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      cw.hintSnackBar(
-                                          "Viewing of Event-List is WIP."));
-                                },
-                                child: Text(
+                            Column(
+                                children: [Text(
                                     "Hosted events: ${group.value.events.length}",
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize:
                                             MediaQuery.of(context).size.width /
-                                                25))),
-                            TextButton(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      cw.hintSnackBar(
-                                          "Viewing of Member-List is WIP."));
-                                },
-                                child: Text(
+                                                25)),
+                                                ListView(
+                                                  
+                                            children: db.queriefyEventList(groups.events, filters)
+                                                .map(
+                                                    (e) => hostedEventCard(e as dbc.Event))
+                                                    .toList()
+                                                ,),
+                                                ]),
+                            Column(
+                                
+                                children: [Text(
                                     "Members: ${group.value.members_roles?.length ?? 0}",
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize:
                                             MediaQuery.of(context).size.width /
-                                                25)))
+                                                25)),
+                                                ListView(
+                                            children: dbc
+                                                .Group.members_roles!
+                                                .map(
+                                                    (e) => GroupMemberCard(e))
+                                                    .toList()
+                                                ,),
+                                                ])
                           ])
                     ]))));
   }

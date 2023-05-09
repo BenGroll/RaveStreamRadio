@@ -16,6 +16,9 @@ import 'package:ravestreamradioapp/pres/rave_stream_icons_icons.dart'
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/screens/loginscreen.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
+import 'package:ravestreamradioapp/screens/overviewpages/eventoverviewpage.dart';
+import 'package:ravestreamradioapp/screens/overviewpages/useroverviewpage.dart';
+import 'filesystem.dart';
 import 'shared_state.dart';
 import 'filesystem.dart' as files;
 import 'database.dart' as db;
@@ -1518,6 +1521,199 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                   : SizedBox(height: 0)
             ]),
       ),
+    );
+  }
+}
+
+class hostedEventCard extends StatelessWidget{
+   late dbc.Event event;
+  hostedEventCard(dbc.Event event) {
+    this.event = event;
+  }
+   @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          vertical: MediaQuery.of(context).size.height / 80,
+          horizontal: MediaQuery.of(context).size.height / 120),
+      child: AspectRatio(
+          aspectRatio: 4/1,
+          child: Card(
+              elevation: 3,
+              color: cl.lighterGrey,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                          MediaQuery.of(context).size.height) /
+                      75,
+                  side: BorderSide(
+                    width: 1,
+                    color: cl.lighterGrey,
+                  )),
+              child: InkWell(
+                onTap: () {
+                  kIsWeb
+                      ? Beamer.of(context)
+                          .beamToNamed("/events/${event.eventid}")
+                      : Navigator.of(context).push(MaterialPageRoute(
+                          builder: ((context) =>
+                              EventOverviewPage(event.eventid))));
+                },
+                customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                            MediaQuery.of(context).size.height) /
+                        75,
+                    side: const BorderSide(
+                      width: 1,
+                    )),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Expanded(
+                                flex: 1,
+                                child: AspectRatio(
+                                    aspectRatio: 1,
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            MediaQuery.of(context).size.width /
+                                                50),
+                                        child: FutureImageBuilder(
+                                            futureImage:
+                                                getEventIcon(event))))),
+                            Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                          child: EventTitle(
+                                              event: event,
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width /
+                                                          15,
+                                                  fontWeight:
+                                                      FontWeight.w500))),
+                                      
+                                     
+                                    ],
+                                  ),
+                                ))
+                          ],
+                        ),
+                      ),
+                      
+                    ],
+                  ),
+                ),
+              ))),
+    );
+  }
+}
+class GroupMemberCard extends StatelessWidget{
+   late dbc.User user;
+  GroupMemberCard(dbc.User user) {
+    this.user = user;
+  }
+   @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          vertical: MediaQuery.of(context).size.height / 80,
+          horizontal: MediaQuery.of(context).size.height / 120),
+      child: AspectRatio(
+          aspectRatio: 4/1,
+          child: Card(
+              elevation: 3,
+              color: cl.lighterGrey,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                          MediaQuery.of(context).size.height) /
+                      75,
+                  side: BorderSide(
+                    width: 1,
+                    color: cl.lighterGrey,
+                  )),
+              child: InkWell(
+                onTap: () {
+                  kIsWeb
+                      ? Beamer.of(context)
+                          .beamToNamed("/user/${user.username}")
+                      : Navigator.of(context).push(MaterialPageRoute(
+                          builder: ((context) =>
+                              UserOverviewPage(username: user.username))));
+                },
+                customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                            MediaQuery.of(context).size.height) /
+                        75,
+                    side: const BorderSide(
+                      width: 1,
+                    )),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Expanded(
+                                flex: 1,
+                                child: AspectRatio(
+                                    aspectRatio: 1,
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            MediaQuery.of(context).size.width /
+                                                50),
+                                        child: Icon(Icons.person)))),
+                            Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                          child: Text(
+                                              "${user.username}",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width /
+                                                          15,
+                                                  fontWeight:
+                                                      FontWeight.w500))),
+                                      
+                                     
+                                    ],
+                                  ),
+                                ))
+                          ],
+                        ),
+                      ),
+                      
+                    ],
+                  ),
+                ),
+              ))),
     );
   }
 }
