@@ -29,10 +29,12 @@ const loader = cw.LoadingIndicator(color: Colors.white);
 class EventCreationScreen extends StatelessWidget {
   final String? eventIDToBeEdited;
 
-  /// PIADGPIDW
+  bool isOpenedByRSRTeamMember = false;
   ValueNotifier<Screen> current_screen = ValueNotifier<Screen>(Screen.general);
+  ValueNotifier<bool> eventtitleIsEmpty = ValueNotifier<bool>(true);
   ValueNotifier<bool> is_awaiting_upload = ValueNotifier(false);
   bool block_upload = false;
+  bool is_overriding_existing_event = false;
 
   ValueNotifier<dbc.Event> currentEventData = ValueNotifier<dbc.Event>(
       dbc.Event(
@@ -41,54 +43,14 @@ class EventCreationScreen extends StatelessWidget {
           locationname: "",
           description: "",
           links: {}));
-
-  List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
-    List<dbc.Link> bufferlist = links.reversed.toList().reversed.toList();
-    for (int i = 0; i < links.length; i++) {
-      if (links[i] == searchlink) {
-        bufferlist[i].title = searchlink.title;
-        bufferlist[i].url = searchlink.url;
-        return bufferlist;
-      }
-    }
-    return bufferlist;
-  }
-
-  List<Widget> getLinkList(BuildContext context, List<dbc.Link> links) {
-    List<Widget> linkso = [];
-    links.forEach((element) {
-      linkso.add(LinkListCard(link: element, parent: this));
-    });
-    linkso.add(AddLinkButton(parent: this));
-    return linkso;
-  }
-
-  Future uploadEvent(dbc.Event event, BuildContext context) async {
-    print(event.hostreference);
-    is_awaiting_upload.value = true;
-    if (event.templateHostID != null && event.templateHostID!.isNotEmpty) {
-      event.hostreference = null;
-    }
-    await db.uploadEventToDatabase(event);
-    await Future.delayed(Duration(seconds: 1));
-    kIsWeb ? Beamer.of(context).popToNamed("/") : Navigator.of(context).pop();
-    if (kIsWeb) {
-      eventIDToBeEdited != null
-          ? ScaffoldMessenger.of(context)
-              .showSnackBar(cw.hintSnackBar("Event edited successfully!"))
-          : ScaffoldMessenger.of(context)
-              .showSnackBar(cw.hintSnackBar("Event created successfully!"));
-    }
-    currently_selected_screen.notifyListeners();
-    is_awaiting_upload.value = false;
-    Navigator.of(context).pop();
-  }
+//String? templateHostID;
 
   /// if it returns an empty list, the validate is without error.
   ///
   /// The List contains the seperate error messages
   Future<List<String>> validateUpload() async {
     dbc.Event toValidate = currentEventData.value;
+
     bool eventIdEmpty = true;
     List<String> errormessages = [];
     if (toValidate.templateHostID == null && toValidate.hostreference == null) {
@@ -114,7 +76,7 @@ class EventCreationScreen extends StatelessWidget {
             .add("Templatehost ${toValidate.templateHostID} does not exist.");
       }
     }
-    if (eventIDToBeEdited != null) {
+    if (is_overriding_existing_event) {
     } else {
       if (!eventIdEmpty) {
         if (await validateEventIDFieldDB(currentEventData.value.eventid) !=
@@ -141,7 +103,7 @@ class EventCreationScreen extends StatelessWidget {
     return outmap;
   }
 
-  Widget mapScreenToWidget(Screen selection) {
+  Widget mapScreenToWidget(Screen selection, EventCreationScreen parent) {
     switch (selection) {
       case Screen.general:
         {
@@ -150,10 +112,8 @@ class EventCreationScreen extends StatelessWidget {
       case Screen.description:
         {
           return DescriptionEditingPage(
-              initialValue: currentEventData.value.description ?? "empty",
-              onChange: (String value) {
-                currentEventData.value.description = value;
-              });
+            to_Notify: currentEventData,
+          );
         }
       case Screen.links:
         {
@@ -198,14 +158,21 @@ class EventCreationScreen extends StatelessWidget {
   EventCreationScreen({super.key, this.eventIDToBeEdited = null});
   @override
   Widget build(BuildContext context) {
+    dynamic logger = ValueListenableBuilder(
+        valueListenable: currentEventData,
+        builder: (BuildContext context, dbc.Event val, foo) {
+          print(val.toString());
+          return Container();
+        });
+
     current_screen.value = Screen.general;
-    currentEventData.value = dbc.Event(
-        eventid: "", title: "", locationname: "", description: "", links: {});
+    eventtitleIsEmpty.value = eventIDToBeEdited == null;
     // Add decision tree
     if (currently_loggedin_as.value == null) {
       return const cw.ErrorScreen(
           errormessage: "You have to be logged in to create or edit events.");
     } else {
+      //String docref = "${branchPrefix}users/${currently_loggedin_as.value!.username}";
       currentEventData.value.hostreference = db.db
           .doc("${branchPrefix}users/${currently_loggedin_as.value!.username}");
       if (eventIDToBeEdited == null) {
@@ -234,9 +201,12 @@ class EventCreationScreen extends StatelessWidget {
                         ),
                       ]),
                       actions: [
+                        eventIDToBeEdited != null
+                            ? cw.DeleteEventIconButton(
+                                event: currentEventData.value)
+                            : const SizedBox(width: 0),
                         TextButton(
                             onPressed: () async {
-                              print(block_upload);
                               if (!block_upload) {
                                 block_upload = true;
                                 List<Widget> errorcontent =
@@ -259,8 +229,8 @@ class EventCreationScreen extends StatelessWidget {
                                     barrierDismissible: true,
                                     context: context,
                                     builder: (context) => UploadingErrorDialog(
-                                        errormessages: errorcontent,
-                                        parent: this),
+                                        parent: this,
+                                        errormessages: errorcontent),
                                   );
                                 }
                               }
@@ -272,9 +242,9 @@ class EventCreationScreen extends StatelessWidget {
                     body: TabBarView(
                       children: [
                         GeneralSettingsPage(parent: this),
-                        DescriptionEditingPage(onChange: (String value) {
-                          currentEventData.value.description = value;
-                        }),
+                        DescriptionEditingPage(
+                          to_Notify: currentEventData,
+                        ),
                         LinkEditingScreen(parent: this),
                         MediaEditingScreen(parent: this)
                       ],
@@ -294,7 +264,7 @@ class EventCreationScreen extends StatelessWidget {
                 } else {
                   if (canEditSnap.data!) {
                     // User has permission to edit event
-                    print("lol0");
+                    is_overriding_existing_event = true;
                     return DefaultTabController(
                       length: 4,
                       child: FutureBuilder(
@@ -308,13 +278,15 @@ class EventCreationScreen extends StatelessWidget {
                                 dbc.Event event = existingEventDataSnap.data!;
                                 currentEventData.value = event;
                                 // / Load existing values
+                                isOpenedByRSRTeamMember = db.doIHavePermission(
+                                    GlobalPermission.MANAGE_EVENTS);
                                 return ValueListenableBuilder(
                                     valueListenable: current_screen,
                                     builder: (context, screen, child) {
                                       return Scaffold(
                                           backgroundColor: cl.darkerGrey,
                                           appBar: AppBar(
-                                            bottom: TabBar(tabs: [
+                                            bottom: const TabBar(tabs: [
                                               Tab(
                                                 child: Text("General"),
                                               ),
@@ -329,6 +301,11 @@ class EventCreationScreen extends StatelessWidget {
                                               ),
                                             ]),
                                             actions: [
+                                              eventIDToBeEdited != null
+                                                  ? cw.DeleteEventIconButton(
+                                                      event: currentEventData
+                                                          .value)
+                                                  : const SizedBox(width: 0),
                                               TextButton(
                                                   onPressed: () async {
                                                     if (!block_upload) {
@@ -361,9 +338,9 @@ class EventCreationScreen extends StatelessWidget {
                                                           context: context,
                                                           builder: (context) =>
                                                               UploadingErrorDialog(
+                                                                  parent: this,
                                                                   errormessages:
-                                                                      errorcontent,
-                                                                  parent: this),
+                                                                      errorcontent),
                                                         );
                                                       }
                                                     }
@@ -373,21 +350,8 @@ class EventCreationScreen extends StatelessWidget {
                                                           color: Colors.white)))
                                             ],
                                           ),
-                                          body: TabBarView(
-                                            children: [
-                                              GeneralSettingsPage(parent: this),
-                                              DescriptionEditingPage(
-                                                  initialValue: currentEventData
-                                                          .value.description ??
-                                                      "",
-                                                  onChange: (String value) {
-                                                    currentEventData.value
-                                                        .description = value;
-                                                  }),
-                                              LinkEditingScreen(parent: this),
-                                              MediaEditingScreen(parent: this)
-                                            ],
-                                          ));
+                                          body:
+                                              mapScreenToWidget(screen, this));
                                     });
                               } else {
                                 return cw.ErrorScreen(
@@ -417,18 +381,14 @@ class EventCreationScreen extends StatelessWidget {
 }
 
 class GeneralSettingsPage extends StatelessWidget {
+  EventCreationScreen parent;
   ValueNotifier<String?> eventidvalidator =
       ValueNotifier<String?>("!EventID can't be empty");
-  EventCreationScreen parent;
   GeneralSettingsPage({super.key, required this.parent});
 
   @override
   Widget build(BuildContext context) {
-    eventidvalidator.value =
-        parent.eventIDToBeEdited == null ? "!EventID can't be empty" : null;
-    ValueNotifier<bool> isEventTitleEmpty = ValueNotifier<bool>(
-        parent.currentEventData.value.title == null ||
-            parent.currentEventData.value.title!.isEmpty);
+    eventidvalidator.value = "!EventID can't be empty";
     return Padding(
         padding: EdgeInsets.symmetric(
             horizontal: MediaQuery.of(context).size.width / 25),
@@ -481,6 +441,12 @@ class GeneralSettingsPage extends StatelessWidget {
                                                     parent.currentEventData,
                                                 builder: (context,
                                                     eventDatacurrent, foo) {
+                                                  /*pprint(
+                                                      "NewBuild: ${parent.currentEventData.value.templateHostID}");
+                                                  pprint(
+                                                      "@ecs ${parent.currentEventData.value.templateHostID} TemplateHostID");
+                                                  pprint(
+                                                      "@ecs ${snapshot.data} Snapshot Data");*/
                                                   return DropdownSearch(
                                                     selectedItem: snapshot
                                                             .data!.keys
@@ -585,35 +551,40 @@ class GeneralSettingsPage extends StatelessWidget {
                                   }
                                 },
                               ), // Continue Here After DropDownSearch
-                        SizedBox(
-                            height: MediaQuery.of(context).size.height / 50),
+
                         parent.eventIDToBeEdited != null
-                            ? Center(
-                                child: Text(
-                                  "EventID: ${parent.eventIDToBeEdited}",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize:
-                                          MediaQuery.of(context).size.height /
-                                              50),
-                                ),
+                            ? Text(
+                                "EventID: ${parent.currentEventData.value.eventid}",
+                                style: TextStyle(color: Colors.white),
                               )
                             : TextFormField(
                                 initialValue:
                                     parent.currentEventData.value.eventid,
                                 onChanged: (value) async {
+                                  pprint(
+                                      "onCH tH: ${parent.currentEventData.value.templateHostID}");
                                   eventidvalidator.value =
                                       parent.validateEventIDFieldLight(value);
+                                  pprint(
+                                      "onCH tH2: ${parent.currentEventData.value.templateHostID}");
                                   parent.currentEventData.value.eventid = value;
                                 },
                                 onFieldSubmitted: (value) async {
+                                  pprint(
+                                      "onFS tH: ${parent.currentEventData.value.templateHostID}");
                                   eventidvalidator.value = await parent
                                       .validateEventIDFieldDB(value);
+                                  pprint(
+                                      "onFS tH2: ${parent.currentEventData.value.templateHostID}");
                                   parent.currentEventData.value.eventid = value;
                                 },
                                 onSaved: (newValue) async {
+                                  pprint(
+                                      "onS tH: ${parent.currentEventData.value.templateHostID}");
                                   eventidvalidator.value = await parent
                                       .validateEventIDFieldDB(newValue ?? "");
+                                  pprint(
+                                      "onS tH2: ${parent.currentEventData.value.templateHostID}");
                                   parent.currentEventData.value.eventid =
                                       newValue ?? "";
                                 },
@@ -642,8 +613,10 @@ class GeneralSettingsPage extends StatelessWidget {
                       ]));
                 }),
             ValueListenableBuilder(
-                valueListenable: isEventTitleEmpty,
-                builder: ((context, eventTitleEmpty, child) {
+                valueListenable: parent.currentEventData,
+                builder: ((context, ev, child) {
+                  bool eventtitleIsEmpty =
+                      ev.title == null || ev.title!.isEmpty;
                   return Padding(
                     padding: EdgeInsets.symmetric(
                         vertical: MediaQuery.of(context).size.height / 100,
@@ -653,14 +626,13 @@ class GeneralSettingsPage extends StatelessWidget {
                         TextFormField(
                           initialValue: parent.currentEventData.value.title,
                           onChanged: (value) async {
-                            isEventTitleEmpty.value = value.isEmpty;
                             parent.currentEventData.value.title = value;
                           },
                           style: const TextStyle(color: Colors.white),
                           cursorColor: Colors.white,
                           decoration: InputDecoration(
                             icon: Icon(
-                                eventTitleEmpty
+                                eventtitleIsEmpty
                                     ? Icons.highlight_off
                                     : Icons.check_circle_outline,
                                 color: Colors.white),
@@ -671,7 +643,7 @@ class GeneralSettingsPage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          eventTitleEmpty ? "Can't be empty" : "",
+                          eventtitleIsEmpty ? "Can't be empty" : "",
                           style: const TextStyle(color: Colors.grey),
                         ),
                         const Divider(color: Color.fromARGB(255, 66, 66, 66)),
@@ -944,9 +916,9 @@ class GeneralSettingsPage extends StatelessWidget {
 }
 
 class AddLinkButton extends StatelessWidget {
-  String label = "";
-  String url = "";
   EventCreationScreen parent;
+  String label = "";
+  String urlS = "";
   AddLinkButton({super.key, required this.parent});
   @override
   Widget build(BuildContext context) {
@@ -955,10 +927,23 @@ class AddLinkButton extends StatelessWidget {
             backgroundColor: cl.darkerGrey,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadiusDirectional.circular(8.0))),
-        onPressed: () {
-          showDialog(
+        onPressed: () async {
+          ValueNotifier<String> title = ValueNotifier<String>("");
+          ValueNotifier<String> url = ValueNotifier<String>("");
+          await showDialog(
+              barrierDismissible: false,
               context: context,
-              builder: (context) => LinkCreateDialog(parent: parent));
+              builder: (context) =>
+                  cw.SingleLinkEditDialog(title: title, url: url));
+          if (url.value.isNotEmpty) {
+            if (parent.currentEventData.value.links != null) {
+              parent.currentEventData.value.links![title.value] = url.value;
+              parent.currentEventData.notifyListeners();
+            } else {
+              parent.currentEventData.value.links = {title.value: url.value};
+              parent.currentEventData.notifyListeners();
+            }
+          }
         },
         child: Text("Add new link"));
   }
@@ -966,6 +951,15 @@ class AddLinkButton extends StatelessWidget {
 
 class LinkEditingScreen extends StatelessWidget {
   EventCreationScreen parent;
+  List<Widget> getLinkList(BuildContext context, List<dbc.Link> links) {
+    List<Widget> linkso = [];
+    links.forEach((element) {
+      linkso.add(LinkListCard(link: element, parent: parent));
+    });
+    linkso.add(AddLinkButton(parent: parent));
+    return linkso;
+  }
+
   LinkEditingScreen({Key? key, required this.parent}) : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -976,7 +970,7 @@ class LinkEditingScreen extends StatelessWidget {
             padding: EdgeInsets.symmetric(
                 vertical: MediaQuery.of(context).size.height / 50,
                 horizontal: MediaQuery.of(context).size.width / 50),
-            children: parent.getLinkList(
+            children: getLinkList(
                 context, dbc.linkListFromMap(eventdata.links ?? {})),
           );
         });
@@ -990,10 +984,37 @@ class LinkListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
-        showDialog(
+      onTap: () async {
+        ValueNotifier<String> title = ValueNotifier<String>(link.title);
+        ValueNotifier<String> url = ValueNotifier<String>(link.url);
+        await showDialog(
+            barrierDismissible: false,
             context: context,
-            builder: ((context) => LinkEditDialog(link: link, parent: parent)));
+            builder: (context) =>
+                cw.SingleLinkEditDialog(title: title, url: url));
+        if (url.value.isNotEmpty) {
+          if (url.value == "DeleteThisLink-12345678912062g53f4v8p0h" &&
+              title.value == "DeleteThisLink-12345678912062g53f4v8p0h") {
+            if (parent.currentEventData.value.links!.containsKey(link.title)) {
+              parent.currentEventData.value.links!.remove(link.title);
+              parent.currentEventData.notifyListeners();
+            }
+          } else {
+            if (parent.currentEventData.value.links != null) {
+              if (parent.currentEventData.value.links!
+                  .containsKey(link.title)) {
+                parent.currentEventData.value.links!.remove(link.title);
+                parent.currentEventData.notifyListeners();
+              }
+              parent.currentEventData.value.links![title.value] = url.value;
+
+              parent.currentEventData.notifyListeners();
+            } else {
+              parent.currentEventData.value.links = {title.value: url.value};
+              parent.currentEventData.notifyListeners();
+            }
+          }
+        }
       },
       tileColor: Colors.black,
       title: Center(
@@ -1072,8 +1093,8 @@ class LinkCreateDialog extends StatelessWidget {
 }
 
 class LinkEditDialog extends StatelessWidget {
-  dbc.Link link;
   EventCreationScreen parent;
+  dbc.Link link;
   LinkEditDialog({super.key, required this.link, required this.parent});
   @override
   Widget build(BuildContext context) {
@@ -1113,7 +1134,7 @@ class LinkEditDialog extends StatelessWidget {
                   .linkListFromMap(parent.currentEventData.value.links ?? {});
               Navigator.of(context).pop();
               parent.currentEventData.value.links =
-                  dbc.mapFromLinkList(parent.editLinkInList(formerlist, link));
+                  dbc.mapFromLinkList(editLinkInList(formerlist, link));
             },
             child: Text("Save changes to Link",
                 style: TextStyle(color: Colors.white)))
@@ -1122,7 +1143,45 @@ class LinkEditDialog extends StatelessWidget {
   }
 }
 
+List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
+  List<dbc.Link> bufferlist = links.reversed.toList().reversed.toList();
+  for (int i = 0; i < links.length; i++) {
+    if (links[i] == searchlink) {
+      bufferlist[i].title = searchlink.title;
+      bufferlist[i].url = searchlink.url;
+      return bufferlist;
+    }
+  }
+  return bufferlist;
+}
+
 class UploadEventDialog extends StatelessWidget {
+  Future uploadEvent(dbc.Event event, BuildContext context) async {
+    print(event.hostreference);
+    parent.is_awaiting_upload.value = true;
+    if (event.templateHostID != null && event.templateHostID!.isNotEmpty) {
+      event.hostreference = null;
+    }
+    await db.uploadEventToDatabase(event);
+    await Future.delayed(Duration(seconds: 2));
+    if (kIsWeb) {
+      Beamer.of(context).beamToNamed("/events");
+    } else {
+      //
+      Navigator.of(context).pop();
+      Navigator.of(context).maybePop();
+    }
+    if (kIsWeb) {
+      parent.eventIDToBeEdited != null
+          ? ScaffoldMessenger.of(context)
+              .showSnackBar(cw.hintSnackBar("Event edited successfully!"))
+          : ScaffoldMessenger.of(context)
+              .showSnackBar(cw.hintSnackBar("Event created successfully!"));
+    }
+    currently_selected_screen.notifyListeners();
+    parent.is_awaiting_upload.value = false;
+  }
+
   EventCreationScreen parent;
   UploadEventDialog({super.key, required this.parent});
   @override
@@ -1147,8 +1206,6 @@ class UploadEventDialog extends StatelessWidget {
                       child: Text("Discard",
                           style: TextStyle(color: Colors.white)),
                       onPressed: () {
-                        uploading = false;
-                        parent.block_upload = false;
                         Navigator.of(context).pop();
                       },
                     ),
@@ -1157,14 +1214,13 @@ class UploadEventDialog extends StatelessWidget {
                           dbc.Event newEventData =
                               parent.currentEventData.value;
                           newEventData.status = EventStatus.draft.name;
-                          parent.uploadEvent(newEventData, context);
+                          uploadEvent(newEventData, context);
                         },
                         child: Text("Save(TBA)",
                             style: TextStyle(color: Colors.white))),
                     TextButton(
                         onPressed: () {
-                          parent.uploadEvent(
-                              parent.currentEventData.value, context);
+                          uploadEvent(parent.currentEventData.value, context);
                         },
                         child: Text("Publish",
                             style: TextStyle(color: Colors.white))),

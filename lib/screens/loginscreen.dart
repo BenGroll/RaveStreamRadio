@@ -53,12 +53,9 @@ class LoginScreen extends StatelessWidget {
                   cursorColor: Colors.grey,
                   style: const TextStyle(color: Colors.white),
                   autocorrect: false,
-                  decoration:
-                  
-                
-                  InputDecoration(
-                  border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0)),
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0)),
                       filled: true,
                       fillColor: cl.lighterGrey,
                       prefixText: "@",
@@ -88,8 +85,8 @@ class LoginScreen extends StatelessWidget {
                   cursorColor: Colors.grey,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0)),
                       filled: true,
                       fillColor: cl.lighterGrey,
                       hintText: "Password",
@@ -101,7 +98,8 @@ class LoginScreen extends StatelessWidget {
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadiusDirectional.circular(8.0)),
                     primary: cl.lighterGrey, // background
                     onPrimary: Colors.white, // foreground
                   ),
@@ -178,9 +176,9 @@ class LoginScreen extends StatelessWidget {
                         TextStyle(color: Color.fromARGB(255, 185, 185, 185))),
               ),
               ElevatedButton(
-                
                   style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadiusDirectional.circular(8.0)),
                     primary: cl.lighterGrey, // background
 
                     onPrimary: Colors.white, // foreground
@@ -245,8 +243,8 @@ class CreateAccountScreen extends StatelessWidget {
                   style: const TextStyle(color: Colors.white),
                   autocorrect: false,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0)),
                       filled: true,
                       fillColor: cl.lighterGrey,
                       prefixText: "@",
@@ -275,8 +273,8 @@ class CreateAccountScreen extends StatelessWidget {
                   cursorColor: Colors.grey,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                     border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16.0)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0)),
                       filled: true,
                       fillColor: cl.lighterGrey,
                       hintText: "Password",
@@ -288,7 +286,8 @@ class CreateAccountScreen extends StatelessWidget {
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadiusDirectional.circular(8.0)),
                     primary: cl.lighterGrey, // background
                     onPrimary: Colors.white, // foreground
                   ),
@@ -306,10 +305,10 @@ class CreateAccountScreen extends StatelessWidget {
                           alias: alias,
                           description: description,
                           path: "${branchPrefix}users/$username");
-
                       await db.db
                           .doc("${branchPrefix}users/$username")
                           .set(createdUser.toMap());
+                      await db.addUserToIndexFile(createdUser);
                       currently_loggedin_as.value =
                           await tryUserLogin(username, password);
                       kIsWeb
@@ -337,7 +336,8 @@ class CreateAccountScreen extends StatelessWidget {
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadiusDirectional.circular(8.0)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadiusDirectional.circular(8.0)),
                     primary: cl.lighterGrey, // background
                     onPrimary: Colors.white, // foreground
                   ),
@@ -373,7 +373,6 @@ Widget _showUsernameTakenDialog(BuildContext context, String? uname) {
     ),
     actions: [
       TextButton(
-        
         child: const Text("Retry"),
         onPressed: () {
           Navigator.of(context).pop();

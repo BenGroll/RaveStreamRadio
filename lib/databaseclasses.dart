@@ -142,7 +142,7 @@ class Event {
     this.end = null,
     this.location = null,
     this.locationname,
-    this.minAge = 0,
+    this.minAge = DEFAULT_MINAGE,
     this.genre = null,
     this.icon = null,
     this.flyer = null,
@@ -274,11 +274,11 @@ class Event {
   }
 
   String toJson() {
-    return json.encode(toJsonCompatibleMap());
+    return json.encode(toJsonCompatibleMap()).dbsafe;
   }
 
   factory Event.fromJson(String source) {
-    Map<String, dynamic> map = json.decode(source);
+    Map<String, dynamic> map = json.decode(source.fromDBSafeString);
     if (map["hostreference"] != null) {
       map["hostreference"] = db.doc(map["hostreference"]);
     }
