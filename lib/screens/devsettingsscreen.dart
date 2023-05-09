@@ -312,19 +312,54 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Test load Messages from IDList")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(currentLogFilePath);
-                        print(currentLogFileDay);
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Messages Loaded"));
                       },
                       child: Text("Log Timestamp Test")),
                   ElevatedButton(
                       onPressed: () async {
-                        await db.addLogEntry("'changedAttribute': 1 -> 2", category: db.LogEntryCategory.unknown, action: db.LogEntryAction.unknown);
+                        await db.addLogEntry("'changedAttribute': 1 -> 2",
+                            category: db.LogEntryCategory.unknown,
+                            action: db.LogEntryAction.unknown);
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Messages Loaded"));
                       },
                       child: Text("Log Adding Test")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        db.createUserIndexFiles();
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Users Indexed"));
+                      },
+                      child: Text("Create User Index")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        db.createGroupIndexFiles();
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Groups Loaded"));
+                      },
+                      child: Text("Create Group Index")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        db.createEventIndexFiles();
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Events Indexed"));
+                      },
+                      child: Text("Create Event Index")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(await db.getIndexedEntitys());
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Events Loaded"));
+                      },
+                      child: Text("Read Indexed Entitys")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await db.addEventToIndexFile(demoEvent);
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Events read"));
+                      },
+                      child: Text("Read Eventindex")),
                 ],
               ),
             ),

@@ -224,9 +224,18 @@ class EventTitle extends StatelessWidget {
         future: getEventTitle(event),
         builder: ((context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
+            ScrollController _cont = ScrollController();
             return SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Text(snapshot.data ?? "Unknown Event", style: style, maxLines: null, softWrap: true,));
+                controller: _cont,
+                scrollDirection: Axis.horizontal,
+                child: Scrollbar(
+                    controller: _cont,
+                    child: Text(
+                      snapshot.data ?? "Unknown Event",
+                      style: style,
+                      maxLines: null,
+                      softWrap: true,
+                    )));
           }
           return const CircularProgressIndicator(color: Colors.white);
         }));
@@ -354,7 +363,7 @@ Map<String, dynamic> eventListToJsonCompatibleMap(List<dbc.Event> list) {
 ///
 /// Returns the json encoded string
 String eventMapToJson(Map<String, dynamic> inMap) {
-  return json.encode(inMap);
+  return json.encode(inMap).dbsafe;
 }
 
 /// Takes Map<String, dynamic> and returns the List<dbc.Event>

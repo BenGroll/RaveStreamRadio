@@ -16,7 +16,7 @@ import 'package:ravestreamradioapp/database.dart' as db;
 
 /// Error Image with white logo and transparent background.
 const errorWhiteImage =
-    Image(image: AssetImage("graphics/image_not_found_white_on_trans.png"));
+    Image(image: AssetImage("graphics/Event_2000x2000.jpeg"));
 
 /// Error Image with black logo and transparent.
 const errorBlackImage =
@@ -104,35 +104,43 @@ Future<Map> readLoginDataWeb() async {
 ///
 /// Returns error image if file doesnt exists, so nullsafe
 Future<Widget?> getImage(String imagepath) async {
-  if (imagepath.isEmpty) {
-    return null;
-  } else {
-    if (saved_pictures.keys.contains(imagepath)) {
-      return saved_pictures[imagepath];
+  try {
+    if (imagepath.isEmpty) {
+      return null;
     } else {
-      try {
-        Reference test = firebasestorage.ref().child(imagepath);
-        Uint8List? raw_image_data = await test.getData();
-        if (raw_image_data == null) {
-          return null;
+      if (saved_pictures.keys.contains(imagepath)) {
+        return saved_pictures[imagepath];
+      } else {
+        try {
+          Reference test = firebasestorage.ref().child(imagepath);
+          String dldURL =
+              await test.getDownloadURL().catchError((error, stackTrace) {
+            return "-1";
+          });
+          if (dldURL == "-1") return errorWhiteImage;
+          Uint8List? raw_image_data = await test.getData().catchError((e) {
+            return errorWhiteImage;
+          });
+          if (raw_image_data == null) return errorWhiteImage;
+          //Save Image for later use in
+          Widget createdImage = errorWhiteImage;
+          if (imagepath.endsWith("svg")) {
+            Widget createdImage = SvgPicture.asset(
+              imagepath,
+              color: Colors.white,
+            );
+          } else {
+            createdImage = Image.memory(raw_image_data);
+          }
+          saved_pictures[imagepath] = createdImage;
+          return createdImage;
+        } catch (e) {
+          return errorWhiteImage;
         }
-
-        //Save Image for later use in
-        Widget createdImage = errorWhiteImage;
-        if (imagepath.endsWith("svg")) {
-          Widget createdImage = SvgPicture.asset(
-            imagepath,
-            color: Colors.white,
-          );
-        } else {
-          createdImage = Image.memory(raw_image_data);
-        }
-        saved_pictures[imagepath] = createdImage;
-        return createdImage;
-      } catch (e) {
-        return errorWhiteImage;
       }
     }
+  } catch (e) {
+    return errorWhiteImage;
   }
 }
 

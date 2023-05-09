@@ -13,7 +13,6 @@ import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/chatting.dart' as chats;
 
-
 Screens map_Index_to_Screen(int index) {
   switch (index) {
     case 0:
@@ -77,7 +76,7 @@ String get FloatingActionButtonTooltip {
       }
     case Screens.forums:
       {
-        return "Test button for dev";
+        return "Create new Group";
       }
     case Screens.profile:
       {
@@ -94,7 +93,8 @@ Widget map_Widget_to_Screen(Screens screen) {
   switch (screen) {
     case Screens.events:
       {
-        return EventCalendar(loggedinas: currently_loggedin_as.value, mode: CalendarMode.normal);
+        return EventCalendar(
+            loggedinas: currently_loggedin_as.value, mode: CalendarMode.normal);
       }
     case Screens.favourites:
       {
@@ -128,7 +128,7 @@ AppBar? mapScreenToAppBar(
       }
     case Screens.forums:
       {
-        return cw.GroupsAppBar(context);
+        return null;
       }
     case Screens.profile:
       {
@@ -161,7 +161,9 @@ class HomeScreen extends StatelessWidget {
               builder: ((context, screen, child) {
                 return Scaffold(
                   drawer: cw.NavBar(),
-                  endDrawer: currently_selected_screen.value == Screens.forums ? chats.ChatsDrawer() : null,
+                  endDrawer: currently_selected_screen.value == Screens.forums
+                      ? chats.ChatsDrawer()
+                      : null,
                   appBar: mapScreenToAppBar(
                       screen, currently_loggedin_as.value, context),
                   body: map_Widget_to_Screen(currently_selected_screen.value),
@@ -182,6 +184,18 @@ class HomeScreen extends StatelessWidget {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                       cw.hintSnackBar(
                                           "Has to be logged in to create Event"));
+                                }
+                              } else if (currently_selected_screen.value ==
+                                  Screens.forums) {
+                                if (currently_loggedin_as.value != null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      cw.hintSnackBar(
+                                          "Group Creating is currently WIP and will be added in the near future."));
+                                  //Beamer.of(context).beamToNamed("/createGroup");
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      cw.hintSnackBar(
+                                          "Has to be logged in to create Group"));
                                 }
                               }
                             },
@@ -231,7 +245,7 @@ class HomeScreen extends StatelessWidget {
                                   ? Icons.question_answer
                                   : Icons.question_answer_outlined)),*/
                           BottomNavigationBarItem(
-                              label: "Groups",
+                              label: "Social",
                               icon: Icon(currently_selected_screen.value ==
                                       Screens.forums
                                   ? Icons.groups

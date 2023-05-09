@@ -24,6 +24,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:ravestreamradioapp/screens/managecalendarscreen.dart'
     as managescreen;
 import 'package:ravestreamradioapp/chatting.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
 /// Function to open date picker
 ///
@@ -98,16 +99,6 @@ AppBar FavouritesAppBar(BuildContext context) {
 /// TabBar for the Social Tab of the homescreens
 
 /// AppBar for the Groups homescreen
-AppBar GroupsAppBar(BuildContext context) {
-  return AppBar(
-    leading: const OpenSidebarButton(),
-    elevation: 8,
-    backgroundColor: cl.lighterGrey,
-    title: Text("Groups", style: TextStyle(color: Colors.white)),
-    centerTitle: true,
-    actions: [OpenChatButton(context: context)],
-  );
-}
 
 /// AppBar for the Profile homescreen
 AppBar ProfileAppBar(BuildContext context) {
@@ -685,9 +676,10 @@ class EventTable extends StatelessWidget {
                         ? null
                         : () async {
                             //pprint(eventid);
-                            String description = await db
-                                .getEvent(eventid)
-                                .then((value) => value?.description ?? "");
+                            ValueNotifier<dbc.Event> ev =
+                                ValueNotifier<dbc.Event>(await db
+                                    .getEvent(eventid)
+                                    .then((value) => value ?? dbc.demoEvent));
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (BuildContext context) => WillPopScope(
                                       onWillPop: () async {
@@ -707,8 +699,9 @@ class EventTable extends StatelessWidget {
                                                             .doc(
                                                                 "${branchPrefix}events/$eventid")
                                                             .update({
-                                                          "description":
-                                                              description
+                                                          "description": ev
+                                                              .value!
+                                                              .description
                                                         });
 
                                                         Navigator.of(context)
@@ -741,11 +734,7 @@ class EventTable extends StatelessWidget {
                                             title: Text("Edit Description"),
                                           ),
                                           body: DescriptionEditingPage(
-                                            initialValue: description,
-                                            onChange: (value) {
-                                              description = value;
-                                            },
-                                          )),
+                                              to_Notify: ev)),
                                     )));
                           },
                     child: Row(
@@ -1115,7 +1104,7 @@ class LinkEditingDialog extends StatelessWidget {
                 barrierDismissible: false,
                 context: context,
                 builder: (context) =>
-                    _SingleLinkEditDialog(title: title, url: url));
+                    SingleLinkEditDialog(title: title, url: url));
             if (url.value.isNotEmpty) {
               List<dbc.Link> linkbuffer = links.value;
               linkbuffer.add(dbc.Link(
@@ -1143,7 +1132,7 @@ class LinkEditingDialog extends StatelessWidget {
                 barrierDismissible: false,
                 context: context,
                 builder: (context) =>
-                    _SingleLinkEditDialog(title: title, url: url));
+                    SingleLinkEditDialog(title: title, url: url));
             if (url.value.isNotEmpty) {
               List<dbc.Link> linkbuffer = links.value;
               if (title.value == "DeleteThisLink-12345678912062g53f4v8p0h" &&
@@ -1199,10 +1188,10 @@ class LinkEditingDialog extends StatelessWidget {
   }
 }
 
-class _SingleLinkEditDialog extends StatelessWidget {
+class SingleLinkEditDialog extends StatelessWidget {
   ValueNotifier<String> title;
   ValueNotifier<String> url;
-  _SingleLinkEditDialog({super.key, required this.title, required this.url});
+  SingleLinkEditDialog({super.key, required this.title, required this.url});
 
   @override
   Widget build(BuildContext context) {
@@ -1215,14 +1204,16 @@ class _SingleLinkEditDialog extends StatelessWidget {
         children: [
           Text((title != "" || url != "") ? "Edit ${titleS}" : "Add new Link",
               style: TextStyle(color: Colors.white)),
-          IconButton(
-            icon: Icon(Icons.delete, color: Colors.white),
-            onPressed: () {
-              title.value = "DeleteThisLink-12345678912062g53f4v8p0h";
-              url.value = "DeleteThisLink-12345678912062g53f4v8p0h";
-              Navigator.of(context).pop();
-            },
-          )
+          titleS.isEmpty && urlS.isEmpty
+              ? Container()
+              : IconButton(
+                  icon: Icon(Icons.delete, color: Colors.white),
+                  onPressed: () {
+                    title.value = "DeleteThisLink-12345678912062g53f4v8p0h";
+                    url.value = "DeleteThisLink-12345678912062g53f4v8p0h";
+                    Navigator.of(context).pop();
+                  },
+                )
         ],
       ),
       content: Column(
@@ -1269,6 +1260,264 @@ class _SingleLinkEditDialog extends StatelessWidget {
             },
             child: Text("Save", style: TextStyle(color: Colors.white)))
       ],
+    );
+  }
+}
+
+class DeleteEventIconButton extends StatelessWidget {
+  dbc.Event event;
+  DeleteEventIconButton({super.key, required this.event});
+  @override
+  Widget build(BuildContext context) {
+    return db.hasPermissionToEditEventObject(event)
+        ? IconButton(
+            onPressed: () async {
+              await showDialog(
+                  barrierDismissible: true,
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      backgroundColor: cl.lighterGrey,
+                      title: Text("Are you sure?",
+                          style: TextStyle(color: Colors.white)),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("WARNING",
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold)),
+                          Text("This can not be undone",
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold))
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          child: Text("Cancel",
+                              style: TextStyle(color: Colors.white)),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          child: Text("Delete Event",
+                              style: TextStyle(color: Colors.red)),
+                          onPressed: () async {
+                            bool hasPermission = false;
+                            await showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return FutureBuilder(
+                                      future: db.hasPermissionToEditEvent(
+                                          event.eventid),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState !=
+                                            ConnectionState.done) {
+                                          return cw.LoadingIndicator(
+                                              color: Colors.white);
+                                        } else {
+                                          if (snapshot.hasData &&
+                                              snapshot.data == true) {
+                                            return FutureBuilder(
+                                                future: db
+                                                    .deleteEvent(event.eventid),
+                                                builder: (BuildContext context,
+                                                    AsyncSnapshot snap) {
+                                                  if (snap.connectionState !=
+                                                      ConnectionState.done) {
+                                                    return AlertDialog(
+                                                        backgroundColor:
+                                                            cl.lighterGrey,
+                                                        content:
+                                                            cw.LoadingIndicator(
+                                                                color: Colors
+                                                                    .white));
+                                                  } else {
+                                                    return AlertDialog(
+                                                      backgroundColor:
+                                                          cl.lighterGrey,
+                                                      title: Text(
+                                                          "Deleted Event",
+                                                          style: TextStyle(
+                                                              color: Colors
+                                                                  .white)),
+                                                      actions: [
+                                                        TextButton(
+                                                          child: Text("Okay!",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white)),
+                                                          onPressed: () {
+                                                            if (kIsWeb) {
+                                                              Beamer.of(context)
+                                                                  .popToNamed(
+                                                                      "/events/");
+                                                            } else {
+
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .maybePop();
+                                                            }
+                                                          },
+                                                        )
+                                                      ],
+                                                    );
+                                                  }
+                                                });
+                                          } else {
+                                            return AlertDialog(
+                                              backgroundColor: cl.lighterGrey,
+                                              title: Text("Oops.."),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text("Something went wrong.",
+                                                      style: TextStyle(
+                                                          color: Colors.white)),
+                                                  Text(
+                                                      "Maybe you dont have permission to delete this.",
+                                                      style: TextStyle(
+                                                          color: Colors.white))
+                                                ],
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  child: Text("Understood",
+                                                      style: TextStyle(
+                                                          color: Colors.white)),
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                )
+                                              ],
+                                            );
+                                          }
+                                        }
+                                      });
+                                });
+                          },
+                        )
+                      ],
+                    );
+                  });
+            },
+            icon: Icon(Icons.delete, color: Colors.white))
+        : SizedBox(height: 0, width: 0);
+  }
+}
+
+class EventOverviewpageSideDrawer extends StatelessWidget {
+  dbc.Event event;
+  EventOverviewpageSideDrawer({super.key, required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: cl.lighterGrey,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+            horizontal: DISPLAY_SHORT_SIDE(context) / 30,
+            vertical: DISPLAY_LONG_SIDE(context) / 60),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              ListTile(
+                  title: Text("Report",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: DISPLAY_SHORT_SIDE(context) / 20)),
+                  onTap: () {
+                    String desc = "";
+                    showModalBottomSheet(
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadiusDirectional.circular(8.0)),
+                        backgroundColor: cl.darkerGrey,
+                        context: context,
+                        builder: (BuildContext context) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: TextFormField(
+                                  onChanged: (value) {
+                                    desc = value;
+                                  },
+                                  minLines: 5,
+                                  maxLines: 2000,
+                                  decoration: InputDecoration(
+                                      filled: true,
+                                      fillColor: cl.lighterGrey,
+                                      labelText:
+                                          "Tell us more about this report...",
+                                      labelStyle:
+                                          TextStyle(color: Colors.white),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: cl.lighterGrey),
+                                          borderRadius:
+                                              BorderRadius.circular(8.0))),
+                                  style: TextStyle(color: Colors.white),
+                                  cursorColor: Colors.white,
+                                  showCursor: true,
+                                ),
+                              ),
+                              TextButton(
+                                  style: TextButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0)),
+                                      backgroundColor: cl.lighterGrey),
+                                  onPressed: () async {
+                                    DocumentReference newRep = await db.db
+                                        .collection("${branchPrefix}reports")
+                                        .add({
+                                      "description": desc,
+                                      "issuer": db.db.doc(
+                                          "${branchPrefix}users/${currently_loggedin_as.value!.username}"),
+                                      "target": event.eventid,
+                                      "timestamp": Timestamp.now(),
+                                      "state": "filed"
+                                    });
+                                    await newRep.update({"id": newRep.id});
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        hintSnackBar("Report was sent!"));
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text(
+                                    "Report",
+                                    style: TextStyle(color: Colors.white),
+                                  ))
+                            ],
+                          );
+                        });
+                  },
+                  trailing: Icon(Icons.report_outlined, color: Colors.white)),
+              db.hasPermissionToEditEventObject(event)
+                  ? ListTile(
+                      title: Text("Edit",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: DISPLAY_SHORT_SIDE(context) / 20)),
+                      trailing: Icon(Icons.edit, color: Colors.white),
+                      onTap: () {
+                        Beamer.of(context)
+                            .beamToNamed("/editevent/${event.eventid}");
+                      },
+                    )
+                  : SizedBox(height: 0)
+            ]),
+      ),
     );
   }
 }

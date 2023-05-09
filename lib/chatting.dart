@@ -248,7 +248,7 @@ class ChatsDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
         backgroundColor: cl.darkerGrey,
-        child: FutureBuilder(
+        child: DISABLE_CHATWINDOW ? Center(child: Text("Chatting is disabled due to technical issues. Will be fixed soon.", maxLines: null, style: TextStyle(color: Colors.white),)) :  FutureBuilder(
             future: getUsersChats(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {

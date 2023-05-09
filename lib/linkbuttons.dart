@@ -107,7 +107,7 @@ class EventLinkButton extends StatelessWidget {
 /// Have to use SizedBox or IconButton
 Widget UrlLinkButton(String url, String label, TextStyle style) {
   void _onPress() async {
-    if (!await canLaunchUrl(Uri.parse(url))) throw 'Could not launch $url';
+    if (!await canLaunchUrl(Uri.parse(url)));
     await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
