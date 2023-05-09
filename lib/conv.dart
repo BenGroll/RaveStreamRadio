@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'main.dart' as main;
 import 'dart:math';
@@ -225,17 +226,23 @@ class EventTitle extends StatelessWidget {
         builder: ((context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             ScrollController _cont = ScrollController();
-            return SingleChildScrollView(
-                controller: _cont,
-                scrollDirection: Axis.horizontal,
-                child: Scrollbar(
+            return GestureDetector(
+                onLongPress: () {
+                  Clipboard.setData(ClipboardData(text: event.eventid));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Copied Title to Clipboard")));
+                },
+                child: SingleChildScrollView(
                     controller: _cont,
-                    child: Text(
-                      snapshot.data ?? "Unknown Event",
-                      style: style,
-                      maxLines: null,
-                      softWrap: true,
-                    )));
+                    scrollDirection: Axis.horizontal,
+                    child: Scrollbar(
+                        controller: _cont,
+                        child: Text(
+                          snapshot.data ?? "Unknown Event",
+                          style: style,
+                          maxLines: null,
+                          softWrap: true,
+                        ))));
           }
           return const CircularProgressIndicator(color: Colors.white);
         }));

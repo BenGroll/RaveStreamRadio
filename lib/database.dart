@@ -304,31 +304,21 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
   if (filters.searchString != null) {
     eventList = eventList.whereContainsString(filters.searchString ?? "");
   }
-
   if (filters.fromIDList != null) {
     eventList = eventList.whereIsInIDList(filters.fromIDList ?? []);
   }
-
   if (filters.onlyAfter != null) {
     eventList =
         eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
   }
-  //pprint(".. ${eventList.length}");
-
   if (filters.onlyBefore != null) {
     eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
   }
-  //pprint("... ${eventList.length}");
-
   eventList = eventList.whereIsInValues("status", filters.byStatus);
-  //pprint(".... ${eventList.length}");
-
   if (filters.canGoByAge != null) {
     eventList =
         eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
   }
-  //pprint("..... ${eventList.length}");
-
   if (filters.onlyHostedByMe) {
     List newList = [];
     eventList.forEach((element) {
@@ -345,8 +335,6 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
       }
     });
   }
-  //pprint("...... ${eventList.length}");
-
   eventList.sort((a, b) {
     int sort_a = a.begin == null
         ? (a.end == null ? 0 : a.end!.millisecondsSinceEpoch)
@@ -356,8 +344,6 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
         : b.begin!.millisecondsSinceEpoch;
     return sort_a.compareTo(sort_b);
   });
-  //pprint("....... ${eventList.length}");
-
   return eventList;
 }
 
@@ -784,10 +770,8 @@ Future uploadHost(dbc.Host host) async {
   futures.add(ref.set(host.toMap()));
   futures.add(db.doc("content/indexes").update({"templateHostIDs": jgkh}));
   if (beforeHost != null) {
-    pprint("122");
     dbc.Host before =
         dbc.Host.fromMap(forceStringDynamicMapFromObject(beforeHost));
-    pprint("123");
     futures.add(addLogEntry(
         "Updated Host : ${before.toString()} => ${host.toMap()}",
         category: LogEntryCategory.host,

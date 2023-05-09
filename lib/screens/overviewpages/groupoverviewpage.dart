@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
@@ -32,8 +33,19 @@ class GroupOverviewPage extends StatelessWidget {
                         backgroundColor: cl.darkerGrey,
                         appBar: AppBar(
                           centerTitle: true,
-                          title: Text(
-                              "Group: ${group?.groupid ?? 'Not Loadable'}"),
+                          title: GestureDetector(
+                            onLongPress: () {
+                              if (group != null) {
+                                Clipboard.setData(
+                                    ClipboardData(text: group.groupid));
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  backgroundColor: Colors.transparent,
+                                  content: Text("Copied ID to clipboard")));
+                              }
+                            },
+                            child: Text(
+                                "Group: ${group?.groupid ?? 'Not Loadable'}"),
+                          ),
                           actions: [
                             ReportButton(
                                 target: "${branchPrefix}groups/$groupid")

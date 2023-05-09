@@ -252,7 +252,6 @@ class _EventCalendarState extends State<EventCalendar> {
         fromIDList: mode == CalendarMode.favourites
             ? (currently_loggedin_as.value?.saved_events.ids() ?? [])
             : null));
-    print("OnCreate filters: $filters");
 
     event_data = [];
     totalelements = 0;
@@ -353,7 +352,6 @@ class _EventCalendarState extends State<EventCalendar> {
                                       db.EventFilters filterValue, foo) {
                                     List<dbc.Event> events =
                                         snapshot.data ?? [];
-                                    print("events: $events");
                                     return mode == CalendarMode.favourites
                                         ? ListView(
                                             children: db
