@@ -255,6 +255,7 @@ class EventFilters {
   List<String> byStatus;
   bool onlyHostedByMe;
   String? searchString;
+  List<String>? fromIDList;
   EventFilters(
       {this.lastelemEventid,
       this.onlyAfter,
@@ -263,7 +264,8 @@ class EventFilters {
       this.orderbyField = "end",
       required this.byStatus,
       this.onlyHostedByMe = false,
-      this.searchString});
+      this.searchString,
+      this.fromIDList});
 
   @override
   String toString() {
@@ -299,11 +301,12 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
 List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     [int? queryLimit]) {
   List<dbc.Event> eventList = events;
-  print("QueryFilters: $filters");
-  //pprint(". ${eventList.length}");
-  //pprint("Stati Included: ${filters.byStatus}");
   if (filters.searchString != null) {
     eventList = eventList.whereContainsString(filters.searchString ?? "");
+  }
+
+  if (filters.fromIDList != null) {
+    eventList = eventList.whereIsInIDList(filters.fromIDList ?? []);
   }
 
   if (filters.onlyAfter != null) {
@@ -936,7 +939,6 @@ Future<List<dbc.Group>> queryGroups() async {
       currently_loggedin_as.value!.followed_groups;
   List<DocumentReference> allGroups = joined_groups..addAll(followed_groups);
   allGroups = allGroups.toSet().toList();
-  print("AllGroups: $allGroups");
   List<Future<DocumentSnapshot>> futures = [];
   allGroups.forEach((element) {
     futures.add(element.get());

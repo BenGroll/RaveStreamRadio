@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/extensions.dart';
@@ -1042,7 +1043,7 @@ class LoadingIndicator extends StatelessWidget {
           child: FractionallySizedBox(
               widthFactor: 0.66,
               heightFactor: 0.66,
-              child: CircularProgressIndicator(color: Colors.white)),
+              child: SpinKitThreeBounce(color: color.withOpacity(0.66))),
         ),
       ),
     );
