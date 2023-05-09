@@ -16,7 +16,7 @@ import 'package:ravestreamradioapp/database.dart' as db;
 
 /// Error Image with white logo and transparent background.
 const errorWhiteImage =
-    Image(image: AssetImage("graphics/image_not_found_white_on_trans.png"));
+    Image(image: AssetImage("graphics/Event_2000x2000.jpeg"));
 
 /// Error Image with black logo and transparent.
 const errorBlackImage =
@@ -113,11 +113,15 @@ Future<Widget?> getImage(String imagepath) async {
       } else {
         try {
           Reference test = firebasestorage.ref().child(imagepath);
-          Uint8List? raw_image_data = await test.getData();
-          if (raw_image_data == null) {
-            return null;
-          }
-
+          String dldURL =
+              await test.getDownloadURL().catchError((error, stackTrace) {
+            return "-1";
+          });
+          if (dldURL == "-1") return errorWhiteImage;
+          Uint8List? raw_image_data = await test.getData().catchError((e) {
+            return errorWhiteImage;
+          });
+          if (raw_image_data == null) return errorWhiteImage;
           //Save Image for later use in
           Widget createdImage = errorWhiteImage;
           if (imagepath.endsWith("svg")) {

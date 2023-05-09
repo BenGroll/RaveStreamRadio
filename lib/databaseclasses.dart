@@ -274,11 +274,11 @@ class Event {
   }
 
   String toJson() {
-    return json.encode(toJsonCompatibleMap());
+    return json.encode(toJsonCompatibleMap()).dbsafe;
   }
 
   factory Event.fromJson(String source) {
-    Map<String, dynamic> map = json.decode(source);
+    Map<String, dynamic> map = json.decode(source.fromDBSafeString);
     if (map["hostreference"] != null) {
       map["hostreference"] = db.doc(map["hostreference"]);
     }

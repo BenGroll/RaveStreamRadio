@@ -51,54 +51,6 @@ class GroupsScreen extends StatefulWidget {
   State<GroupsScreen> createState() => _GroupsScreenState();
 }
 
-List<Widget> groupListToListTiles(
-    List<dbc.Group> list, BuildContext context, ValueNotifier to_Notify,
-    [String? searchString]) {
-  list = list.queryStringMatch(searchString ?? "");
-  list = list.pinnedFirst;
-  List<ListTile> outL = list
-      .map((e) => ListTile(
-            onTap: () {
-              kIsWeb
-                  ? Beamer.of(context).beamToNamed("/groups/${e.groupid}")
-                  : Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          GroupOverviewPage(groupid: "${e.groupid}")));
-            },
-            onLongPress: () {
-              if (currently_loggedin_as.value!.pinned_groups
-                  .contains(db.db.doc("${branchPrefix}groups/${e.groupid}"))) {
-                currently_loggedin_as.value!.pinned_groups
-                    .remove(db.db.doc("${branchPrefix}groups/${e.groupid}"));
-                db.db.doc(currently_loggedin_as.value!.path).update({
-                  "pinned_groups": currently_loggedin_as.value!.pinned_groups
-                });
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(cw.hintSnackBar("Group pinned."));
-                to_Notify.notifyListeners();
-              } else {
-                currently_loggedin_as.value!.pinned_groups
-                    .add(db.db.doc("${branchPrefix}groups/${e.groupid}"));
-                db.db.doc(currently_loggedin_as.value!.path).update({
-                  "pinned_groups": currently_loggedin_as.value!.pinned_groups
-                });
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(cw.hintSnackBar("Group unpinned."));
-                to_Notify.notifyListeners();
-              }
-            },
-            title: Text(e.title ?? "@${e.groupid}",
-                style: TextStyle(color: Colors.white)),
-            leading: CircleAvatar(),
-            trailing: db.hasGroupPinned(
-                    e, currently_loggedin_as.value ?? dbc.demoUser)
-                ? Icon(Icons.push_pin, color: Colors.white)
-                : null,
-          ))
-      .toList();
-  return outL;
-}
-
 class _GroupsScreenState extends State<GroupsScreen> {
   @override
   Widget build(BuildContext context) {
@@ -156,130 +108,203 @@ class _GroupsScreenState extends State<GroupsScreen> {
           backgroundColor: cl.darkerGrey,
           drawer: cw.NavBar(),
           endDrawer: const ChatsDrawer(),
-          body: TabBarView(
-            children: [
-              FutureBuilder(
-                  future: db.queryGroups(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return ValueListenableBuilder(
-                          valueListenable: searchString,
-                          builder: (context, query, foo) {
-                            ValueNotifier<List<Widget>> widgetlist =
-                                ValueNotifier<List<Widget>>(
-                                    groupListToListTiles(snapshot.data ?? [],
-                                        context, searchString, query));
-                            return RefreshIndicator(
-                              onRefresh: () async {
-                                widgetlist.value = groupListToListTiles(
-                                    await db.queryGroups(),
-                                    context,
-                                    searchString,
-                                    query);
-                              },
-                              child: ListView(
-                                children: widgetlist.value.isEmpty
-                                    ? [
-                                        const Center(
-                                            child: Text(
-                                                "You haven't joined any groups yet",
-                                                style: TextStyle(
-                                                    color: Colors.white)))
-                                      ]
-                                    : widgetlist.value,
-                              ),
-                            );
-                          });
-                    } else {
-                      return cw.LoadingIndicator(color: Colors.white);
-                    }
-                  }),
-
-              /// Discover Page
-              FutureBuilder(
-                  future: db.getIndexedEntitys(),
-                  builder: (context, AsyncSnapshot<List<Map>> snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return cw.LoadingIndicator(color: Colors.white);
-                    } else {
-                      List<QueryEntry> users = snapshot.data![1].entries
-                          .map((e) => QueryEntry(
-                              id: e.key,
-                              name: e.value,
-                              type: QueryCategory.user))
-                          .toList();
-                      List<QueryEntry> groups = snapshot.data![0].entries
-                          .map((e) => QueryEntry(
-                              id: e.key,
-                              name: e.value,
-                              type: QueryCategory.group))
-                          .toList();
-                      List<QueryEntry> events = snapshot.data![2].entries
-                          .map((e) => QueryEntry(
-                              id: e.key,
-                              name: e.value,
-                              type: QueryCategory.event))
-                          .toList();
-                      List<QueryEntry> data = users + groups + events;
-                      return ValueListenableBuilder(
-                          valueListenable: searchString,
-                          builder: (context, string, foo) {
-                            List<QueryEntry> shownEntrys = string.isEmpty
-                                ? []
-                                : data.matchesString(string);
-                            return ListView(
-                              children: string.isEmpty
+          body: TabBarView(children: [
+            FutureBuilder(
+                future: db.queryGroups(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return ValueListenableBuilder(
+                        valueListenable: searchString,
+                        builder: (context, query, foo) {
+                          ValueNotifier<List<Widget>> widgetlist =
+                              ValueNotifier<List<Widget>>(
+                                  EntityBrowser.groupListToListTiles(
+                                      snapshot.data ?? [],
+                                      context,
+                                      searchString,
+                                      query));
+                          return RefreshIndicator(
+                            onRefresh: () async {
+                              widgetlist.value =
+                                  EntityBrowser.groupListToListTiles(
+                                      await db.queryGroups(),
+                                      context,
+                                      searchString,
+                                      query);
+                            },
+                            child: ListView(
+                              children: widgetlist.value.isEmpty
                                   ? [
                                       const Center(
                                           child: Text(
-                                              "Search for Events, Groups and Users.",
+                                              "You haven't joined any groups yet",
                                               style: TextStyle(
                                                   color: Colors.white)))
                                     ]
-                                  : shownEntrys
-                                      .map((e) => ListTile(
-                                            title: Text(e.name,
-                                                style: const TextStyle(
-                                                    color: Colors.white)),
-                                            subtitle: Text(e.id,
-                                                style: const TextStyle(
-                                                    color: Colors.white)),
-                                            trailing: e.icon,
-                                            onTap: () {
-                                              if (e.type ==
-                                                  QueryCategory.event) {
-                                                kIsWeb
-                                                  ? Beamer.of(context).beamToNamed("/events/${e.id}")
-                                                  : Navigator.of(context).push(MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          EventOverviewPage(e.id)));
-                                              } else if (e.type ==
-                                                  QueryCategory.group) {
-                                                kIsWeb
-                                                  ? Beamer.of(context).beamToNamed("/groups/${e.id}")
-                                                  : Navigator.of(context).push(MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          GroupOverviewPage(groupid: e.id)));
-                                              } else if (e.type ==
-                                                  QueryCategory.user) {
-                                                kIsWeb
-                                                  ? Beamer.of(context).beamToNamed("/users/${e.id}@groups")
-                                                  : Navigator.of(context).push(MaterialPageRoute(
-                                                      builder: (context) => UserOverviewPage(username: e.id)));
-                                              } else {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(cw
-                                                        .hintSnackBar("Error"));
-                                              }
-                                            },
-                                          ))
-                                      .toList(),
-                            );
-                          });
-                    }
-                  })
-            ],
-          )),
+                                  : widgetlist.value,
+                            ),
+                          );
+                        });
+                  } else {
+                    return cw.LoadingIndicator(color: Colors.white);
+                  }
+                }),
+
+            /// Discover Page
+            EntityBrowser(
+                searchStringNotif: searchString,
+                include_events: true,
+                include_groups: true,
+                include_users: true)
+          ])),
     );
+  }
+}
+
+class EntityBrowser extends StatelessWidget {
+  ValueNotifier searchStringNotif;
+  bool include_users = true;
+  bool include_groups = false;
+  bool include_events = true;
+  EntityBrowser(
+      {super.key,
+      required this.searchStringNotif,
+      this.include_events = false,
+      this.include_groups = false,
+      this.include_users = true});
+
+  static List<Widget> groupListToListTiles(
+      List<dbc.Group> list, BuildContext context, ValueNotifier to_Notify,
+      [String? searchString]) {
+    list = list.queryStringMatch(searchString ?? "");
+    list = list.pinnedFirst;
+    List<ListTile> outL = list
+        .map((e) => ListTile(
+              onTap: () {
+                kIsWeb
+                    ? Beamer.of(context).beamToNamed("/groups/${e.groupid}")
+                    : Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) =>
+                            GroupOverviewPage(groupid: "${e.groupid}")));
+              },
+              onLongPress: () {
+                if (currently_loggedin_as.value!.pinned_groups.contains(
+                    db.db.doc("${branchPrefix}groups/${e.groupid}"))) {
+                  currently_loggedin_as.value!.pinned_groups
+                      .remove(db.db.doc("${branchPrefix}groups/${e.groupid}"));
+                  db.db.doc(currently_loggedin_as.value!.path).update({
+                    "pinned_groups": currently_loggedin_as.value!.pinned_groups
+                  });
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(cw.hintSnackBar("Group pinned."));
+                  to_Notify.notifyListeners();
+                } else {
+                  currently_loggedin_as.value!.pinned_groups
+                      .add(db.db.doc("${branchPrefix}groups/${e.groupid}"));
+                  db.db.doc(currently_loggedin_as.value!.path).update({
+                    "pinned_groups": currently_loggedin_as.value!.pinned_groups
+                  });
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(cw.hintSnackBar("Group unpinned."));
+                  to_Notify.notifyListeners();
+                }
+              },
+              title: Text(e.title ?? "@${e.groupid}",
+                  style: TextStyle(color: Colors.white)),
+              leading: CircleAvatar(),
+              trailing: db.hasGroupPinned(
+                      e, currently_loggedin_as.value ?? dbc.demoUser)
+                  ? Icon(Icons.push_pin, color: Colors.white)
+                  : null,
+            ))
+        .toList();
+    return outL;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: db.getIndexedEntitys(),
+        builder: (context, AsyncSnapshot<List<Map>> snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return cw.LoadingIndicator(color: Colors.white);
+          } else {
+            List<QueryEntry> users = include_users ? snapshot.data![1].entries
+                .map((e) => QueryEntry(
+                    id: e.key, name: e.value, type: QueryCategory.user))
+                .toList() : [];
+            List<QueryEntry> groups = include_groups ? snapshot.data![0].entries
+                .map((e) => QueryEntry(
+                    id: e.key, name: e.value, type: QueryCategory.group))
+                .toList() : [];
+            List<QueryEntry> events = include_events ? snapshot.data![2].entries
+                .map((e) => QueryEntry(
+                    id: e.key, name: e.value, type: QueryCategory.event))
+                .toList() : [];
+            List<QueryEntry> data = users + groups + events;
+            return ValueListenableBuilder(
+                valueListenable: searchStringNotif,
+                builder: (context, string, foo) {
+                  List<QueryEntry> shownEntrys =
+                      string.isEmpty ? [] : data.matchesString(string);
+                  String shownEntrysString = "Search for ";
+                  if (include_users) shownEntrysString = "$shownEntrysString Users ";
+                  if (include_groups) shownEntrysString = "$shownEntrysString Groups ";
+                  if (include_events) shownEntrysString = "$shownEntrysString Events ";
+                  return ListView(
+                    children: string.isEmpty
+                        ? [
+                            Center(
+                                child: Text(shownEntrysString,
+                                    style: TextStyle(color: Colors.white)))
+                          ]
+                        : shownEntrys
+                            .map((e) => ListTile(
+                                  title: Text(e.name,
+                                      style:
+                                          const TextStyle(color: Colors.white)),
+                                  subtitle: Text(e.id,
+                                      style:
+                                          const TextStyle(color: Colors.white)),
+                                  trailing: e.icon,
+                                  onTap: () {
+                                    if (e.type == QueryCategory.event) {
+                                      kIsWeb
+                                          ? Beamer.of(context)
+                                              .beamToNamed("/events/${e.id}")
+                                          : Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EventOverviewPage(e.id)));
+                                    } else if (e.type == QueryCategory.group) {
+                                      kIsWeb
+                                          ? Beamer.of(context)
+                                              .beamToNamed("/groups/${e.id}")
+                                          : Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      GroupOverviewPage(
+                                                          groupid: e.id)));
+                                    } else if (e.type == QueryCategory.user) {
+                                      kIsWeb
+                                          ? Beamer.of(context).beamToNamed(
+                                              "/users/${e.id}@groups")
+                                          : Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      UserOverviewPage(
+                                                          username: e.id)));
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                              cw.hintSnackBar("Error"));
+                                    }
+                                  },
+                                ))
+                            .toList(),
+                  );
+                });
+          }
+        });
   }
 }

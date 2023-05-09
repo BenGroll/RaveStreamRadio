@@ -202,8 +202,9 @@ class EventCreationScreen extends StatelessWidget {
                       ]),
                       actions: [
                         eventIDToBeEdited != null
-                        ? cw.DeleteEventIconButton(event: currentEventData.value)
-                        : const SizedBox(width: 0),
+                            ? cw.DeleteEventIconButton(
+                                event: currentEventData.value)
+                            : const SizedBox(width: 0),
                         TextButton(
                             onPressed: () async {
                               if (!block_upload) {
@@ -286,22 +287,24 @@ class EventCreationScreen extends StatelessWidget {
                                           backgroundColor: cl.darkerGrey,
                                           appBar: AppBar(
                                             bottom: const TabBar(tabs: [
-                                                Tab(
-                                                  child: Text("General"),
-                                                ),
-                                                Tab(
-                                                  child: Text("Desc."),
-                                                ),
-                                                Tab(
-                                                  child: Text("Links"),
-                                                ),
-                                                Tab(
-                                                  child: Text("Media"),
-                                                ),
-                                              ]),
+                                              Tab(
+                                                child: Text("General"),
+                                              ),
+                                              Tab(
+                                                child: Text("Desc."),
+                                              ),
+                                              Tab(
+                                                child: Text("Links"),
+                                              ),
+                                              Tab(
+                                                child: Text("Media"),
+                                              ),
+                                            ]),
                                             actions: [
                                               eventIDToBeEdited != null
-                                                  ? cw.DeleteEventIconButton(event: currentEventData.value)
+                                                  ? cw.DeleteEventIconButton(
+                                                      event: currentEventData
+                                                          .value)
                                                   : const SizedBox(width: 0),
                                               TextButton(
                                                   onPressed: () async {
@@ -1160,8 +1163,14 @@ class UploadEventDialog extends StatelessWidget {
       event.hostreference = null;
     }
     await db.uploadEventToDatabase(event);
-    await Future.delayed(Duration(seconds: 1));
-    kIsWeb ? Beamer.of(context).popToNamed("/") : Navigator.of(context).pop();
+    await Future.delayed(Duration(seconds: 2));
+    if (kIsWeb) {
+      Beamer.of(context).beamToNamed("/events");
+    } else {
+      //
+      Navigator.of(context).pop();
+      Navigator.of(context).maybePop();
+    }
     if (kIsWeb) {
       parent.eventIDToBeEdited != null
           ? ScaffoldMessenger.of(context)
@@ -1171,7 +1180,6 @@ class UploadEventDialog extends StatelessWidget {
     }
     currently_selected_screen.notifyListeners();
     parent.is_awaiting_upload.value = false;
-    Navigator.of(context).pop();
   }
 
   EventCreationScreen parent;

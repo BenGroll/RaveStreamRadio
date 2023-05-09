@@ -35,7 +35,9 @@ class MyApp extends StatelessWidget {
       routerDelegate: routerDelegate,
       title: 'RaveStreamRadio',
       theme:
-          ThemeData(primarySwatch: MaterialColor(0xFF000000, cl.blackmaterial)),
+          ThemeData(primarySwatch: MaterialColor(0xFF000000, cl.blackmaterial), scrollbarTheme: ScrollbarThemeData(
+            thumbVisibility: MaterialStateProperty.all<bool>(true)
+          )),
       debugShowCheckedModeBanner: false,
     );
   }

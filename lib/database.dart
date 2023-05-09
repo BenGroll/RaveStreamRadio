@@ -11,7 +11,8 @@ import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'testdbscenario.dart';
-import 'package:ravestreamradioapp/extensions.dart' show Queriefy, pprint;
+import 'package:ravestreamradioapp/extensions.dart'
+    show Queriefy, pprint, JsonSafe;
 import 'dart:convert';
 
 var db = FirebaseFirestore.instance;
@@ -81,14 +82,15 @@ Future uploadEventToDatabase(dbc.Event event) async {
     hostdata["events"] = hostedevents;
     event.hostreference!.set(hostdata);
   }
-  Map eventIndexFile = await json.decode(await readEventIndexesJson());
+  Map eventIndexFile = await json.decode(
+      await readEventIndexesJson().then((value) => value.fromDBSafeString));
   dbc.Event? eventBefore = eventIndexFile.containsKey(event.eventid)
       ? dbc.Event.fromMap(eventIndexFile[event.eventid])
       : null;
   eventIndexFile[event.eventid] = event.toJsonCompatibleMap();
   List<Future> futures = [];
   futures.add(storage.ref("indexes/${branchPrefix}eventsIndex.json").putString(
-      eventMapToJson(forceStringDynamicMapFromObject(eventIndexFile))));
+      eventMapToJson(forceStringDynamicMapFromObject(eventIndexFile)).dbsafe));
   if (eventBefore != null) {
     futures.add(addLogEntry(
         "Updated Event ${eventBefore.toString()} => ${eventIndexFile[event.eventid].toString()}",
@@ -272,7 +274,7 @@ class EventFilters {
 /// Gets the list of events for current branch from firestore.
 Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
   String eventIndexesJson = await readEventIndexesJson();
-  List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson);
+  List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson.dbsafe);
   AggregateQuery eventsInDB =
       await db.collection("${branchPrefix}events").count();
   int docsInDB = await eventsInDB.get().then((value) => value.count);
@@ -287,7 +289,7 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
     List<dbc.Event> events = await getEvents();
     String jsonindexString =
         eventMapToJson(eventListToJsonCompatibleMap(events));
-    await writeEventIndexes(jsonindexString);
+    await writeEventIndexes(jsonindexString.dbsafe);
     return await fetchEventsFromIndexFile();
   }
   return eventList;
@@ -688,7 +690,7 @@ Future writeEventIndexes(String eventjsonstring) async {
   Reference storageRef = FirebaseStorage.instance.ref();
   Reference pathReference =
       storageRef.child("indexes/${branchPrefix}eventsIndex.json");
-  UploadTask task = pathReference.putString(eventjsonstring);
+  UploadTask task = pathReference.putString(eventjsonstring.dbsafe);
   return await task;
 }
 
@@ -697,13 +699,15 @@ Future<String> readEventIndexesJson() async {
   Reference storageRef = FirebaseStorage.instance.ref();
   Reference pathReference =
       storageRef.child("indexes/${branchPrefix}eventsIndex.json");
+  Stopwatch stop = Stopwatch()..start();
   Uint8List? data = await pathReference.getData(100 * 1024 * 1024);
-  return String.fromCharCodes(data ?? Uint8List.fromList([0]));
+  print("Time to download Events: ${stop.elapsed}");
+  return String.fromCharCodes(data ?? Uint8List.fromList([0])).fromDBSafeString;
 }
 
 /// Read the event list from a index.json in String format
 List<dbc.Event> getEventListFromIndexes(String indexJsonString) {
-  Map<String, dynamic> indexMap = json.decode(indexJsonString);
+  Map<String, dynamic> indexMap = json.decode(indexJsonString.fromDBSafeString);
   List<dbc.Event> eventlist = [];
   indexMap.keys.forEach((element) {
     eventlist.add(dbc.Event.fromJson(json.encode(indexMap[element])));
@@ -917,10 +921,10 @@ Future addLogEntry(String changes,
 
 Future deleteEvent(String eventID) async {
   return Future.wait([
-   db.doc("${branchPrefix}events/$eventID").delete(),
-   addLogEntry("Deleted Event: $eventID",
-      action: LogEntryAction.delete, category: LogEntryCategory.event),
-   removeEventFromIndexFile(null, eventID)
+    db.doc("${branchPrefix}events/$eventID").delete(),
+    addLogEntry("Deleted Event: $eventID",
+        action: LogEntryAction.delete, category: LogEntryCategory.event),
+    removeEventFromIndexFile(null, eventID)
   ]);
 }
 
@@ -931,6 +935,7 @@ Future<List<dbc.Group>> queryGroups() async {
   List<DocumentReference> followed_groups =
       currently_loggedin_as.value!.followed_groups;
   List<DocumentReference> allGroups = joined_groups..addAll(followed_groups);
+  allGroups = allGroups.toSet().toList();
   print("AllGroups: $allGroups");
   List<Future<DocumentSnapshot>> futures = [];
   allGroups.forEach((element) {
@@ -956,7 +961,7 @@ Future createUserIndexFiles() async {
   });
   Reference ref =
       FirebaseStorage.instance.ref("/indexes/${branchPrefix}users.json");
-  await ref.putString(json.encode(strings));
+  await ref.putString(json.encode(strings).dbsafe);
 }
 
 Future addEventToIndexFile(dbc.Event event) async {
@@ -965,9 +970,9 @@ Future addEventToIndexFile(dbc.Event event) async {
   String da = await events
       .getData(4096 * 4096)
       .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
-  Map eventMap = jsonDecode(da);
+  Map eventMap = jsonDecode(da.fromDBSafeString);
   eventMap[event.eventid] = event.title ?? event.eventid;
-  return await events.putString(json.encode(eventMap));
+  return await events.putString(json.encode(eventMap).dbsafe);
 }
 
 Future removeEventFromIndexFile([dbc.Event? event, String? id]) async {
@@ -976,11 +981,11 @@ Future removeEventFromIndexFile([dbc.Event? event, String? id]) async {
   String da = await events
       .getData(4096 * 4096)
       .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
-  Map eventMap = jsonDecode(da);
+  Map eventMap = jsonDecode(da.fromDBSafeString);
   if (eventMap.keys.contains(event?.eventid ?? id)) {
     eventMap.remove(event?.eventid ?? id);
   }
-  return await events.putString(json.encode(eventMap));
+  return await events.putString(json.encode(eventMap).dbsafe);
 }
 
 Future addUserToIndexFile(dbc.User user) async {
@@ -989,9 +994,9 @@ Future addUserToIndexFile(dbc.User user) async {
   String da = await users
       .getData(4096 * 4096)
       .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
-  Map eventMap = jsonDecode(da);
+  Map eventMap = jsonDecode(da.fromDBSafeString);
   eventMap[user.username] = user.alias ?? user.username;
-  return await users.putString(json.encode(eventMap));
+  return await users.putString(json.encode(eventMap).dbsafe);
 }
 
 Future removeUserFromIndexFile([dbc.User? user, String? id]) async {
@@ -1000,11 +1005,11 @@ Future removeUserFromIndexFile([dbc.User? user, String? id]) async {
   String da = await users
       .getData(4096 * 4096)
       .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
-  Map eventMap = jsonDecode(da);
+  Map eventMap = jsonDecode(da.fromDBSafeString);
   if (eventMap.keys.contains(user?.username ?? id)) {
     eventMap.remove(user?.username ?? id);
   }
-  return await users.putString(json.encode(eventMap));
+  return await users.putString(json.encode(eventMap).dbsafe);
 }
 
 Future addGroupToIndexFile(dbc.Group group) async {
@@ -1013,9 +1018,9 @@ Future addGroupToIndexFile(dbc.Group group) async {
   String da = await users
       .getData(4096 * 4096)
       .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
-  Map eventMap = jsonDecode(da);
+  Map eventMap = jsonDecode(da.fromDBSafeString);
   eventMap[group.groupid] = group.title ?? group.groupid;
-  return await users.putString(json.encode(eventMap));
+  return await users.putString(json.encode(eventMap).dbsafe);
 }
 
 Future removeGroupFromIndexFile([dbc.Group? group, String? id]) async {
@@ -1024,11 +1029,11 @@ Future removeGroupFromIndexFile([dbc.Group? group, String? id]) async {
   String da = await users
       .getData(4096 * 4096)
       .then((value) => String.fromCharCodes(value ?? Uint8List.fromList([])));
-  Map eventMap = jsonDecode(da);
+  Map eventMap = jsonDecode(da.fromDBSafeString);
   if (eventMap.keys.contains(group?.groupid ?? id)) {
     eventMap.remove(group?.groupid ?? id);
   }
-  return await users.putString(json.encode(eventMap));
+  return await users.putString(json.encode(eventMap).dbsafe);
 }
 
 Future createGroupIndexFiles() async {
@@ -1043,7 +1048,7 @@ Future createGroupIndexFiles() async {
   });
   Reference ref =
       FirebaseStorage.instance.ref("/indexes/${branchPrefix}groups.json");
-  await ref.putString(json.encode(strings));
+  await ref.putString(json.encode(strings).dbsafe);
 }
 
 Future createEventIndexFiles() async {
@@ -1058,7 +1063,7 @@ Future createEventIndexFiles() async {
   });
   Reference ref =
       FirebaseStorage.instance.ref("/indexes/${branchPrefix}events.json");
-  await ref.putString(json.encode(strings));
+  await ref.putString(json.encode(strings).dbsafe);
 }
 
 Future<List<Map>> getIndexedEntitys() async {
@@ -1077,5 +1082,5 @@ Future<List<Map>> getIndexedEntitys() async {
   ];
   List<Uint8List> lists = await Future.wait(futures);
   List<String> strings = lists.map((e) => String.fromCharCodes(e)).toList();
-  return strings.map((e) => jsonDecode(e) as Map).toList();
+  return strings.map((e) => jsonDecode(e.fromDBSafeString) as Map).toList();
 }

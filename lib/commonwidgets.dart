@@ -100,7 +100,6 @@ AppBar FavouritesAppBar(BuildContext context) {
 
 /// AppBar for the Groups homescreen
 
-
 /// AppBar for the Profile homescreen
 AppBar ProfileAppBar(BuildContext context) {
   dbc.User? user = currently_loggedin_as.value;
@@ -1351,9 +1350,22 @@ class DeleteEventIconButton extends StatelessWidget {
                                                                   color: Colors
                                                                       .white)),
                                                           onPressed: () {
-                                                            Beamer.of(context)
-                                                                .beamToNamed(
-                                                                    "/events");
+                                                            if (kIsWeb) {
+                                                              Beamer.of(context)
+                                                                  .popToNamed(
+                                                                      "/events/");
+                                                            } else {
+
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .maybePop();
+                                                            }
                                                           },
                                                         )
                                                       ],
