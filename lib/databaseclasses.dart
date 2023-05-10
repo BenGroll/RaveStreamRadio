@@ -8,6 +8,7 @@ import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/screens/managecalendarscreen.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+import 'dart:io' show File;
 
 /// DataClass for Link (Pair of Title and url)
 class Link {
@@ -351,6 +352,8 @@ class Group {
   Map<String, MaterialColor>? custom_roles;
   Map<DocumentReference, dynamic>? members_roles;
   List<DocumentReference> events;
+  String? description;
+  File? image;
   Group({
     this.title,
     required this.groupid,
@@ -358,6 +361,8 @@ class Group {
     this.custom_roles,
     required this.members_roles,
     this.events = const [],
+    this.description,
+    this.image
   });
 
   Group copyWith({
@@ -367,6 +372,8 @@ class Group {
     Map<String, MaterialColor>? custom_roles,
     Map<DocumentReference, dynamic>? members_roles,
     List<DocumentReference>? events,
+    String? description,
+    File? image
   }) {
     return Group(
       title: title ?? this.title,
@@ -375,6 +382,8 @@ class Group {
       custom_roles: custom_roles ?? this.custom_roles,
       members_roles: members_roles ?? this.members_roles,
       events: events ?? this.events,
+      description: description ?? this.description,
+      image: image ?? this.image
     );
   }
 
@@ -388,17 +397,22 @@ class Group {
         return MapEntry(key.path, value);
       }),
       'events': events.map((x) => x).toList(),
+      'description': description,
+      'image' : image
     };
   }
 
   factory Group.fromMap(Map<String, dynamic> map) {
     return Group(
-        title: map['title'] as String?,
-        groupid: map['groupid'] as String,
-        design: map['design'] as dynamic,
-        custom_roles: map['custom_roles'] as Map<String, MaterialColor>?,
-        members_roles: mapStringDynamic2DocRefDynamic(map["members_roles"]),
-        events: forceDocumentReferenceType(map['events']));
+      title: map['title'] as String?,
+      groupid: map['groupid'] as String,
+      design: map['design'] as dynamic,
+      custom_roles: map['custom_roles'] as Map<String, MaterialColor>?,
+      members_roles: mapStringDynamic2DocRefDynamic(map["members_roles"]),
+      events: forceDocumentReferenceType(map['events']),
+      description: map['description'],
+      image: map['image']
+    );
   }
 
   String toJson() => json.encode(toMap());
@@ -408,7 +422,7 @@ class Group {
 
   @override
   String toString() {
-    return 'Group(title: $title, groupid: $groupid, Design : $design, custom_roles: $custom_roles, members_roles: $members_roles, events: $events)';
+    return 'Group(title: $title, groupid: $groupid, Design : $design, custom_roles: $custom_roles, members_roles: $members_roles, events: $events, description: $description, image: $image)';
   }
 
   @override
@@ -420,7 +434,9 @@ class Group {
         other.design == design &&
         mapEquals(other.custom_roles, custom_roles) &&
         mapEquals(other.members_roles, members_roles) &&
-        listEquals(other.events, events);
+        listEquals(other.events, events) &&
+        other.description == description &&
+        other.image == image;
   }
 
   @override
@@ -430,7 +446,8 @@ class Group {
         design.hashCode ^
         custom_roles.hashCode ^
         members_roles.hashCode ^
-        events.hashCode;
+        events.hashCode ^
+        image.hashCode;
   }
 }
 
@@ -717,13 +734,13 @@ class Host {
   }
   Map<String, dynamic> toMap() {
     return {
-      "id" : id,
-      "links" : mapFromLinkList(links ?? <Link>[]),
-      "logopath" : logopath,
-      "name" : name,
+      "id": id,
+      "links": mapFromLinkList(links ?? <Link>[]),
+      "logopath": logopath,
+      "name": name,
       "category": category?.name,
       "permit": permit,
-      "official_logo" : official_logo
+      "official_logo": official_logo
     };
   }
 }

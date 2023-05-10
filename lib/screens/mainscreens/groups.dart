@@ -166,12 +166,14 @@ class EntityBrowser extends StatelessWidget {
   bool include_users = true;
   bool include_groups = false;
   bool include_events = true;
+  ValueNotifier<List<QueryEntry>>? to_Notify_on_Pick;
   EntityBrowser(
       {super.key,
       required this.searchStringNotif,
       this.include_events = false,
       this.include_groups = false,
-      this.include_users = true});
+      this.include_users = true,
+      this.to_Notify_on_Pick});
 
   static List<Widget> groupListToListTiles(
       List<dbc.Group> list, BuildContext context, ValueNotifier to_Notify,
@@ -229,18 +231,24 @@ class EntityBrowser extends StatelessWidget {
           if (snapshot.connectionState != ConnectionState.done) {
             return cw.LoadingIndicator(color: Colors.white);
           } else {
-            List<QueryEntry> users = include_users ? snapshot.data![1].entries
-                .map((e) => QueryEntry(
-                    id: e.key, name: e.value, type: QueryCategory.user))
-                .toList() : [];
-            List<QueryEntry> groups = include_groups ? snapshot.data![0].entries
-                .map((e) => QueryEntry(
-                    id: e.key, name: e.value, type: QueryCategory.group))
-                .toList() : [];
-            List<QueryEntry> events = include_events ? snapshot.data![2].entries
-                .map((e) => QueryEntry(
-                    id: e.key, name: e.value, type: QueryCategory.event))
-                .toList() : [];
+            List<QueryEntry> users = include_users
+                ? snapshot.data![1].entries
+                    .map((e) => QueryEntry(
+                        id: e.key, name: e.value, type: QueryCategory.user))
+                    .toList()
+                : [];
+            List<QueryEntry> groups = include_groups
+                ? snapshot.data![0].entries
+                    .map((e) => QueryEntry(
+                        id: e.key, name: e.value, type: QueryCategory.group))
+                    .toList()
+                : [];
+            List<QueryEntry> events = include_events
+                ? snapshot.data![2].entries
+                    .map((e) => QueryEntry(
+                        id: e.key, name: e.value, type: QueryCategory.event))
+                    .toList()
+                : [];
             List<QueryEntry> data = users + groups + events;
             return ValueListenableBuilder(
                 valueListenable: searchStringNotif,
@@ -248,9 +256,12 @@ class EntityBrowser extends StatelessWidget {
                   List<QueryEntry> shownEntrys =
                       string.isEmpty ? [] : data.matchesString(string);
                   String shownEntrysString = "Search for ";
-                  if (include_users) shownEntrysString = "$shownEntrysString Users ";
-                  if (include_groups) shownEntrysString = "$shownEntrysString Groups ";
-                  if (include_events) shownEntrysString = "$shownEntrysString Events ";
+                  if (include_users)
+                    shownEntrysString = "$shownEntrysString Users ";
+                  if (include_groups)
+                    shownEntrysString = "$shownEntrysString Groups ";
+                  if (include_events)
+                    shownEntrysString = "$shownEntrysString Events ";
                   return ListView(
                     children: string.isEmpty
                         ? [
@@ -268,36 +279,47 @@ class EntityBrowser extends StatelessWidget {
                                           const TextStyle(color: Colors.white)),
                                   trailing: e.icon,
                                   onTap: () {
-                                    if (e.type == QueryCategory.event) {
-                                      kIsWeb
-                                          ? Beamer.of(context)
-                                              .beamToNamed("/events/${e.id}")
-                                          : Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      EventOverviewPage(e.id)));
-                                    } else if (e.type == QueryCategory.group) {
-                                      kIsWeb
-                                          ? Beamer.of(context)
-                                              .beamToNamed("/groups/${e.id}")
-                                          : Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      GroupOverviewPage(
-                                                          groupid: e.id)));
-                                    } else if (e.type == QueryCategory.user) {
-                                      kIsWeb
-                                          ? Beamer.of(context).beamToNamed(
-                                              "/users/${e.id}@groups")
-                                          : Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      UserOverviewPage(
-                                                          username: e.id)));
+                                    if (to_Notify_on_Pick == null) {
+                                      if (e.type == QueryCategory.event) {
+                                        kIsWeb
+                                            ? Beamer.of(context)
+                                                .beamToNamed("/events/${e.id}")
+                                            : Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        EventOverviewPage(
+                                                            e.id)));
+                                      } else if (e.type ==
+                                          QueryCategory.group) {
+                                        kIsWeb
+                                            ? Beamer.of(context)
+                                                .beamToNamed("/groups/${e.id}")
+                                            : Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        GroupOverviewPage(
+                                                            groupid: e.id)));
+                                      } else if (e.type == QueryCategory.user) {
+                                        kIsWeb
+                                            ? Beamer.of(context).beamToNamed(
+                                                "/users/${e.id}@groups")
+                                            : Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        UserOverviewPage(
+                                                            username: e.id)));
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                                cw.hintSnackBar("Error"));
+                                      }
                                     } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                              cw.hintSnackBar("Error"));
+                                      if (to_Notify_on_Pick!.value
+                                          .contains(e)) {
+                                        to_Notify_on_Pick!.value.remove(e);
+                                      } else {
+                                        to_Notify_on_Pick!.value.add(e);
+                                      }
                                     }
                                   },
                                 ))

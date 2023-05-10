@@ -169,6 +169,16 @@ extension Queriefy on List<dbc.Event> {
     });
     return outL;
   }
+
+  List<dbc.Event> whereIsInIDList(List<String> ids) {
+    List<dbc.Event> outL = [];
+    forEach((element) {
+      if (ids.contains(element.eventid)) {
+        outL.add(element);
+      }
+    });
+    return outL;
+  }
 }
 
 extension Check on List<Message> {
@@ -297,6 +307,7 @@ extension JsonSafe on String {
     watch.stop;
     return value;
   }
+
   String get fromDBSafeString {
     Stopwatch watch = Stopwatch()..start();
     String value = replaceAll(OE, "Ö");
@@ -310,5 +321,4 @@ extension JsonSafe on String {
     watch.stop;
     return value;
   }
-
 }

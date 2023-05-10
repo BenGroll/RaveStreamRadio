@@ -50,7 +50,7 @@ class EventFilterBottomSheet extends StatelessWidget {
           builder: (context, enabledFilters, foo) {
             return ListView(
               children: [
-                ListTile(
+                /*ListTile(
                   dense: false,
                   title: Text("Only After:",
                       style: TextStyle(color: Colors.white)),
@@ -86,7 +86,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                   dense: true,
                   title: Text("Select Only Before",
                       style: TextStyle(color: Colors.white)),
-                ),
+                ),*/
                 ListTile(
                   dense: false,
                   title: Text("Can go with this Age:",
@@ -240,7 +240,6 @@ class _EventCalendarState extends State<EventCalendar> {
   @override
   void initState() {
     super.initState();
-    //events =db.fetchEventsFromIndexFile();
   }
 
   @override
@@ -249,8 +248,10 @@ class _EventCalendarState extends State<EventCalendar> {
     ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
         byStatus: mode == CalendarMode.normal
             ? ["public"]
-            : (mode == CalendarMode.drafts ? ["draft"] : ["public"])));
-    print("OnCreate filters: $filters");
+            : (mode == CalendarMode.drafts ? ["draft"] : ["public"]),
+        fromIDList: mode == CalendarMode.favourites
+            ? (currently_loggedin_as.value?.saved_events.ids() ?? [])
+            : null));
 
     event_data = [];
     totalelements = 0;
@@ -348,26 +349,30 @@ class _EventCalendarState extends State<EventCalendar> {
                               return ValueListenableBuilder(
                                   valueListenable: filters,
                                   builder: (BuildContext context,
-                                      db.EventFilters filters, foo) {
+                                      db.EventFilters filterValue, foo) {
                                     List<dbc.Event> events =
                                         snapshot.data ?? [];
                                     return mode == CalendarMode.favourites
                                         ? ListView(
                                             children: db
                                                 .queriefyEventList(
-                                                    saved_events, filters)
-                                                .map(
-                                                    (e) => CalendarEventCard(e))
+                                                    events, filterValue)
+                                                .map((e) => CalendarEventCard(
+                                                    event: e,
+                                                    parent: widget,
+                                                    filters: filters))
                                                 .toList(),
                                           )
                                         : ListView(
                                             children: db
                                                 .queriefyEventList(
                                                   events,
-                                                  filters,
+                                                  filters.value,
                                                 )
-                                                .map(
-                                                    (e) => CalendarEventCard(e))
+                                                .map((e) => CalendarEventCard(
+                                                    event: e,
+                                                    parent: widget,
+                                                    filters: filters))
                                                 .toList(),
                                           );
                                   });
@@ -389,10 +394,11 @@ class _EventCalendarState extends State<EventCalendar> {
 }
 
 class CalendarEventCard extends StatelessWidget {
-  late dbc.Event event;
-  CalendarEventCard(dbc.Event event) {
-    this.event = event;
-  }
+  dbc.Event event;
+  EventCalendar parent;
+  ValueNotifier<db.EventFilters> filters;
+  CalendarEventCard(
+      {required this.event, required this.parent, required this.filters});
   @override
   Widget build(BuildContext context) {
     ValueNotifier<bool> saved =
@@ -406,6 +412,9 @@ class CalendarEventCard extends StatelessWidget {
               bool was_saved = await db.saveEventToUserReturnWasSaved(
                   event, currently_loggedin_as.value);
               saved.value = !was_saved;
+              if (parent.mode == CalendarMode.favourites) {
+                reloadEventPage();
+              }
               was_saved
                   ? ScaffoldMessenger.of(context).showSnackBar(
                       cw.hintSnackBar("Deleted event from favorites."))
@@ -482,6 +491,9 @@ class CalendarEventCard extends StatelessWidget {
               bool was_saved = await db.saveEventToUserReturnWasSaved(
                   event, currently_loggedin_as.value);
               saved.value = !was_saved;
+              if (parent.mode == CalendarMode.favourites) {
+                reloadEventPage();
+              }
               was_saved
                   ? ScaffoldMessenger.of(context).showSnackBar(
                       cw.hintSnackBar("Deleted event from favorites."))

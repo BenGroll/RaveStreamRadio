@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
@@ -47,7 +48,6 @@ class EventOverviewPage extends StatelessWidget {
                           builder: (context, eventdata, foo) {
                             print(event);
                             try {
-                              print("INSIDE TRY BLOCK");
                               return FutureBuilder(
                                   future: db.getEventUserspecificData(
                                       event.value ?? dbc.demoEvent,
@@ -56,16 +56,12 @@ class EventOverviewPage extends StatelessWidget {
                                     //pprint(stringToTextSpanList("Hello Friends!\n Lol"));
                                     if (snapshot.connectionState ==
                                         ConnectionState.done) {
-                                      print("BreakPoint 15");
-
                                       eventUserSpecificData.value =
                                           snapshot.data;
                                       return ValueListenableBuilder(
                                           valueListenable:
                                               eventUserSpecificData,
                                           builder: (context, bar, foo) {
-                                            print("BreakPoint 1");
-
                                             List<Widget> linkButtons = [];
                                             /*event.value!.links
                                                 ?.forEach((key, value) {
@@ -92,9 +88,19 @@ class EventOverviewPage extends StatelessWidget {
                                                   backgroundColor:
                                                       cl.lighterGrey,
                                                   centerTitle: true,
-                                                  title: Text(
-                                                      event.value!.eventid,
-                                                      maxLines: 2),
+                                                  title: GestureDetector(
+                                                    onLongPress: () {
+                                                      event.value != null ? 
+                                                      Clipboard.setData(
+                                                          ClipboardData(text: event.value!.eventid)) : null;
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(
+                                                            content: Text("Copied Title to Clipboard")));
+                                                    },
+                                                    child: Text(
+                                                        event.value!.eventid,
+                                                        maxLines: 2),
+                                                  ),
                                                   actions: [
                                                     IconButton(
                                                         onPressed: () async {
@@ -176,14 +182,16 @@ class EventOverviewPage extends StatelessWidget {
                                                         Expanded(
                                                             flex: 3,
                                                             child: ClipRRect(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(DISPLAY_SHORT_SIDE(context) /
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                        DISPLAY_SHORT_SIDE(context) /
                                                                             30),
-                                                                    child: kIsWeb
-                                                                        ? Container()
-                                                                        : FutureImageBuilder(
-                                                                            futureImage:
-                                                                                getEventFlyer(event.value ?? dbc.demoEvent)))),
+                                                                child: kIsWeb
+                                                                    ? Container()
+                                                                    : FutureImageBuilder(
+                                                                        futureImage:
+                                                                            getEventFlyer(event.value ??
+                                                                                dbc.demoEvent)))),
                                                       ]),
                                                       Padding(
                                                         padding:

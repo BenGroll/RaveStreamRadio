@@ -360,6 +360,29 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("Events read"));
                       },
                       child: Text("Read Eventindex")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        QuerySnapshot snap = await db.db
+                            .collection("${branchPrefix}events")
+                            .get();
+                        List<QueryDocumentSnapshot> docs = snap.docs;
+                        List<Map> events =
+                            docs.map((e) => e.data() as Map).toList();
+                        List<Future> futures = events
+                            .map((e) =>
+                                db.db
+                                    .doc(
+                                        "${branchPrefix}events/${e["eventid"]}")
+                                    .update({
+                                  "flyer": e["flyer"].runtimeType == String ? 
+                                      e["flyer"].replaceAll("1000x1000", "2000x2000") : null
+                                }))
+                            .toList();
+                        await Future.wait(futures);
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("Events read"));
+                      },
+                      child: Text("Rewrite Event Flyer links")),
                 ],
               ),
             ),

@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -255,6 +256,7 @@ class EventFilters {
   List<String> byStatus;
   bool onlyHostedByMe;
   String? searchString;
+  List<String>? fromIDList;
   EventFilters(
       {this.lastelemEventid,
       this.onlyAfter,
@@ -263,7 +265,8 @@ class EventFilters {
       this.orderbyField = "end",
       required this.byStatus,
       this.onlyHostedByMe = false,
-      this.searchString});
+      this.searchString,
+      this.fromIDList});
 
   @override
   String toString() {
@@ -299,33 +302,24 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
 List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
     [int? queryLimit]) {
   List<dbc.Event> eventList = events;
-  print("QueryFilters: $filters");
-  //pprint(". ${eventList.length}");
-  //pprint("Stati Included: ${filters.byStatus}");
   if (filters.searchString != null) {
     eventList = eventList.whereContainsString(filters.searchString ?? "");
   }
-
+  if (filters.fromIDList != null) {
+    eventList = eventList.whereIsInIDList(filters.fromIDList ?? []);
+  }
   if (filters.onlyAfter != null) {
     eventList =
         eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
   }
-  //pprint(".. ${eventList.length}");
-
   if (filters.onlyBefore != null) {
     eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
   }
-  //pprint("... ${eventList.length}");
-
   eventList = eventList.whereIsInValues("status", filters.byStatus);
-  //pprint(".... ${eventList.length}");
-
   if (filters.canGoByAge != null) {
     eventList =
         eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
   }
-  //pprint("..... ${eventList.length}");
-
   if (filters.onlyHostedByMe) {
     List newList = [];
     eventList.forEach((element) {
@@ -342,8 +336,6 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
       }
     });
   }
-  //pprint("...... ${eventList.length}");
-
   eventList.sort((a, b) {
     int sort_a = a.begin == null
         ? (a.end == null ? 0 : a.end!.millisecondsSinceEpoch)
@@ -353,8 +345,6 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
         : b.begin!.millisecondsSinceEpoch;
     return sort_a.compareTo(sort_b);
   });
-  //pprint("....... ${eventList.length}");
-
   return eventList;
 }
 
@@ -781,10 +771,8 @@ Future uploadHost(dbc.Host host) async {
   futures.add(ref.set(host.toMap()));
   futures.add(db.doc("content/indexes").update({"templateHostIDs": jgkh}));
   if (beforeHost != null) {
-    pprint("122");
     dbc.Host before =
         dbc.Host.fromMap(forceStringDynamicMapFromObject(beforeHost));
-    pprint("123");
     futures.add(addLogEntry(
         "Updated Host : ${before.toString()} => ${host.toMap()}",
         category: LogEntryCategory.host,
@@ -936,7 +924,6 @@ Future<List<dbc.Group>> queryGroups() async {
       currently_loggedin_as.value!.followed_groups;
   List<DocumentReference> allGroups = joined_groups..addAll(followed_groups);
   allGroups = allGroups.toSet().toList();
-  print("AllGroups: $allGroups");
   List<Future<DocumentSnapshot>> futures = [];
   allGroups.forEach((element) {
     futures.add(element.get());
@@ -1083,4 +1070,31 @@ Future<List<Map>> getIndexedEntitys() async {
   List<Uint8List> lists = await Future.wait(futures);
   List<String> strings = lists.map((e) => String.fromCharCodes(e)).toList();
   return strings.map((e) => jsonDecode(e.fromDBSafeString) as Map).toList();
+}
+
+Future uploadGroupToDB(dbc.Group group) async {
+  if (group.image != null) {
+    String fileExtension =
+        group.image!.path.split(".")[group.image!.path.split(".").length - 1];
+    Reference ref = FirebaseStorage.instance.ref("/groupicons");
+    await ref.child("${group.groupid}").putFile(group.image ?? File("oguih"),
+        SettableMetadata(contentType: 'image/${fileExtension}'));
+  }
+  Map map = group.toMap()..remove("image");
+  List<Future> futures = [
+    db
+        .doc("${branchPrefix}groups/${group.groupid}")
+        .set(forceStringDynamicMapFromObject(map)),
+    addGroupToIndexFile(group),
+    db
+        .doc("${branchPrefix}users/${currently_loggedin_as.value!.username}")
+        .update({
+      "joined_groups": FieldValue.arrayUnion(
+          [db.doc("${branchPrefix}groups/${group.groupid}")])
+    })
+  ];
+  Future.wait(futures);
+  currently_loggedin_as.value!.joined_groups
+      .add(db.doc("${branchPrefix}groups/${group.groupid}"));
+  return;
 }
