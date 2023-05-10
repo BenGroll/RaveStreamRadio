@@ -95,7 +95,6 @@ class EventOverviewPage extends StatelessWidget {
                                                           ClipboardData(text: event.value!.eventid)) : null;
                                                       ScaffoldMessenger.of(context).showSnackBar(
                                                           SnackBar(
-                                                            backgroundColor: Colors.transparent,
                                                             content: Text("Copied Title to Clipboard")));
                                                     },
                                                     child: Text(

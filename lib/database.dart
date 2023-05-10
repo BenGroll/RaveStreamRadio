@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -1069,4 +1070,31 @@ Future<List<Map>> getIndexedEntitys() async {
   List<Uint8List> lists = await Future.wait(futures);
   List<String> strings = lists.map((e) => String.fromCharCodes(e)).toList();
   return strings.map((e) => jsonDecode(e.fromDBSafeString) as Map).toList();
+}
+
+Future uploadGroupToDB(dbc.Group group) async {
+  if (group.image != null) {
+    String fileExtension =
+        group.image!.path.split(".")[group.image!.path.split(".").length - 1];
+    Reference ref = FirebaseStorage.instance.ref("/groupicons");
+    await ref.child("${group.groupid}").putFile(group.image ?? File("oguih"),
+        SettableMetadata(contentType: 'image/${fileExtension}'));
+  }
+  Map map = group.toMap()..remove("image");
+  List<Future> futures = [
+    db
+        .doc("${branchPrefix}groups/${group.groupid}")
+        .set(forceStringDynamicMapFromObject(map)),
+    addGroupToIndexFile(group),
+    db
+        .doc("${branchPrefix}users/${currently_loggedin_as.value!.username}")
+        .update({
+      "joined_groups": FieldValue.arrayUnion(
+          [db.doc("${branchPrefix}groups/${group.groupid}")])
+    })
+  ];
+  Future.wait(futures);
+  currently_loggedin_as.value!.joined_groups
+      .add(db.doc("${branchPrefix}groups/${group.groupid}"));
+  return;
 }

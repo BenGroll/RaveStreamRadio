@@ -35,26 +35,26 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
+  cupertino_icons:
   firebase_core:
   cloud_firestore:
-  auto_size_text: 3.0.0
-  flutter_spinkit: 5.1.0
-  path_provider: 2.0.11
+  auto_size_text: 
+  flutter_spinkit: 
+  path_provider: 
   url_launcher: 
   firebase_storage:
   flutter_svg:
   url_strategy:
-  beamer: 1.5.3
-  numberpicker: 2.0.1
-  dropdown_search: 5.0.3
+  beamer: 
+  numberpicker: 
+  dropdown_search: 
   flutter_paypal:
   firebase_database:
   auto_size_text_field:
-  
+  image_picker: 
   
 dev_dependencies: 
-  change_app_package_name: ^1.1.0
+  change_app_package_name:
   flutter_test:
     sdk: flutter
 
@@ -63,8 +63,8 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
-  flutter_native_splash: ^2.0.1+1
+  flutter_lints: 
+  flutter_native_splash: 
 
 flutter_native_splash:
   color: "#000000"

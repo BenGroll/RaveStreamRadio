@@ -39,7 +39,6 @@ class GroupOverviewPage extends StatelessWidget {
                                 Clipboard.setData(
                                     ClipboardData(text: group.groupid));
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  backgroundColor: Colors.transparent,
                                   content: Text("Copied ID to clipboard")));
                               }
                             },

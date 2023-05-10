@@ -3,6 +3,7 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/colors.dart' as cl;
+import 'package:ravestreamradioapp/screens/groupcreationscreen.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/favourites.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/groups.dart';
@@ -188,10 +189,14 @@ class HomeScreen extends StatelessWidget {
                               } else if (currently_selected_screen.value ==
                                   Screens.forums) {
                                 if (currently_loggedin_as.value != null) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      cw.hintSnackBar(
-                                          "Group Creating is currently WIP and will be added in the near future."));
-                                  //Beamer.of(context).beamToNamed("/createGroup");
+                                  DISABLE_GROUP_CREATION
+                                      ? ScaffoldMessenger.of(context)
+                                          .showSnackBar(cw.hintSnackBar(
+                                              "Group Creating is currently WIP and will be added in the near future."))
+                                      : Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  GroupCreationScreen()));
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                       cw.hintSnackBar(
