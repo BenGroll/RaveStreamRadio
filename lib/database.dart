@@ -645,9 +645,6 @@ Future<Map<String, String>> getDocIDsFromCollectionAsList(
 
 /// Get demohost Ids
 Future<Map<String, String>> getDemoHostIDs() async {
-  if (!doIHavePermission(GlobalPermission.MANAGE_HOSTS)) {
-    return {};
-  }
   DocumentSnapshot indexesSnap = await db.doc("content/indexes").get();
   if (indexesSnap.data() != null) {
     return forceStringStringMapFromStringDynamic(
@@ -691,7 +688,6 @@ Future<String> readEventIndexesJson() async {
       storageRef.child("indexes/${branchPrefix}eventsIndex.json");
   Stopwatch stop = Stopwatch()..start();
   Uint8List? data = await pathReference.getData(100 * 1024 * 1024);
-  print("Time to download Events: ${stop.elapsed}");
   return String.fromCharCodes(data ?? Uint8List.fromList([0])).fromDBSafeString;
 }
 

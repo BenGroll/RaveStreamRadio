@@ -1043,7 +1043,7 @@ class LoadingIndicator extends StatelessWidget {
           child: FractionallySizedBox(
               widthFactor: 0.66,
               heightFactor: 0.66,
-              child: SpinKitThreeBounce(color: color.withOpacity(0.66))),
+              child: CircularProgressIndicator(),)
         ),
       ),
     );
@@ -1179,7 +1179,6 @@ class LinkEditingDialog extends StatelessWidget {
         TextButton(
             child: Text("Save", style: TextStyle(color: Colors.white)),
             onPressed: () {
-              print(currentLinkList.value);
               to_Notify.value = currentLinkList.value;
               Navigator.of(context).pop();
               to_Notify.notifyListeners();

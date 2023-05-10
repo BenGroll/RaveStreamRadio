@@ -155,8 +155,10 @@ class TemplateHostLinkButton extends StatelessWidget {
           future: db.getDemoHostIDs(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
+              print("Host ID: $id");
+              print("Hosts: ${snapshot.data}");
               return Text(
-                snapshot.data![id] ?? "This should never display",
+                snapshot.data?[id] ?? "This should never display",
                 style: const TextStyle(color: Colors.white),
               );
             } else {

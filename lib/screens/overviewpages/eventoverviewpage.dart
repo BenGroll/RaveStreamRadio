@@ -46,7 +46,6 @@ class EventOverviewPage extends StatelessWidget {
                       : ValueListenableBuilder(
                           valueListenable: event,
                           builder: (context, eventdata, foo) {
-                            print(event);
                             try {
                               return FutureBuilder(
                                   future: db.getEventUserspecificData(
@@ -90,64 +89,92 @@ class EventOverviewPage extends StatelessWidget {
                                                   centerTitle: true,
                                                   title: GestureDetector(
                                                     onLongPress: () {
-                                                      event.value != null ? 
-                                                      Clipboard.setData(
-                                                          ClipboardData(text: event.value!.eventid)) : null;
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(
-                                                            content: Text("Copied Title to Clipboard")));
+                                                      event.value != null
+                                                          ? Clipboard.setData(
+                                                              ClipboardData(
+                                                                  text: event
+                                                                      .value!
+                                                                      .eventid))
+                                                          : null;
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(SnackBar(
+                                                              content: Text(
+                                                                  "Copied Title to Clipboard")));
                                                     },
-                                                    child: Text(
-                                                        event.value!.eventid,
-                                                        maxLines: 2),
+                                                    child:
+                                                        SingleChildScrollView(
+                                                      scrollDirection:
+                                                          Axis.horizontal,
+                                                      child: Text(
+                                                          event.value!.eventid,
+                                                          maxLines: 2),
+                                                    ),
                                                   ),
                                                   actions: [
-                                                    IconButton(
-                                                        onPressed: () async {
-                                                          List<DocumentReference>
-                                                              saved_events =
-                                                              currently_loggedin_as
-                                                                  .value!
-                                                                  .saved_events;
-                                                          if (saved_events
-                                                              .contains(db.db.doc(
-                                                                  "${branchPrefix}events/${event.value!.eventid}"))) {
-                                                            saved_events.remove(
-                                                                db.db.doc(
-                                                                    "${branchPrefix}events/${event.value!.eventid}"));
-                                                          } else {
-                                                            saved_events.add(
-                                                                db.db.doc(
-                                                                    "${branchPrefix}events/${event.value!.eventid}"));
-                                                          }
-                                                          Map<String, dynamic>
-                                                              currentUserData =
-                                                              currently_loggedin_as
-                                                                  .value!
-                                                                  .toMap();
-                                                          currentUserData[
-                                                                  "saved_events"] =
-                                                              saved_events;
-                                                          db.db
-                                                              .doc(
-                                                                  "${branchPrefix}users/${currently_loggedin_as.value!.username}")
-                                                              .set(
-                                                                  currentUserData);
-                                                          currently_loggedin_as
-                                                                  .value!
-                                                                  .saved_events =
-                                                              saved_events;
-                                                        },
-                                                        icon: eventUserSpecificData
-                                                                        .value![
-                                                                    "user_has_event_saved"] ??
-                                                                false
-                                                            ? Icon(
-                                                                Icons.bookmark,
-                                                                color: Colors
-                                                                    .white)
-                                                            : Icon(Icons
-                                                                .bookmark_border)),
+                                                    ValueListenableBuilder(
+                                                        valueListenable:
+                                                            currently_loggedin_as,
+                                                        builder: (context,
+                                                            userLoggedIn, foo) {
+                                                          return IconButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                List<DocumentReference>
+                                                                    saved_events =
+                                                                    currently_loggedin_as
+                                                                        .value!
+                                                                        .saved_events;
+                                                                if (saved_events
+                                                                    .contains(db
+                                                                        .db
+                                                                        .doc(
+                                                                            "${branchPrefix}events/${event.value!.eventid}"))) {
+                                                                  saved_events
+                                                                      .remove(db
+                                                                          .db
+                                                                          .doc(
+                                                                              "${branchPrefix}events/${event.value!.eventid}"));
+                                                                } else {
+                                                                  saved_events.add(
+                                                                      db.db.doc(
+                                                                          "${branchPrefix}events/${event.value!.eventid}"));
+                                                                }
+                                                                Map<String,
+                                                                        dynamic>
+                                                                    currentUserData =
+                                                                    currently_loggedin_as
+                                                                        .value!
+                                                                        .toMap();
+                                                                currentUserData[
+                                                                        "saved_events"] =
+                                                                    saved_events;
+                                                                db.db
+                                                                    .doc(
+                                                                        "${branchPrefix}users/${currently_loggedin_as.value!.username}")
+                                                                    .set(
+                                                                        currentUserData);
+                                                                currently_loggedin_as
+                                                                        .value!
+                                                                        .saved_events =
+                                                                    saved_events;
+                                                                currently_loggedin_as
+                                                                    .notifyListeners();
+                                                              },
+                                                              icon: currently_loggedin_as
+                                                                          .value
+                                                                          ?.saved_events
+                                                                          .contains(db.db.doc(
+                                                                              "${branchPrefix}events/$eventid")) ??
+                                                                      false
+                                                                  ? Icon(
+                                                                      Icons
+                                                                          .bookmark,
+                                                                      color: Colors
+                                                                          .white)
+                                                                  : Icon(Icons
+                                                                      .bookmark_border));
+                                                        }),
                                                     IconButton(
                                                         onPressed: () {
                                                           _key.currentState!
@@ -178,21 +205,17 @@ class EventOverviewPage extends StatelessWidget {
                                                                       DISPLAY_LONG_SIDE(
                                                                               context) /
                                                                           20))),
-                                                      Row(children: [
-                                                        Expanded(
-                                                            flex: 3,
-                                                            child: ClipRRect(
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                        DISPLAY_SHORT_SIDE(context) /
-                                                                            30),
-                                                                child: kIsWeb
-                                                                    ? Container()
-                                                                    : FutureImageBuilder(
-                                                                        futureImage:
-                                                                            getEventFlyer(event.value ??
-                                                                                dbc.demoEvent)))),
-                                                      ]),
+                                                      ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  DISPLAY_SHORT_SIDE(
+                                                                          context) /
+                                                                      30),
+                                                          child: FutureImageBuilder(
+                                                              futureImage:
+                                                                  getEventFlyer(
+                                                                      event.value ??
+                                                                          dbc.demoEvent))),
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
@@ -233,29 +256,27 @@ class EventOverviewPage extends StatelessWidget {
                                                           ],
                                                         ),
                                                       ),
-                                                      Expanded(
-                                                        child: event.value!
-                                                                    .description !=
-                                                                null
-                                                            ? Padding(
-                                                                padding: const EdgeInsets.all(
-                                                                    16.0),
-                                                                child: RichText(
-                                                                    maxLines:
-                                                                        50,
-                                                                    softWrap:
-                                                                        true,
-                                                                    text: TextSpan(
-                                                                        style: const TextStyle(
-                                                                            color: Colors
-                                                                                .white),
-                                                                        children: (event.value!.description == null || event.value!.description!.isEmpty)
-                                                                            ? null
-                                                                            : stringToTextSpanList(event.value!.description ??
-                                                                                ""))))
-                                                            : const SizedBox(
-                                                                height: 0),
-                                                      ),
+                                                      event.value!.description !=
+                                                              null
+                                                          ? Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                          .all(
+                                                                      16.0),
+                                                              child: RichText(
+                                                                  maxLines: 50,
+                                                                  softWrap:
+                                                                      true,
+                                                                  text: TextSpan(
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .white),
+                                                                      children: (event.value!.description == null || event.value!.description!.isEmpty)
+                                                                          ? null
+                                                                          : stringToTextSpanList(event.value!.description ??
+                                                                              ""))))
+                                                          : const SizedBox(
+                                                              height: 0),
                                                       Padding(
                                                         padding: EdgeInsets
                                                             .symmetric(

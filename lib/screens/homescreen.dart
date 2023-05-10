@@ -3,6 +3,7 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/colors.dart' as cl;
+import 'package:ravestreamradioapp/screens/aboutus.dart';
 import 'package:ravestreamradioapp/screens/groupcreationscreen.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/favourites.dart';
@@ -10,6 +11,7 @@ import 'package:ravestreamradioapp/screens/mainscreens/groups.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/profile.dart';
 import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
+import 'package:ravestreamradioapp/screens/privacypolicy.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/chatting.dart' as chats;
@@ -177,14 +179,114 @@ class HomeScreen extends StatelessWidget {
                           child: FloatingActionButton(
                             backgroundColor: cl.darkerGrey,
                             onPressed: () {
+                              ValueNotifier<bool> has_accepted =
+                                  ValueNotifier(false);
                               if (currently_selected_screen.value ==
                                   Screens.events) {
                                 if (currently_loggedin_as.value != null) {
-                                  Beamer.of(context).beamToNamed("/hostevent");
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                            backgroundColor: cl.lighterGrey,
+                                            title: Text("AGBs",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                    "To publish events you have to accept our AGBs.",
+                                                    style: TextStyle(
+                                                        color: Colors.white)),
+                                                TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  PrivacyPolicy()));
+                                                    },
+                                                    child: Text("View AGBs",
+                                                        style: TextStyle(
+                                                            color:
+                                                                Color.fromARGB(
+                                                                    255,
+                                                                    110,
+                                                                    178,
+                                                                    255)))),
+                                                ValueListenableBuilder(
+                                                    valueListenable:
+                                                        has_accepted,
+                                                    builder: (context, accepted,
+                                                        foo) {
+                                                      return Theme(
+                                                        data: Theme.of(context)
+                                                            .copyWith(
+                                                                unselectedWidgetColor:
+                                                                    Colors
+                                                                        .white),
+                                                        child: Checkbox(
+                                                            checkColor:
+                                                                Colors.white,
+                                                            activeColor:
+                                                                Colors.white,
+                                                            value: accepted,
+                                                            onChanged: (value) =>
+                                                                has_accepted
+                                                                        .value =
+                                                                    value ??
+                                                                        has_accepted
+                                                                            .value),
+                                                      );
+                                                    })
+                                              ],
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: Text("Discard",
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.white))),
+                                              ValueListenableBuilder(
+                                                  valueListenable: has_accepted,
+                                                  builder:
+                                                      (contex, value, foo) {
+                                                    return TextButton(
+                                                      child: Text("Proceed",
+                                                          style: TextStyle(
+                                                              color: value
+                                                                  ? Colors.white
+                                                                  : Color
+                                                                      .fromARGB(
+                                                                          255,
+                                                                          163,
+                                                                          163,
+                                                                          163))),
+                                                      onPressed: () {
+                                                        if (value) {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          Beamer.of(context)
+                                                              .beamToNamed(
+                                                                  "/hostevent");
+                                                        } else {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(SnackBar(
+                                                                  content: Text(
+                                                                      "You haven't accepted our AGBs")));
+                                                        }
+                                                      },
+                                                    );
+                                                  })
+                                            ],
+                                          ));
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                       cw.hintSnackBar(
-                                          "Has to be logged in to create Event"));
+                                          "You have to be logged in to create Event"));
                                 }
                               } else if (currently_selected_screen.value ==
                                   Screens.forums) {

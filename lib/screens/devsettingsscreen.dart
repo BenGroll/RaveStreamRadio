@@ -267,7 +267,6 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Chat Test")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(generateDocumentID());
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Chat Test"));
                       },
@@ -348,7 +347,6 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Create Event Index")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(await db.getIndexedEntitys());
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Events Loaded"));
                       },

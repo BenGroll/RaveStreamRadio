@@ -161,7 +161,6 @@ class EventCreationScreen extends StatelessWidget {
     dynamic logger = ValueListenableBuilder(
         valueListenable: currentEventData,
         builder: (BuildContext context, dbc.Event val, foo) {
-          print(val.toString());
           return Container();
         });
 
@@ -465,7 +464,6 @@ class GeneralSettingsPage extends StatelessWidget {
                                                     onChanged: (value) {
                                                       pprint(
                                                           "New Build Invoked");
-                                                      print(value);
                                                       if (value ==
                                                           HOST_YOURSELF_ID) {
                                                         parent
@@ -683,7 +681,6 @@ class GeneralSettingsPage extends StatelessWidget {
                                           }
                                           DateTime? picked_date = await cw
                                               .pick_date(context, initialDate);
-                                          print(picked_date);
                                           if (picked_date != null) {
                                             parent.currentEventData.value
                                                     .begin =
@@ -1157,7 +1154,6 @@ List<dbc.Link> editLinkInList(List<dbc.Link> links, dbc.Link searchlink) {
 
 class UploadEventDialog extends StatelessWidget {
   Future uploadEvent(dbc.Event event, BuildContext context) async {
-    print(event.hostreference);
     parent.is_awaiting_upload.value = true;
     if (event.templateHostID != null && event.templateHostID!.isNotEmpty) {
       event.hostreference = null;
