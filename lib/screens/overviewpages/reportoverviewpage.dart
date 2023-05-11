@@ -163,7 +163,7 @@ class SingleReportScreen extends StatelessWidget {
                     color: cl.lighterGrey,
                   )),
                         child: Padding(padding: EdgeInsets.all(8.0),child: Text(
-                            "${report.description?.isEmpty ?? 'No Description included.'}",
+                            "${!report.description!.isEmpty ? report.description : 'No Description included.'}",
                             style: TextStyle(color: Colors.white),
                             maxLines: 1000),
                       )),),)

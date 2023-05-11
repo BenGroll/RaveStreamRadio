@@ -193,6 +193,8 @@ class EventOverviewPage extends StatelessWidget {
                                                                 30,
                                                         vertical: 8.0),
                                                     child: ListView(children: [
+                                                      event.value?.status == "frozen" ?
+                                                      Text("This event is currently hidden from the public by moderation.", style: TextStyle(color: Colors.red)) : Container(),
                                                       Center(
                                                           child: EventTitle(
                                                               event: event
@@ -478,9 +480,10 @@ class EventOverviewPage extends StatelessWidget {
                 ),
               );
             } else {
-              Navigator.of(context).maybePop();
-              reloadEventPage();
+              /*Navigator.of(context).maybePop();
+              reloadEventPage();*/
               return Scaffold(
+                appBar: AppBar(),
                   backgroundColor: cl.darkerGrey,
                   body: Center(
                       child: Text("This Event doesn't exist (anymore)",

@@ -1,5 +1,11 @@
+// ignore_for_file: sort_child_properties_last, invalid_use_of_visible_for_testing_member
+
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
@@ -38,8 +44,10 @@ class GroupOverviewPage extends StatelessWidget {
                               if (group != null) {
                                 Clipboard.setData(
                                     ClipboardData(text: group.groupid));
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text("Copied ID to clipboard")));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content:
+                                            Text("Copied ID to clipboard")));
                               }
                             },
                             child: Text(
@@ -86,6 +94,7 @@ class GroupView extends StatelessWidget {
         group.value
                 .members_roles![db.db.doc(currently_loggedin_as.value!.path)] ==
             "Founder";
+    ValueNotifier triggerthistorefreshicon = ValueNotifier(null);
     return Scaffold(
         backgroundColor: cl.darkerGrey,
         body: SingleChildScrollView(
@@ -98,9 +107,50 @@ class GroupView extends StatelessWidget {
                       Center(
                         child: Container(
                           width: 150,
-                          child: const CircleAvatar(
-                            radius: 70,
-                            /*backgroundImage: SvgPicture(pictureProvider),*/
+                          child: InkWell(
+                            onTap: () async {
+                              if (isGroupAdmin) {
+                                ImagePicker picker = ImagePicker();
+                                XFile? image = await picker.pickImage(
+                                    source: ImageSource.gallery);
+                                if (image != null) {
+                                  File file = File(image.path);
+                                  await db.uploadGroupIcon(
+                                      group.value.groupid, file);
+                                  triggerthistorefreshicon.notifyListeners();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      cw.hintSnackBar(
+                                          "Profile Picture Changed!"));
+                                }
+                              }
+                            },
+                            child: ValueListenableBuilder(
+                                valueListenable: triggerthistorefreshicon,
+                                builder: (context, snapshot, foo) {
+                                  return FutureBuilder(
+                                      future: FirebaseStorage.instance
+                                          .ref(
+                                              "groupicons/${group.value.groupid}")
+                                          .getDownloadURL(),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.done) {
+                                          return CircleAvatar(
+                                            radius: 70,
+                                            backgroundColor: Colors.transparent,
+                                            foregroundImage: snapshot.hasData
+                                                ? NetworkImage(
+                                                    snapshot.data ?? "")
+                                                : null,
+                                          );
+                                        } else {
+                                          return const CircleAvatar(
+                                            radius: 70,
+                                            backgroundColor: Colors.transparent,
+                                          );
+                                        }
+                                      });
+                                }),
                           ),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,

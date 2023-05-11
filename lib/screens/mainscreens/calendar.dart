@@ -246,6 +246,7 @@ class _EventCalendarState extends State<EventCalendar> {
   Widget build(BuildContext context) {
     CalendarMode mode = widget.mode;
     ValueNotifier<db.EventFilters> filters = ValueNotifier(db.EventFilters(
+      onlyHostedByMe: mode == CalendarMode.drafts,
         byStatus: mode == CalendarMode.normal
             ? ["public"]
             : (mode == CalendarMode.drafts ? ["draft"] : ["public"]),

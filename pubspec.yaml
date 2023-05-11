@@ -52,6 +52,7 @@ dependencies:
   firebase_database:
   auto_size_text_field:
   image_picker: 
+  shared_preferences:
   
 dev_dependencies: 
   change_app_package_name:

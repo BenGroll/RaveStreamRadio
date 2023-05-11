@@ -1039,12 +1039,12 @@ class LoadingIndicator extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Center(
         child: AspectRatio(
-          aspectRatio: 1,
-          child: FractionallySizedBox(
+            aspectRatio: 1,
+            child: FractionallySizedBox(
               widthFactor: 0.66,
               heightFactor: 0.66,
-              child: CircularProgressIndicator(),)
-        ),
+              child: CircularProgressIndicator(color: color.withOpacity(0.66)),
+            )),
       ),
     );
   }
@@ -1355,7 +1355,6 @@ class DeleteEventIconButton extends StatelessWidget {
                                                                   .popToNamed(
                                                                       "/events/");
                                                             } else {
-
                                                               Navigator.of(
                                                                       context)
                                                                   .pop();
@@ -1515,9 +1514,113 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                             .beamToNamed("/editevent/${event.eventid}");
                       },
                     )
+                  : SizedBox(height: 0),
+              db.doIHavePermission(GlobalPermission.MODERATE) && event.status != "frozen"
+                  ? ListTile(
+                      title: Text("Freeze",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: DISPLAY_SHORT_SIDE(context) / 20)),
+                      subtitle: Text(
+                          "This hides the event from the public. Only use when Event isnt complying with our values / is being reported / is spam",
+                          style: TextStyle(color: Colors.white)),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: cl.lighterGrey,
+                                  title: Text(
+                                      "Do you really want to freeze this Event?", style: TextStyle(color: Colors.white)),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("Cancel",
+                                            style: TextStyle(
+                                                color: Colors.white))),
+                                    TextButton(
+                                        onPressed: () async {
+                                          showLoadingDialog(
+                                              context, "Freezing Event...");
+                                          await db.uploadEventToDatabase(
+                                              event.copyWith(
+                                                  eventid: event.eventid,
+                                                  status:
+                                                      EventStatus.frozen.name));
+                                          Navigator.of(context).pop();
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("YES",
+                                            style:
+                                                TextStyle(color: Colors.red)))
+                                  ],
+                                ));
+                      },
+                    )
+                  : SizedBox(height: 0),
+                db.doIHavePermission(GlobalPermission.MODERATE) && event.status == "frozen" 
+                  ? ListTile(
+                      title: Text("UnFreeze",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: DISPLAY_SHORT_SIDE(context) / 20)),
+                      subtitle: Text(
+                          "This opens up the Event to the public again.",
+                          style: TextStyle(color: Colors.white)),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: cl.lighterGrey,
+                                  title: Text(
+                                      "Do you really want to unfreeze this Event?", style: TextStyle(color: Colors.white)),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("Cancel",
+                                            style: TextStyle(
+                                                color: Colors.white))),
+                                    TextButton(
+                                        onPressed: () async {
+                                          showLoadingDialog(
+                                              context, "Unfreezing Event...");
+                                          await db.uploadEventToDatabase(
+                                              event.copyWith(
+                                                  eventid: event.eventid,
+                                                  status:
+                                                      EventStatus.public.name));
+                                          Navigator.of(context).pop();
+                                          Navigator.of(context).pop();
+                                          
+                                        },
+                                        child: Text("YES",
+                                            style:
+                                                TextStyle(color: Colors.red)))
+                                  ],
+                                ));
+                      },
+                    )
                   : SizedBox(height: 0)
             ]),
       ),
     );
   }
+}
+
+void showLoadingDialog(context, [String? task]) {
+  showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+            backgroundColor: cl.darkerGrey,
+            title: task != null
+                ? Text(task, style: TextStyle(color: Colors.white))
+                : null,
+            content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [cw.LoadingIndicator(color: Colors.white)]),
+          ));
 }

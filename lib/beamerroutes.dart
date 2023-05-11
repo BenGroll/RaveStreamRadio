@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ravestreamradioapp/screens/aboutus.dart';
 import 'package:ravestreamradioapp/screens/chatwindow.dart';
+import 'package:ravestreamradioapp/screens/downloadLandingPage.dart';
 import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/screens/loginscreen.dart';
 import 'package:ravestreamradioapp/screens/managecalendarscreen.dart';
@@ -84,6 +85,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
                 },
                 child: EventCreationScreen(eventIDToBeEdited: eventid)));
   },
+  "/download": (context, state, data) => const DownloadLandingPage(),
   "/createaccount": (context, state, data) => CreateAccountScreen(),
   "/policy": (context, state, data) => const PrivacyPolicy(),
   "/imprint": (context, state, data) => const ImPrint(),

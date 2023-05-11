@@ -293,6 +293,7 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
     String jsonindexString =
         eventMapToJson(eventListToJsonCompatibleMap(events));
     await writeEventIndexes(jsonindexString.dbsafe);
+    await Future.delayed(Duration(seconds: 5));
     return await fetchEventsFromIndexFile();
   }
   return eventList;
@@ -308,11 +309,11 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
   if (filters.fromIDList != null) {
     eventList = eventList.whereIsInIDList(filters.fromIDList ?? []);
   }
-  if (filters.onlyAfter != null) {
-    eventList =
-        eventList.whereIsGreaterThanOrEqualTo("begin", filters.onlyAfter);
+  if (false) {
+    eventList = eventList.whereIsGreaterThanOrEqualTo(
+        "begin", filters.onlyAfter ?? Timestamp.now());
   }
-  if (filters.onlyBefore != null) {
+  if (false && filters.onlyBefore != null) {
     eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
   }
   eventList = eventList.whereIsInValues("status", filters.byStatus);
@@ -321,7 +322,7 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
         eventList.whereIsLessThanOrEqualTo("minAge", filters.canGoByAge);
   }
   if (filters.onlyHostedByMe) {
-    List newList = [];
+    List<dbc.Event> newList = [];
     eventList.forEach((element) {
       if (element.hostreference != null &&
           currently_loggedin_as.value != null) {
@@ -334,17 +335,33 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
           /// TBA For after Groups are done
         }
       }
+      if (element.templateHostID != null &&
+          doIHavePermission(GlobalPermission.MANAGE_EVENTS)) {
+        newList.add(element);
+      }
+    });
+    eventList = newList;
+  }
+  if (filters.byStatus == ["draft"]) {
+  } else {
+    eventList.sort((a, b) {
+      int sort_a = 0;
+      int sort_b = 0;
+      if (a.end != null) {
+        sort_a = a.end!.millisecondsSinceEpoch;
+      }
+      if (a.begin != null) {
+        sort_a = a.begin!.millisecondsSinceEpoch;
+      }
+      if (b.end != null) {
+        sort_b = b.end!.millisecondsSinceEpoch;
+      }
+      if (b.begin != null) {
+        sort_b = b.begin!.millisecondsSinceEpoch;
+      }
+      return sort_a.compareTo(sort_b);
     });
   }
-  eventList.sort((a, b) {
-    int sort_a = a.begin == null
-        ? (a.end == null ? 0 : a.end!.millisecondsSinceEpoch)
-        : a.begin!.millisecondsSinceEpoch;
-    int sort_b = b.begin == null
-        ? (b.end == null ? 0 : b.end!.millisecondsSinceEpoch)
-        : b.begin!.millisecondsSinceEpoch;
-    return sort_a.compareTo(sort_b);
-  });
   return eventList;
 }
 
@@ -653,24 +670,6 @@ Future<Map<String, String>> getDemoHostIDs() async {
   }
   return {};
 }
-/*
-Future createIndexesForEvents(
-    List<dbc.Event> events, BuildContext context) async {
-  if (events.isEmpty) return;
-  List<Future> callList = [];
-  Map<String, dynamic> exampleEventMap = events.first.toMap();
-  exampleEventMap.keys.forEach((attribute) async {
-    Map<String, dynamic> idToValueMap = {};
-    events.forEach((event) {
-      idToValueMap[event.eventid] = event.toMap()[attribute];
-    });
-    callList.add(db
-        .doc("${branchPrefix}events.indexes/${attribute}")
-        .set({"values": idToValueMap}));
-  });
-  await Future.wait(callList);
-  return Future.delayed(Duration.zero);
-}*/
 
 /// Write the database events to the index.json
 Future writeEventIndexes(String eventjsonstring) async {
@@ -678,17 +677,54 @@ Future writeEventIndexes(String eventjsonstring) async {
   Reference pathReference =
       storageRef.child("indexes/${branchPrefix}eventsIndex.json");
   UploadTask task = pathReference.putString(eventjsonstring.dbsafe);
-  return await task;
+  await task;
+  if (!kIsWeb) {
+    await files.writeIndexFile(
+        "${branchPrefix}eventsIndex.json", json.decode(eventjsonstring));
+  }
+  return;
+}
+
+Future<String?> checkForNewerCachedIndexFile(String filename) async {
+  if (kIsWeb) return null;
+  Reference storageRef = FirebaseStorage.instance.ref();
+  Reference pathReference = storageRef.child("indexes/$filename");
+  DateTime? cachedIndexFileLastWritten =
+      await files.getSavedIndexFileLastChanged(filename);
+  //String? cachedIndexFileContent = await files.getSavedIndexFile(filename);
+  print("Cached event last written: $cachedIndexFileLastWritten");
+  DateTime? serverLastUpdated =
+      await pathReference.getMetadata().then((value) => value.updated);
+  if (cachedIndexFileLastWritten != null &&
+      serverLastUpdated != null &&
+      cachedIndexFileLastWritten.millisecondsSinceEpoch >
+          serverLastUpdated.millisecondsSinceEpoch) {
+    print("Cached Event File is newer!");
+    return await files.getSavedIndexFile(filename);
+  } else {
+    return null;
+  }
 }
 
 /// Read the index.json
 Future<String> readEventIndexesJson() async {
+  String filename = "${branchPrefix}eventsIndex.json";
   Reference storageRef = FirebaseStorage.instance.ref();
-  Reference pathReference =
-      storageRef.child("indexes/${branchPrefix}eventsIndex.json");
+  Reference pathReference = storageRef.child("indexes/$filename");
+  if (!kIsWeb) {
+    String? indexFilecontent = await checkForNewerCachedIndexFile(filename);
+    if (indexFilecontent != null) {
+      return indexFilecontent;
+    }
+  }
   Stopwatch stop = Stopwatch()..start();
   Uint8List? data = await pathReference.getData(100 * 1024 * 1024);
-  return String.fromCharCodes(data ?? Uint8List.fromList([0])).fromDBSafeString;
+  String newerData =
+      String.fromCharCodes(data ?? Uint8List.fromList([0])).fromDBSafeString;
+  if (!kIsWeb) {
+    await files.writeIndexFile(filename, json.decode(newerData));
+  }
+  return newerData;
 }
 
 /// Read the event list from a index.json in String format
@@ -1049,23 +1085,73 @@ Future createEventIndexFiles() async {
   await ref.putString(json.encode(strings).dbsafe);
 }
 
+Future<String> getIndexFileContent(String name) async {
+  String fileName = name;
+  Reference groups = FirebaseStorage.instance.ref("/indexes/$fileName");
+  if (!kIsWeb) {
+    String? groupCachedFile = await checkForNewerCachedIndexFile(fileName);
+    if (groupCachedFile != null) {
+      print("Cached File on Device is newer!");
+      return groupCachedFile;
+    }
+  }
+  Uint8List data = await groups
+      .getData(4096 * 4096)
+      .then((value) => value ?? Uint8List.fromList([]));
+  if (!kIsWeb) {
+    await files.writeIndexFile(
+        fileName, json.decode(String.fromCharCodes(data)));
+  }
+  return String.fromCharCodes(data);
+}
+
 Future<List<Map>> getIndexedEntitys() async {
-  Reference groups =
-      FirebaseStorage.instance.ref("/indexes/${branchPrefix}groups.json");
-  Reference users =
-      FirebaseStorage.instance.ref("/indexes/${branchPrefix}users.json");
-  Reference events =
-      FirebaseStorage.instance.ref("/indexes/${branchPrefix}events.json");
+  /*
+  String groupsFileName = "${branchPrefix}groups.json";
+  String usersFileName = "${branchPrefix}users.json";
+  String eventsFileName = "${branchPrefix}events.json";
+  Reference groups = FirebaseStorage.instance.ref("/indexes/$groupsFileName");
+  Reference users = FirebaseStorage.instance.ref("/indexes/$usersFileName)");
+  Reference events = FirebaseStorage.instance.ref("/indexes/$eventsFileName");
+  String? groupCachedFile = await checkForNewerCachedIndexFile(groupsFileName);
+  String? userCachedFile = await checkForNewerCachedIndexFile(usersFileName);
+  String? eventsCachedFile = await checkForNewerCachedIndexFile(eventsFileName);
+
   List<Future<Uint8List>> futures = [
-    groups
-        .getData(4096 * 4096)
-        .then((value) => value ?? Uint8List.fromList([])),
     users.getData(4096 * 4096).then((value) => value ?? Uint8List.fromList([])),
     events.getData(4096 * 4096).then((value) => value ?? Uint8List.fromList([]))
   ];
   List<Uint8List> lists = await Future.wait(futures);
   List<String> strings = lists.map((e) => String.fromCharCodes(e)).toList();
+  return strings.map((e) => jsonDecode(e.fromDBSafeString) as Map).toList();*/
+  List<Future<String>> futures = [
+    getIndexFileContent("${branchPrefix}groups.json"),
+    getIndexFileContent("${branchPrefix}users.json"),
+    getIndexFileContent("${branchPrefix}events.json"),
+  ];
+  List<String> strings = await Future.wait(futures);
   return strings.map((e) => jsonDecode(e.fromDBSafeString) as Map).toList();
+}
+
+Future uploadProfilePicture(String username, File file) async {
+  String fileExtension = file.path.split(".")[file.path.split(".").length - 1];
+  Reference ref = FirebaseStorage.instance.ref("/profilepictures");
+  await ref
+      .child("${username}")
+      .putFile(file, SettableMetadata(contentType: 'image/${fileExtension}'));
+  String dldURL = await ref.child("${username}").getDownloadURL();
+  await db
+      .doc("${branchPrefix}users/$username")
+      .update({"profile_picture": dldURL});
+  return dldURL;
+}
+
+Future uploadGroupIcon(String groupid, File file) async {
+  String fileExtension = file.path.split(".")[file.path.split(".").length - 1];
+  Reference ref = FirebaseStorage.instance.ref("/groupicons");
+  await ref
+      .child("${groupid}")
+      .putFile(file, SettableMetadata(contentType: 'image/${fileExtension}'));
 }
 
 Future uploadGroupToDB(dbc.Group group) async {

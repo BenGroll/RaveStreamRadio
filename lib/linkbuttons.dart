@@ -89,7 +89,10 @@ class EventLinkButton extends StatelessWidget {
         builder: (context, snapshot) {
           return TextButton(
               onPressed: () async {
-                Beamer.of(context).beamToNamed("/events/${target.id}");
+                kIsWeb
+                    ? Beamer.of(context).beamToNamed("/events/${target.id}")
+                    : Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => EventOverviewPage(target.id)));
               },
               child: Text(
                 "@${target.id}",
@@ -107,7 +110,7 @@ class EventLinkButton extends StatelessWidget {
 /// Have to use SizedBox or IconButton
 Widget UrlLinkButton(String url, String label, TextStyle style) {
   void _onPress() async {
-    if (!await canLaunchUrl(Uri.parse(url)));
+    if (!await canLaunchUrl(Uri.parse(url))) ;
     await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
@@ -155,8 +158,8 @@ class TemplateHostLinkButton extends StatelessWidget {
           future: db.getDemoHostIDs(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              print("Host ID: $id");
-              print("Hosts: ${snapshot.data}");
+              /*print("Host ID: $id");
+              print("Hosts: ${snapshot.data}");*/
               return Text(
                 snapshot.data?[id] ?? "This should never display",
                 style: const TextStyle(color: Colors.white),

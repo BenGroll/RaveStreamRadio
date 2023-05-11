@@ -1,6 +1,11 @@
+// ignore_for_file: sort_child_properties_last
+
+import 'dart:io';
+
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/screens/devsettingsscreen.dart';
@@ -119,10 +124,45 @@ class UserView extends StatelessWidget {
                             Center(
                               child: Container(
                                 width: 150,
-                                child: const CircleAvatar(
-                                  radius: 70,
-                                  /*backgroundImage: SvgPicture(pictureProvider),*/
-                                ),
+                                child: Stack(children: [
+                                  Center(
+                                    child: Tooltip(
+                                      message: userIsMyself
+                                          ? "Tap here to change your Image"
+                                          : "This user's profile picture",
+                                      child: InkWell(
+                                        onTap: () async {
+                                          ImagePicker picker = ImagePicker();
+                                          XFile? image = await picker.pickImage(
+                                              source: ImageSource.gallery);
+                                          if (image != null) {
+                                            File file = File(image.path);
+                                            String url =
+                                                await db.uploadProfilePicture(
+                                                    username, file);
+                                            currently_loggedin_as
+                                                .value!.profile_picture = url;
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(cw.hintSnackBar(
+                                                    "Profile Picture Changed!"));
+                                            currently_loggedin_as
+                                                .notifyListeners();
+                                          }
+                                        },
+                                        child: CircleAvatar(
+                                          radius: 70,
+                                          backgroundColor: Colors.transparent,
+                                          foregroundImage:
+                                              user.value.profile_picture != null
+                                                  ? (NetworkImage(user.value
+                                                          .profile_picture ??
+                                                      ""))
+                                                  : null,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                ]),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(

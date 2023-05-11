@@ -8,7 +8,6 @@ import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 
-
 Widget leadingIcon(dbc.Report e) {
   if (e.target == null) return SizedBox();
   if (e.target!.path.startsWith("${branchPrefix}events"))
@@ -37,10 +36,7 @@ Widget trailingIcon(dbc.Report e) {
     return Icon(Icons.done, color: Colors.green);
   }
   if (e.state == dbc.ReportState.pending) {
-    return Icon(
-      Icons.pending,
-      color: Colors.yellow
-    );
+    return Icon(Icons.pending, color: Colors.yellow);
   }
   return SizedBox();
 }
@@ -64,6 +60,9 @@ class ReportManagementScreen extends StatelessWidget {
           builder:
               (BuildContext context, AsyncSnapshot<List<dbc.Report>> snap) {
             if (snap.connectionState == ConnectionState.done) {
+              List<dbc.Report> reports = snap.data ?? [];
+              reports.sort((b, a) => a.timestamp!.millisecondsSinceEpoch
+                  .compareTo(b.timestamp!.millisecondsSinceEpoch));
               return ListView(
                 children: snap.data!.map((e) {
                   return ListTile(

@@ -64,10 +64,6 @@ enum EventStatus { public, friendlist, frozen, draft }
 
 /// Flag that corresponds to the System this app is ran from. True means its running in a browser, false means it runs on mobile or desktop
 const bool kIsWeb = bool.fromEnvironment('dart.library.js_util');
-/*
-ValueNotifier<ServerBranches> selectedbranch = kIsWeb 
-  ? ValueNotifier(ServerBranches.public) 
-  : ValueNotifier(ServerBranches.develop);*/
 
 /// ValueNotifier that contains which database branch the api is currently connected to
 ValueNotifier<ServerBranches> selectedbranch =
@@ -136,7 +132,7 @@ String get branchPrefix {
   if (selectedbranch.value == ServerBranches.test) {
     return "test.";
   } else {
-    throw Exception("Prefix for selected Branch not set.");
+    return "";
   }
 }
 

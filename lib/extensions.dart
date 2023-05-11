@@ -303,7 +303,7 @@ extension JsonSafe on String {
     value = value.replaceAll("ä", ae);
     value = value.replaceAll("ö", oe);
     value = value.replaceAll("ü", ue);
-    print("String conversion took ${watch.elapsed}");
+    //print("String conversion took ${watch.elapsed}");
     watch.stop;
     return value;
   }
@@ -317,7 +317,7 @@ extension JsonSafe on String {
     value = value.replaceAll(ae, "ä");
     value = value.replaceAll(oe, "ö");
     value = value.replaceAll(ue, "ü");
-    print("String conversion took ${watch.elapsed}");
+    //print("String conversion took ${watch.elapsed}");
     watch.stop;
     return value;
   }

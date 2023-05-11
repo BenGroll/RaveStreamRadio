@@ -106,34 +106,32 @@ class LoginScreen extends StatelessWidget {
                   onPressed: () async {
                     pprint("Button Pressed");
                     if (!kIsWeb) {
+                      cw.showLoadingDialog(context, "Logging in...");
                       dbc.User? tryUserData =
                           await db.tryUserLogin(username ?? "", password ?? "");
                       if (tryUserData == null) {
                         // Throw error dialog. (choices : Retry, anonymous)
+                        Navigator.of(context).pop();
                         showDialog(
                             context: context,
                             builder: (BuildContext context) =>
                                 _showLoginFailedDialog(context));
                       } else {
-                        kIsWeb
-                            ? await files.writeLoginDataWeb(
-                                tryUserData.username, tryUserData.password)
-                            : await files.writeLoginDataMobile(
-                                username = tryUserData.username,
-                                password = tryUserData.password);
+                        await files.writeLoginDataMobile(
+                            username = tryUserData.username,
+                            password = tryUserData.password);
                         currently_loggedin_as.value = tryUserData;
-                        Beamer.of(context).beamToNamed("/profile");
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
                         sleep(const Duration(seconds: 1));
                         ScaffoldMessenger.of(context).showSnackBar(
                             cw.hintSnackBar("Logged in as @$username"));
                       }
                     } else {
                       pprint("Is On Web!");
-
                       DocumentSnapshot doc = await db.db
                           .doc("${branchPrefix}users/$username")
                           .get();
-
                       if (!doc.exists) {
                         showDialog(
                             context: context,
@@ -141,6 +139,7 @@ class LoginScreen extends StatelessWidget {
                                 _showLoginFailedDialog(context));
                       } else {
                         pprint("User exists!");
+                        cw.showLoadingDialog(context, "Logging in...");
                         Map<String, dynamic>? docData =
                             doc.data() as Map<String, dynamic>?;
                         pprint(doc.data());
@@ -155,6 +154,7 @@ class LoginScreen extends StatelessWidget {
                           pprint("Constructed User");
                           if (tryUserData.password == password) {
                             currently_loggedin_as.value = tryUserData;
+                            Navigator.of(context).pop();
                             Beamer.of(context).beamToNamed("/");
                           } else {
                             showDialog(
@@ -292,13 +292,24 @@ class CreateAccountScreen extends StatelessWidget {
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () async {
-                    if (username.isEmpty) {}
+                    if (username.isEmpty) {
+                      showDialog(
+                          context: context,
+                          builder: (context) =>
+                              _showUsernameTakenDialog(context, username));
+                      return;
+                    }
                     if (await db.db
                         .doc("${branchPrefix}users/$username")
                         .get()
                         .then((value) => value.exists)) {
-                      _showUsernameTakenDialog(context, username);
+                      print("Username Taken");
+                      showDialog(
+                          context: context,
+                          builder: (context) =>
+                              _showUsernameTakenDialog(context, username));
                     } else {
+                      cw.showLoadingDialog(context, "Creating User...");
                       dbc.User createdUser = dbc.User(
                           username: username,
                           password: password,
@@ -315,6 +326,7 @@ class CreateAccountScreen extends StatelessWidget {
                           ? await files.writeLoginDataWeb(username, password)
                           : await files.writeLoginDataMobile(
                               username = username, password = password);
+                      Navigator.of(context).pop();
                       kIsWeb
                           ? Beamer.of(context).beamToNamed("/profile")
                           : Navigator.of(context).pop();
@@ -360,28 +372,38 @@ class CreateAccountScreen extends StatelessWidget {
 /// Shows the dialog to tell the user the username they chose is already taken
 Widget _showUsernameTakenDialog(BuildContext context, String? uname) {
   return AlertDialog(
-    title: const Text("Username Taken"),
+    title: Text("Username Taken", style: TextStyle(color: Colors.white)),
+    backgroundColor: cl.lighterGrey,
     content: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       // ignore: prefer_const_literals_to_create_immutables
       children: [
-        uname == null
-            ? Text("Username can't be empty")
-            : Text("Username has to be unique. Account @$uname exists already.")
+        uname == null || uname.isEmpty
+            ? Text("Username can't be empty",
+                style: TextStyle(color: Colors.white))
+            : Text("Username has to be unique. Account @$uname exists already.",
+                style: TextStyle(color: Colors.white))
       ],
     ),
     actions: [
       TextButton(
-        child: const Text("Retry"),
+        child: const Text("Retry", style: TextStyle(color: Colors.white)),
         onPressed: () {
           Navigator.of(context).pop();
         },
       ),
       TextButton(
-        child: const Text("Browse Anonymously"),
+        child: const Text("Browse Anonymously",
+            style: TextStyle(color: Colors.white)),
         onPressed: () {
-          Beamer.of(context).beamToNamed("/events/");
+          if (kIsWeb) {
+            Beamer.of(context).beamToNamed("/events/");
+          } else {
+            print("HERE");
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          }
         },
       ),
     ],
@@ -391,18 +413,26 @@ Widget _showUsernameTakenDialog(BuildContext context, String? uname) {
 /// Show Dialog with wrong login credentials
 Widget _showLoginFailedDialog(BuildContext context) {
   return AlertDialog(
-    content: const Text("Couldnt login using this data."),
+    backgroundColor: cl.lighterGrey,
+    content: const Text("Couldn't login using this data.",
+        style: TextStyle(color: Colors.white)),
     actions: [
       TextButton(
-        child: const Text("Retry"),
+        child: const Text("Retry", style: TextStyle(color: Colors.white)),
         onPressed: () {
           Navigator.of(context).pop();
         },
       ),
       TextButton(
-        child: const Text("Browse Anonymously"),
+        child: const Text("Browse Anonymously",
+            style: TextStyle(color: Colors.white)),
         onPressed: () {
-          Beamer.of(context).beamToNamed("/events/");
+          if (kIsWeb) {
+            Beamer.of(context).beamToNamed("/events/");
+          } else {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          }
         },
       ),
     ],

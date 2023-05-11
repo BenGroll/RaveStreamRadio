@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/debugsettings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'colors.dart' as cl;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'shared_state.dart' as shs;
@@ -35,6 +36,40 @@ Future<String> get _localPath async {
 Future<File> get _usersettingsfile async {
   final path = await _localPath;
   return File('$path/usersettings.dart');
+}
+
+/// Returns last Modified timestamp for Index File.
+///
+/// Returns null if file doesnt exist
+Future<DateTime?> getSavedIndexFileLastChanged(String name) async {
+  final path = await _localPath;
+  File file = File("$path/$name");
+  if (file.existsSync()) {
+    return file.lastModifiedSync();
+  } else {
+    return null;
+  }
+}
+
+Future<String?> getSavedIndexFile(String name) async {
+  final path = await _localPath;
+  File file = File("$path/$name");
+  if (!file.existsSync()) {
+    return null;
+  } else {
+    return await file.readAsString();
+  }
+}
+
+Future<File> writeIndexFile(String name, Map data) async {
+  final path = await _localPath;
+  File file = File("$path/$name");
+  if (!await file.exists()) {
+    file.create();
+  }
+  await file.writeAsString(jsonEncode(data));
+  await file.setLastModified(DateTime.now());
+  return file;
 }
 
 /// Reference to the file where the login-credentials are saved.
@@ -89,12 +124,16 @@ Future<UserSettings> readUserSettingsWeb() async {
 
 /// Not Working RN, Only typesafe
 Future writeLoginDataWeb(String username, String password) async {
-  return Future;
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.setString(
+      "credentials", jsonEncode({"username": username, "password": password}));
 }
 
 /// Not Working RN, Only typesafe
 /// Define if function should default to error or success with DEBUG_LOGIN_RETURN_TRUE_ON_WEB
 Future<Map> readLoginDataWeb() async {
+  final prefs = await SharedPreferences.getInstance();
+  print("LOGIN DATA: ${await prefs.getString("credentials")}");
   return DEBUG_LOGIN_RETURN_TRUE_ON_WEB
       ? {"username": "demouser", "password": ""}
       : {"username": "", "password": ""};
@@ -112,12 +151,19 @@ Future<Widget?> getImage(String imagepath) async {
         return saved_pictures[imagepath];
       } else {
         try {
-          Reference test = firebasestorage.ref().child(imagepath);
-          String dldURL =
-              await test.getDownloadURL().catchError((error, stackTrace) {
-            return "-1";
-          });
+          String dldURL;
+          if (imagepath.startsWith("https://firebasestorage.googleapis.com/")) {
+            return Image.network(imagepath);
+          } else {
+            Reference test = firebasestorage.ref().child(imagepath);
+            dldURL =
+                await test.getDownloadURL().catchError((error, stackTrace) {
+              return "-1";
+            });
+          }
           if (dldURL == "-1") return errorWhiteImage;
+
+          Reference test = firebasestorage.ref().child(imagepath);
           Uint8List? raw_image_data = await test.getData().catchError((e) {
             return errorWhiteImage;
           });

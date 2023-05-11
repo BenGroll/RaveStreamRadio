@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:beamer/beamer.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart';
+import 'package:ravestreamradioapp/filesystem.dart';
 import 'package:ravestreamradioapp/screens/chatwindow.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
@@ -84,6 +86,18 @@ class DevSettingsScreen extends StatelessWidget {
                           },
                         ))
                       ]),
+                  ElevatedButton(
+                    onPressed: (() async {
+                      Beamer.of(context).beamToNamed("/download");
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(hintSnackBar("Opened DownloadLink"));
+                    }),
+                    child: ValueListenableBuilder(
+                        valueListenable: selectedbranch,
+                        builder: (context, branch, foo) {
+                          return Text("Open DownloadLink");
+                        }),
+                  ),
                   ElevatedButton(
                     onPressed: (() async {
                       await db.setTestDBScenario();
@@ -367,13 +381,14 @@ class DevSettingsScreen extends StatelessWidget {
                         List<Map> events =
                             docs.map((e) => e.data() as Map).toList();
                         List<Future> futures = events
-                            .map((e) =>
-                                db.db
+                            .map((e) => db.db
                                     .doc(
                                         "${branchPrefix}events/${e["eventid"]}")
                                     .update({
-                                  "flyer": e["flyer"].runtimeType == String ? 
-                                      e["flyer"].replaceAll("1000x1000", "2000x2000") : null
+                                  "flyer": e["flyer"].runtimeType == String
+                                      ? e["flyer"]
+                                          .replaceAll("1000x1000", "2000x2000")
+                                      : null
                                 }))
                             .toList();
                         await Future.wait(futures);
@@ -381,6 +396,38 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("Events read"));
                       },
                       child: Text("Rewrite Event Flyer links")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        String lmao = await db.readEventIndexesJson();
+                        await writeIndexFile(
+                            "dev.eventsIndex.json", json.decode(lmao));
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("File Written"));
+                      },
+                      child: Text("Test Index-File-Writing")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(await getSavedIndexFile("dev.eventsIndex.json"));
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("File Read."));
+                      },
+                      child: Text("Test Index-File-Reading")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(await getSavedIndexFileLastChanged(
+                            "dev.eventsIndex.json"));
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("File Read"));
+                      },
+                      child: Text("Test Index-File-LastModified")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(await db
+                            .getIndexFileContent("${branchPrefix}users.json"));
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("File Read"));
+                      },
+                      child: Text("Get Groups Index File")),
                 ],
               ),
             ),

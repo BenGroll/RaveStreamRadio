@@ -1,6 +1,7 @@
 //TestChange
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'screens/homescreen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -21,7 +22,6 @@ void main() async {
   runApp(const MyApp());
 }
 
-
 final routerDelegate =
     BeamerDelegate(locationBuilder: RoutesLocationBuilder(routes: webroutes));
 
@@ -30,14 +30,16 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     return MaterialApp.router(
       routeInformationParser: BeamerParser(),
       routerDelegate: routerDelegate,
       title: 'RaveStreamRadio',
-      theme:
-          ThemeData(primarySwatch: MaterialColor(0xFF000000, cl.blackmaterial), scrollbarTheme: ScrollbarThemeData(
-            thumbVisibility: MaterialStateProperty.all<bool>(true)
-          )),
+      theme: ThemeData(
+          primarySwatch: MaterialColor(0xFF000000, cl.blackmaterial),
+          scrollbarTheme: ScrollbarThemeData(
+              thumbVisibility: MaterialStateProperty.all<bool>(true))),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -51,39 +53,32 @@ class MainRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
         child: ValueListenableBuilder(
-            valueListenable: selectedbranch,
-            builder: (context, snapshot, foo) {
-              return FutureBuilder(
-                          future: Firebase.initializeApp(
-                              options: DefaultFirebaseOptions.currentPlatform),
-                          builder: (BuildContext context, AsyncSnapshot snap) {
-                            if (snap.connectionState == ConnectionState.done) {
-                              return FutureBuilder(
-                                  future: db.doStartupLoginDataCheck(),
-                                  builder: (context, AsyncSnapshot snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.done) {
-                                      return SafeArea(
-                                          minimum: const EdgeInsets.fromLTRB(
-                                              0, 15, 0, 0),
-                                          child: HomeScreen(
-                                              loggedinas: snapshot.data,
-                                              startingscreen: startingscreen));
-                                    } else {
-                                      return Container(
-                                          color: Colors.transparent);
-                                    }
-                                  });
-                            } else {
-                              return const SpinKitRotatingCircle(
-                                  color: Colors.white, size: 50.0);
-                            }
-                          });
-                    
-                        },
-                      ));
-                    }
-                  }
-            
-  
-
+      valueListenable: selectedbranch,
+      builder: (context, snapshot, foo) {
+        return FutureBuilder(
+            future: Firebase.initializeApp(
+                options: DefaultFirebaseOptions.currentPlatform),
+            builder: (BuildContext context, AsyncSnapshot snap) {
+              if (snap.connectionState == ConnectionState.done) {
+                return FutureBuilder(
+                    future: db.doStartupLoginDataCheck(),
+                    builder: (context, AsyncSnapshot snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return SafeArea(
+                            minimum: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                            child: HomeScreen(
+                                loggedinas: snapshot.data,
+                                startingscreen: startingscreen));
+                      } else {
+                        return Container(color: Colors.transparent);
+                      }
+                    });
+              } else {
+                return const SpinKitRotatingCircle(
+                    color: Colors.white, size: 50.0);
+              }
+            });
+      },
+    ));
+  }
+}
