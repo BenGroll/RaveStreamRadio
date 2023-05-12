@@ -46,10 +46,12 @@ List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
   print(permits);
   List<GlobalPermission> outlist = [];
   if (permits.contains("ADMIN")) {
-    outlist.add(GlobalPermission.MANAGE_EVENTS);
+    outlist.add(GlobalPermission.ADMIN);
     outlist.add(GlobalPermission.CHANGE_DEV_SETTINGS);
+    outlist.add(GlobalPermission.MANAGE_EVENTS);
     outlist.add(GlobalPermission.MANAGE_HOSTS);
     outlist.add(GlobalPermission.MODERATE);
+    
     return outlist;
   }
   permits.forEach((element) {

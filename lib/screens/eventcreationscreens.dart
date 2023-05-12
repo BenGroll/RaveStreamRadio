@@ -350,7 +350,16 @@ class EventCreationScreen extends StatelessWidget {
                                             ],
                                           ),
                                           body:
-                                              mapScreenToWidget(screen, this));
+                                              TabBarView(
+                                                children: [
+                                                  GeneralSettingsPage(parent: this),
+                                                  DescriptionEditingPage(
+                                                    to_Notify: currentEventData,
+                                                  ),
+                                                  LinkEditingScreen(parent: this),
+                                                  MediaEditingScreen(parent: this)
+                                                ],
+                                              ));
                                     });
                               } else {
                                 return cw.ErrorScreen(

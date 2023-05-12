@@ -172,6 +172,10 @@ class UserView extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            Wrap(
+                              alignment: WrapAlignment.spaceEvenly,
+                              children: db.permissionIndicatorsFromPermissions(user.value)
+                            ),
                             // Avatar Editor Icon
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

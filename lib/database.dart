@@ -1168,3 +1168,71 @@ Future uploadGroupToDB(dbc.Group group) async {
       .add(db.doc("${branchPrefix}groups/${group.groupid}"));
   return;
 }
+
+class PermissionTextButton extends StatelessWidget {
+  GlobalPermission permission;
+  Color _permToColor(String perm) {
+    switch (perm) {
+      case "ADMIN":
+        return Color.fromARGB(255, 245, 88, 15);
+      case "CHANGE_DEV_SETTINGS":
+        return Color.fromARGB(255, 4, 211, 238);
+      case "MANAGE_EVENTS":
+        return Colors.green;
+      case "MANAGE_HOSTS":
+        return Colors.green;
+      case "MODERATE":
+        return Colors.purple;
+      default:
+        return Colors.white;
+    }
+  }
+  String _permToName(String name) {
+    switch (name) {
+      case "ADMIN":
+        return "Admin";
+      case "CHANGE_DEV_SETTINGS":
+        return "Developer";
+      case "MANAGE_EVENTS":
+        return "Event-Editor";
+      case "MANAGE_HOSTS":
+        return "Host-Editor";
+      case "MODERATE":
+        return "Moderator";
+      default:
+        return "Permission";
+    }
+  }
+  String _permToTip(String name) {
+    switch (name) {
+      case "ADMIN":
+        return "This user has every Permission, since its his project and server lol. Also the only Person who can give and deny other users Permissions.";
+      case "CHANGE_DEV_SETTINGS":
+        return "This user has access to developer-only tools and access to the server.";
+      case "MANAGE_EVENTS":
+        return "This user can manage Events for Hosts in the registry.";
+      case "MANAGE_HOSTS":
+        return "This user can manage Hosts in the registry.";
+      case "MODERATE":
+        return "This Person has access to submitted reports, and the ability to ban any kind of content that doesn't comply with our Code of Conduct.";
+      default:
+        return "Permission";
+    }
+  }
+  PermissionTextButton({required this.permission});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: _permToTip(permission.name),
+      child: TextButton(onPressed: () {},
+      child: Text(_permToName(permission.name), style: TextStyle(color: _permToColor(permission.name)))),
+    );
+  }
+}
+
+List<Widget> permissionIndicatorsFromPermissions(dbc.User user) {
+  return dbc.dbPermissionsToGlobal(user.permissions) 
+      .map((e) => PermissionTextButton(permission: e))
+      .toList();
+}

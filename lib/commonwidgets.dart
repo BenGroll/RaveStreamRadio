@@ -976,6 +976,11 @@ class StartChatButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
         onPressed: () async {
+          if (DISABLE_CHATWINDOW) {
+            ScaffoldMessenger.of(context).showSnackBar(hintSnackBar(
+                "Chatting is disabled right now, but will soon be available"));
+            return;
+          }
           showDialog(
               context: context,
               barrierDismissible: false,
