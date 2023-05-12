@@ -356,7 +356,7 @@ class NavBar extends StatelessWidget {
                   "© RaveStreamRadio 2023",
                   style: TextStyle(color: Colors.white),
                 ),
-              )
+              ),
             ],
           ),
         ));

@@ -408,3 +408,16 @@ List<DocumentReference> forceDocumentReferenceFromStringList(
     List<String> list) {
   return list.map((e) => db.db.doc(e)).toList();
 }
+
+List<String> get lowercaseCharacters {
+  return List.generate(
+      26, (index) => String.fromCharCode(index + 65).toLowerCase());
+}
+
+List<String> get uppercaseCharacters {
+  return List.generate(26, (index) => String.fromCharCode(index + 65));
+}
+
+List<String> get numbers {
+  return List.generate(10, (index) => index.toString());
+}

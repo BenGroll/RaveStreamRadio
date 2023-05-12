@@ -131,21 +131,13 @@ Future setTestDBScenario() async {
 /// Returns Failed attempt on Web until Filesystem alternative is worked out
 /// Only typesafe on web, doesnt work.
 Future<dbc.User?> tryUserLogin(String username, String password) async {
-  //pprint("tryUserLogin with $username $password");
-  //if (kIsWeb && DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return dbc.demoUser;
-  //if (kIsWeb && !DEBUG_LOGIN_RETURN_TRUE_ON_WEB) return null;
   try {
-    //pprint("Trying to login using username : $username, password: $password");
     if (username.isEmpty || password.isEmpty) {
       return null;
     }
-    //pprint("${branchPrefix}users/$username");
-
     DocumentSnapshot<Map<String, dynamic>> doc =
         await db.doc("${branchPrefix}users/$username").get();
-    /*DocumentSnapshot<Map<String, dynamic>> doc =
-        await db.doc("users/admin").get();*/
-    //pprint("Doc: $doc");
+
     if (doc.data() == null) {
       return null;
     }
@@ -175,17 +167,13 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
       ? await files.readLoginDataWeb()
       : await files.readLoginDataMobile();
   //return await tryUserLogin(savedlogindata["username"], savedlogindata["password"]);
-
-  if (kIsWeb) {
-    ///
-  } else {
-    return await tryUserLogin(
-        savedlogindata["username"], savedlogindata["password"]);
-  }
+  return await tryUserLogin(
+      savedlogindata["username"], savedlogindata["password"]);
 }
 
 /// Fetch User from database
 Future<dbc.User?> getUser(String username) async {
+  if (username.isEmpty) return null;
   DocumentSnapshot userdoc =
       await db.doc("${branchPrefix}users/$username").get();
   if (userdoc.exists && userdoc.data() != null) {

@@ -125,7 +125,7 @@ Future<UserSettings> readUserSettingsWeb() async {
 /// Not Working RN, Only typesafe
 Future writeLoginDataWeb(String username, String password) async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.setString(
+  return await prefs.setString(
       "credentials", jsonEncode({"username": username, "password": password}));
 }
 
@@ -133,7 +133,10 @@ Future writeLoginDataWeb(String username, String password) async {
 /// Define if function should default to error or success with DEBUG_LOGIN_RETURN_TRUE_ON_WEB
 Future<Map> readLoginDataWeb() async {
   final prefs = await SharedPreferences.getInstance();
-  print("LOGIN DATA: ${await prefs.getString("credentials")}");
+  return DEBUG_LOGIN_RETURN_TRUE_ON_WEB
+      ? {"username": "demouser", "password": ""}
+      : json.decode(await prefs.getString("credentials") ?? jsonEncode({"username": "", "password": ""}));
+  "LOGIN DATA: ${await prefs.getString("credentials")}";
   return DEBUG_LOGIN_RETURN_TRUE_ON_WEB
       ? {"username": "demouser", "password": ""}
       : {"username": "", "password": ""};

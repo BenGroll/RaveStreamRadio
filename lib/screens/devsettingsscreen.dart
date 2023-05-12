@@ -428,6 +428,27 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("File Read"));
                       },
                       child: Text("Get Groups Index File")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await writeLoginDataWeb("admin", "admin");
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("File Read"));
+                      },
+                      child: Text("Test writing userdata")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(await readLoginDataWeb());
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("File Read"));
+                      },
+                      child: Text("Test reading userdata")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print("");
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("File Read"));
+                      },
+                      child: Text("Test ListGen")),
                 ],
               ),
             ),

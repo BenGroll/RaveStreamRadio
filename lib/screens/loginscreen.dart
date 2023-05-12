@@ -14,9 +14,33 @@ import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
+String? usernamevalidator(String? username) {
+  if (username == null || username.isEmpty) return "Username can't be Empty";
+  List<String> allowedChars = lowercaseCharacters + numbers + ["_"];
+  String? out = null;
+  username.characters.forEach((element) {
+    if (!allowedChars.contains(element)) {
+      out = "Username can only contain a-z, 0-9, '_'";
+    }
+  });
+  return out;
+}
+
+String? passwordvalidator(String? password) {
+  if (password == null || password.isEmpty) return "Password can't be Empty";
+  if (password.length < 6)
+    return "Password has to be at least 6 characters long";
+  if (password.contains(" ")) return "Password can't contain any Spaces";
+  return null;
+}
+
 class LoginScreen extends StatelessWidget {
   String? username = "";
+  GlobalKey<FormFieldState> usernameFieldKey = GlobalKey();
+  ValueNotifier<String> usernameValidatorError = ValueNotifier<String>("");
   String? password = "";
+  GlobalKey<FormFieldState> passwordFieldKey = GlobalKey();
+  ValueNotifier<String> passwordValidatorError = ValueNotifier<String>("");
   LoginScreen({super.key});
 
   @override
@@ -40,135 +64,138 @@ class LoginScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(
                     vertical: 10,
                     horizontal: MediaQuery.of(context).size.width / 10),
-                child: TextFormField(
-                  onChanged: (value) {
-                    username = value;
-                  },
-                  onFieldSubmitted: (value) {
-                    username = value;
-                  },
-                  onSaved: (value) {
-                    username = value;
-                  },
-                  cursorColor: Colors.grey,
-                  style: const TextStyle(color: Colors.white),
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      filled: true,
-                      fillColor: cl.lighterGrey,
-                      prefixText: "@",
-                      hintText: "Username",
-                      helperStyle: const TextStyle(color: Colors.grey),
-                      helperText: "Cannot be changed later",
-                      labelText: "Enter your username",
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      hintStyle: const TextStyle(color: Colors.grey)),
-                ),
+                child: ValueListenableBuilder(
+                    valueListenable: usernameValidatorError,
+                    builder: (context, error, foo) {
+                      return TextFormField(
+                        key: usernameFieldKey,
+                        onChanged: (value) {
+                          usernameFieldKey.currentState?.validate();
+                          username = value;
+                        },
+                        onFieldSubmitted: (value) {
+                          username = value;
+                        },
+                        onSaved: (value) {
+                          username = value;
+                        },
+                        cursorColor: Colors.grey,
+                        style: const TextStyle(color: Colors.white),
+                        autocorrect: false,
+                        validator: usernamevalidator,
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.0)),
+                            filled: true,
+                            fillColor: cl.lighterGrey,
+                            prefixText: "@",
+                            hintText: "Username",
+                            labelText: "Enter your username",
+                            labelStyle: const TextStyle(color: Colors.grey),
+                            hintStyle: const TextStyle(color: Colors.grey)),
+                      );
+                    }),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(
                     vertical: 10,
                     horizontal: MediaQuery.of(context).size.width / 10),
-                child: TextFormField(
-                  onChanged: (value) {
-                    password = value;
-                  },
-                  onFieldSubmitted: (value) {
-                    password = value;
-                  },
-                  onSaved: (value) {
-                    password = value;
-                  },
-                  autocorrect: false,
-                  cursorColor: Colors.grey,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      filled: true,
-                      fillColor: cl.lighterGrey,
-                      hintText: "Password",
-                      helperText: "Password",
-                      labelText: "Enter your password",
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      hintStyle: const TextStyle(color: Colors.grey)),
-                ),
+                child: ValueListenableBuilder(
+                    valueListenable: passwordValidatorError,
+                    builder: (context, error, foo) {
+                      return TextFormField(
+                        key: passwordFieldKey,
+                        validator: passwordvalidator,
+                        onChanged: (value) {
+                          password = value;
+                          passwordFieldKey.currentState?.validate();
+                        },
+                        onFieldSubmitted: (value) {
+                          password = value;
+                        },
+                        onSaved: (value) {
+                          password = value;
+                        },
+                        autocorrect: false,
+                        cursorColor: Colors.grey,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.0)),
+                            filled: true,
+                            fillColor: cl.lighterGrey,
+                            hintText: "Password",
+                            labelText: "Enter your password",
+                            labelStyle: const TextStyle(color: Colors.grey),
+                            hintStyle: const TextStyle(color: Colors.grey)),
+                      );
+                    }),
               ),
               ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusDirectional.circular(8.0)),
-                    primary: cl.lighterGrey, // background
-                    onPrimary: Colors.white, // foreground
-                  ),
-                  onPressed: () async {
-                    pprint("Button Pressed");
-                    if (!kIsWeb) {
-                      cw.showLoadingDialog(context, "Logging in...");
-                      dbc.User? tryUserData =
-                          await db.tryUserLogin(username ?? "", password ?? "");
-                      if (tryUserData == null) {
-                        // Throw error dialog. (choices : Retry, anonymous)
-                        Navigator.of(context).pop();
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                _showLoginFailedDialog(context));
-                      } else {
-                        await files.writeLoginDataMobile(
-                            username = tryUserData.username,
-                            password = tryUserData.password);
-                        currently_loggedin_as.value = tryUserData;
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                        sleep(const Duration(seconds: 1));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            cw.hintSnackBar("Logged in as @$username"));
-                      }
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadiusDirectional.circular(8.0)),
+                  primary: cl.lighterGrey, // background
+                  onPrimary: Colors.white, // foreground
+                ),
+                onPressed: () async {
+                  if ((!usernameFieldKey.currentState!.isValid ||
+                      !passwordFieldKey.currentState!.isValid)) {
+                    ScaffoldMessenger.of(context).showSnackBar(cw.hintSnackBar(
+                        "One or more Fields doesn't match requirements."));
+                    return;
+                  }
+                  if (!kIsWeb) {
+                    cw.showLoadingDialog(context, "Logging in...");
+                    dbc.User? tryUserData =
+                        await db.tryUserLogin(username ?? "", password ?? "");
+                    if (tryUserData == null) {
+                      // Throw error dialog. (choices : Retry, anonymous)
+                      Navigator.of(context).pop();
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              _showLoginFailedDialog(context));
                     } else {
-                      pprint("Is On Web!");
-                      DocumentSnapshot doc = await db.db
-                          .doc("${branchPrefix}users/$username")
-                          .get();
-                      if (!doc.exists) {
+                      await files.writeLoginDataMobile(
+                          username = tryUserData.username,
+                          password = tryUserData.password);
+                      currently_loggedin_as.value = tryUserData;
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                      sleep(const Duration(seconds: 1));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          cw.hintSnackBar("Logged in as @$username"));
+                    }
+                  } else {
+                    pprint("Is On Web!");
+                    dbc.User? constUser = await db.getUser(username ?? "");
+                    if (constUser == null) {
+                      await showDialog(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              _showLoginFailedDialog(context));
+                    } else {
+                      pprint("Constructed User");
+                      if (constUser.password == password) {
+                        currently_loggedin_as.value = constUser;
+                        await files.writeLoginDataWeb(
+                            constUser.username, constUser.password);
+                        Navigator.of(context).pop();
+                        Beamer.of(context).beamToNamed("/");
+                      } else {
                         showDialog(
                             context: context,
                             builder: (BuildContext context) =>
                                 _showLoginFailedDialog(context));
-                      } else {
-                        pprint("User exists!");
-                        cw.showLoadingDialog(context, "Logging in...");
-                        Map<String, dynamic>? docData =
-                            doc.data() as Map<String, dynamic>?;
-                        pprint(doc.data());
-                        if (docData == null) {
-                          await showDialog(
-                              context: context,
-                              builder: (BuildContext context) =>
-                                  _showLoginFailedDialog(context));
-                        } else {
-                          dbc.User tryUserData = dbc.User.fromMap(
-                              forceStringDynamicMapFromObject(docData));
-                          pprint("Constructed User");
-                          if (tryUserData.password == password) {
-                            currently_loggedin_as.value = tryUserData;
-                            Navigator.of(context).pop();
-                            Beamer.of(context).beamToNamed("/");
-                          } else {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) =>
-                                    _showLoginFailedDialog(context));
-                          }
-                        }
                       }
                     }
-                  },
-                  child: Text("Login",
-                      style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width / 20))),
+                  }
+                },
+                child: Text("Login",
+                    style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width / 20)),
+              ),
               const Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Text(" - or - ",
@@ -207,7 +234,10 @@ class CreateAccountScreen extends StatelessWidget {
   String alias = "";
   String description = "";
   String mail = "";
-
+  GlobalKey<FormFieldState> usernameFieldKey = GlobalKey();
+  ValueNotifier<String> usernameValidatorError = ValueNotifier<String>("");
+  GlobalKey<FormFieldState> passwordFieldKey = GlobalKey();
+  ValueNotifier<String> passwordValidatorError = ValueNotifier<String>("");
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -229,60 +259,73 @@ class CreateAccountScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(
                     vertical: 2,
                     horizontal: MediaQuery.of(context).size.width / 10),
-                child: TextFormField(
-                  onChanged: (value) {
-                    username = value;
-                  },
-                  onFieldSubmitted: (value) {
-                    username = value;
-                  },
-                  onSaved: (value) {
-                    username = value ?? "";
-                  },
-                  cursorColor: Colors.grey,
-                  style: const TextStyle(color: Colors.white),
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      filled: true,
-                      fillColor: cl.lighterGrey,
-                      prefixText: "@",
-                      hintText: "Username",
-                      helperText: "Username",
-                      labelText: "Choose your username",
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      hintStyle: const TextStyle(color: Colors.grey)),
-                ),
+                child: ValueListenableBuilder(
+                    valueListenable: passwordValidatorError,
+                    builder: (context, error, foo) {
+                      return TextFormField(
+                        key: usernameFieldKey,
+                        onChanged: (value) {
+                          username = value;
+                          usernameFieldKey.currentState?.validate();
+                        },
+                        onFieldSubmitted: (value) {
+                          username = value;
+                        },
+                        onSaved: (value) {
+                          username = value ?? "";
+                        },
+                        cursorColor: Colors.grey,
+                        style: const TextStyle(color: Colors.white),
+                        autocorrect: false,
+                        validator: usernamevalidator,
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.0)),
+                            filled: true,
+                            fillColor: cl.lighterGrey,
+                            prefixText: "@",
+                            hintText: "Username",
+                            labelText: "Choose your username",
+                            labelStyle: const TextStyle(color: Colors.grey),
+                            hintStyle: const TextStyle(color: Colors.grey)),
+                      );
+                    }),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(
                     vertical: 2,
                     horizontal: MediaQuery.of(context).size.width / 10),
-                child: TextFormField(
-                  onChanged: (value) {
-                    password = value;
-                  },
-                  onFieldSubmitted: (value) {
-                    password = value;
-                  },
-                  onSaved: (value) {
-                    password = value ?? "";
-                  },
-                  autocorrect: false,
-                  cursorColor: Colors.grey,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      filled: true,
-                      fillColor: cl.lighterGrey,
-                      hintText: "Password",
-                      helperText: "Password",
-                      labelText: "Choose your password",
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      hintStyle: const TextStyle(color: Colors.grey)),
-                ),
+                child: ValueListenableBuilder(
+                    valueListenable: passwordValidatorError,
+                    builder: (context, error, foo) {
+                      return TextFormField(
+                        key: passwordFieldKey,
+                        validator: passwordvalidator,
+                        onChanged: (value) {
+                          password = value;
+                          passwordFieldKey.currentState?.validate();
+                        },
+                        onFieldSubmitted: (value) {
+                          password = value;
+                        },
+                        onSaved: (value) {
+                          password = value ?? "";
+                        },
+                        autocorrect: false,
+                        cursorColor: Colors.grey,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.0)),
+                            filled: true,
+                            fillColor: cl.lighterGrey,
+                            hintText: "Password",
+                            helperText: "Password",
+                            labelText: "Choose your password",
+                            labelStyle: const TextStyle(color: Colors.grey),
+                            hintStyle: const TextStyle(color: Colors.grey)),
+                      );
+                    }),
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -292,6 +335,12 @@ class CreateAccountScreen extends StatelessWidget {
                     onPrimary: Colors.white, // foreground
                   ),
                   onPressed: () async {
+                    if (!usernameFieldKey.currentState!.isValid ||
+                        !passwordFieldKey.currentState!.isValid) {
+                      ScaffoldMessenger.of(context).showSnackBar(cw.hintSnackBar(
+                          "One or more Fields doesn't match requirements."));
+                      return;
+                    }
                     if (username.isEmpty) {
                       showDialog(
                           context: context,
@@ -303,7 +352,6 @@ class CreateAccountScreen extends StatelessWidget {
                         .doc("${branchPrefix}users/$username")
                         .get()
                         .then((value) => value.exists)) {
-                      print("Username Taken");
                       showDialog(
                           context: context,
                           builder: (context) =>
