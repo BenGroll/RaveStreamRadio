@@ -354,37 +354,34 @@ class Group {
   List<DocumentReference> events;
   String? description;
   File? image;
-  Group({
-    this.title,
-    required this.groupid,
-    this.design = null,
-    this.custom_roles,
-    required this.members_roles,
-    this.events = const [],
-    this.description,
-    this.image
-  });
+  Group(
+      {this.title,
+      required this.groupid,
+      this.design = null,
+      this.custom_roles,
+      required this.members_roles,
+      this.events = const [],
+      this.description,
+      this.image});
 
-  Group copyWith({
-    String? title,
-    required String groupid,
-    dynamic design,
-    Map<String, MaterialColor>? custom_roles,
-    Map<DocumentReference, dynamic>? members_roles,
-    List<DocumentReference>? events,
-    String? description,
-    File? image
-  }) {
+  Group copyWith(
+      {String? title,
+      required String groupid,
+      dynamic design,
+      Map<String, MaterialColor>? custom_roles,
+      Map<DocumentReference, dynamic>? members_roles,
+      List<DocumentReference>? events,
+      String? description,
+      File? image}) {
     return Group(
-      title: title ?? this.title,
-      groupid: groupid,
-      design: design ?? this.design,
-      custom_roles: custom_roles ?? this.custom_roles,
-      members_roles: members_roles ?? this.members_roles,
-      events: events ?? this.events,
-      description: description ?? this.description,
-      image: image ?? this.image
-    );
+        title: title ?? this.title,
+        groupid: groupid,
+        design: design ?? this.design,
+        custom_roles: custom_roles ?? this.custom_roles,
+        members_roles: members_roles ?? this.members_roles,
+        events: events ?? this.events,
+        description: description ?? this.description,
+        image: image ?? this.image);
   }
 
   Map<String, dynamic> toMap() {
@@ -398,21 +395,20 @@ class Group {
       }),
       'events': events.map((x) => x).toList(),
       'description': description,
-      'image' : image
+      'image': image
     };
   }
 
   factory Group.fromMap(Map<String, dynamic> map) {
     return Group(
-      title: map['title'] as String?,
-      groupid: map['groupid'] as String,
-      design: map['design'] as dynamic,
-      custom_roles: map['custom_roles'] as Map<String, MaterialColor>?,
-      members_roles: mapStringDynamic2DocRefDynamic(map["members_roles"]),
-      events: forceDocumentReferenceType(map['events']),
-      description: map['description'],
-      image: map['image']
-    );
+        title: map['title'] as String?,
+        groupid: map['groupid'] as String,
+        design: map['design'] as dynamic,
+        custom_roles: map['custom_roles'] as Map<String, MaterialColor>?,
+        members_roles: mapStringDynamic2DocRefDynamic(map["members_roles"]),
+        events: forceDocumentReferenceType(map['events']),
+        description: map['description'],
+        image: map['image']);
   }
 
   String toJson() => json.encode(toMap());
@@ -782,6 +778,25 @@ class Report {
         description: map["description"],
         finishedat: map["finishedat"],
         finishedby: map["finishedby"]);
+  }
+}
+
+enum FeedbackCategory { Bug, Idea, Positive, Moderation, Content }
+
+class FeedBackCollector {
+  String feedbackcontent;
+  FeedbackCategory category;
+  String? feedbackSenderUserName;
+  FeedBackCollector(
+      {required this.feedbackcontent,
+      required this.category,
+      required this.feedbackSenderUserName});
+  Map<String, dynamic> toMap() {
+    return {
+      "feedbackcontent": feedbackcontent,
+      "category": category.name,
+      "feedbackSenderUserName": feedbackSenderUserName
+    };
   }
 }
 

@@ -188,15 +188,9 @@ class NavBar extends StatelessWidget {
         backgroundColor: cl.darkerGrey,
         child: Padding(
           padding: EdgeInsetsDirectional.all(8.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            // ignore: prefer_const_literals_to_create_immutables
+          child: ListView(
             children: [
-              Expanded(
-                child: SizedBox(),
-              ),
+              Divider(color: cl.darkerGrey),
               ListTile(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0)),
@@ -211,9 +205,25 @@ class NavBar extends StatelessWidget {
                         color: Colors.white,
                         fontSize: MediaQuery.of(context).size.height / 40)),
               ),
-              Expanded(
-                child: SizedBox(),
+              Divider(color: cl.darkerGrey),
+              ListTile(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                tileColor: cl.lighterGrey,
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => FeedbackScreen()));
+                },
+                subtitle: Text("Please tell us what you think!",
+                    style: TextStyle(color: Colors.white)),
+                title: Text(
+                    maxLines: 1,
+                    "Feedback",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.height / 40)),
               ),
+              Divider(color: cl.darkerGrey),
               db.doIHavePermission(GlobalPermission.MODERATE) ||
                       db.doIHavePermission(GlobalPermission.MODERATE)
                   ? FutureBuilder(
@@ -1515,7 +1525,8 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                       },
                     )
                   : SizedBox(height: 0),
-              db.doIHavePermission(GlobalPermission.MODERATE) && event.status != "frozen"
+              db.doIHavePermission(GlobalPermission.MODERATE) &&
+                      event.status != "frozen"
                   ? ListTile(
                       title: Text("Freeze",
                           style: TextStyle(
@@ -1528,9 +1539,10 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                         showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              backgroundColor: cl.lighterGrey,
+                                  backgroundColor: cl.lighterGrey,
                                   title: Text(
-                                      "Do you really want to freeze this Event?", style: TextStyle(color: Colors.white)),
+                                      "Do you really want to freeze this Event?",
+                                      style: TextStyle(color: Colors.white)),
                                   actions: [
                                     TextButton(
                                         onPressed: () {
@@ -1559,7 +1571,8 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                       },
                     )
                   : SizedBox(height: 0),
-                db.doIHavePermission(GlobalPermission.MODERATE) && event.status == "frozen" 
+              db.doIHavePermission(GlobalPermission.MODERATE) &&
+                      event.status == "frozen"
                   ? ListTile(
                       title: Text("UnFreeze",
                           style: TextStyle(
@@ -1572,9 +1585,10 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                         showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              backgroundColor: cl.lighterGrey,
+                                  backgroundColor: cl.lighterGrey,
                                   title: Text(
-                                      "Do you really want to unfreeze this Event?", style: TextStyle(color: Colors.white)),
+                                      "Do you really want to unfreeze this Event?",
+                                      style: TextStyle(color: Colors.white)),
                                   actions: [
                                     TextButton(
                                         onPressed: () {
@@ -1594,7 +1608,6 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                                                       EventStatus.public.name));
                                           Navigator.of(context).pop();
                                           Navigator.of(context).pop();
-                                          
                                         },
                                         child: Text("YES",
                                             style:
@@ -1623,4 +1636,73 @@ void showLoadingDialog(context, [String? task]) {
                 mainAxisSize: MainAxisSize.min,
                 children: [cw.LoadingIndicator(color: Colors.white)]),
           ));
+}
+
+class FeedbackScreen extends StatelessWidget {
+  String feedbackcontent = "";
+  dbc.FeedbackCategory category = dbc.FeedbackCategory.Idea;
+  FeedbackScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: cl.darkerGrey,
+      appBar: AppBar(
+        title: Text("FeedBack"),
+        centerTitle: true,
+      ),
+      body: ListView(
+        padding: EdgeInsets.all(MediaQuery.of(context).size.width / 25),
+        children: [
+          Center(
+              child: Text(
+                  "Please tell us what we can improve, what you found out doesn't work, any ideas you have or really all your thoughts! We'll address all your Feedback!",
+                  style: TextStyle(color: Colors.white))),
+          Divider(color: cl.darkerGrey),
+          TextField(
+            onChanged: (value) {
+              feedbackcontent = value;
+            },
+            style: TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16.0)),
+                filled: true,
+                fillColor: cl.lighterGrey,
+                hintText: "Feedback",
+                labelText: "Tell us your thoughts here",
+                labelStyle: const TextStyle(color: Colors.grey),
+                hintStyle: const TextStyle(color: Colors.grey)),
+            maxLines: null,
+            maxLength: null,
+          ),
+          Divider(color: cl.darkerGrey),
+          Divider(color: cl.darkerGrey),
+          InkWell(
+              onTap: () async {
+                await db.db.collection("feedback").add(dbc.FeedBackCollector(
+                        category: category,
+                        feedbackcontent: feedbackcontent,
+                        feedbackSenderUserName:
+                            currently_loggedin_as.value == null
+                                ? null
+                                : currently_loggedin_as.value!.username)
+                    .toMap());
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                    hintSnackBar("Thank you for sending us your Feedback!"));
+              },
+              child: Card(
+                  color: cl.lighterGrey,
+                  child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Center(
+                          child: Text(
+                        "Send Feedback!",
+                        style: TextStyle(color: Colors.white),
+                      )))))
+        ],
+      ),
+    );
+  }
 }

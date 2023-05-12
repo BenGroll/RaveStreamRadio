@@ -28,8 +28,8 @@ String? usernamevalidator(String? username) {
 
 String? passwordvalidator(String? password) {
   if (password == null || password.isEmpty) return "Password can't be Empty";
-  if (password.length < 6)
-    return "Password has to be at least 6 characters long";
+  if (password.length < 4)
+    return "Password has to be at least 4 characters long";
   if (password.contains(" ")) return "Password can't contain any Spaces";
   return null;
 }
