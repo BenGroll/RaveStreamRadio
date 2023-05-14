@@ -160,7 +160,7 @@ class OpenSidebarButton extends StatelessWidget {
         icon: Padding(
           padding: EdgeInsets.all(MediaQuery.of(context).size.height / 300),
           child:
-              SvgPicture.asset("graphics/rsrvector.svg", color: Colors.white),
+              kIsWeb ? Image.asset("graphics/splash.png"): SvgPicture.asset("graphics/rsrvector.svg", color: Colors.white),
         ));
   }
 }

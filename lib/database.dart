@@ -297,13 +297,24 @@ List<dbc.Event> queriefyEventList(List<dbc.Event> events, EventFilters filters,
   if (filters.fromIDList != null) {
     eventList = eventList.whereIsInIDList(filters.fromIDList ?? []);
   }
-  if (false) {
-    eventList = eventList.whereIsGreaterThanOrEqualTo(
-        "begin", filters.onlyAfter ?? Timestamp.now());
-  }
-  if (false && filters.onlyBefore != null) {
-    eventList = eventList.whereIsLessThanOrEqualTo("end", filters.onlyBefore);
-  }
+
+  List<dbc.Event> buffer = [];
+  eventList.forEach((element) {
+    if (element.end != null &&
+        element.end!.millisecondsSinceEpoch >
+            Timestamp.now().millisecondsSinceEpoch) {
+      buffer.add(element);
+    } else if (element.end == null && element.begin != null) {
+      if (element.begin!
+              .toDate()
+              .add(Duration(hours: 12))
+              .millisecondsSinceEpoch >
+          Timestamp.now().millisecondsSinceEpoch) {
+        buffer.add(element);
+      }
+    }
+  });
+  eventList = buffer;
   eventList = eventList.whereIsInValues("status", filters.byStatus);
   if (filters.canGoByAge != null) {
     eventList =
@@ -1187,6 +1198,7 @@ class PermissionTextButton extends StatelessWidget {
         return Colors.white;
     }
   }
+
   String _permToName(String name) {
     switch (name) {
       case "ADMIN":
@@ -1203,6 +1215,7 @@ class PermissionTextButton extends StatelessWidget {
         return "Permission";
     }
   }
+
   String _permToTip(String name) {
     switch (name) {
       case "ADMIN":
@@ -1219,20 +1232,24 @@ class PermissionTextButton extends StatelessWidget {
         return "Permission";
     }
   }
+
   PermissionTextButton({required this.permission});
 
   @override
   Widget build(BuildContext context) {
     return Tooltip(
       message: _permToTip(permission.name),
-      child: TextButton(onPressed: () {},
-      child: Text(_permToName(permission.name), style: TextStyle(color: _permToColor(permission.name)))),
+      child: TextButton(
+          onPressed: () {},
+          child: Text(_permToName(permission.name),
+              style: TextStyle(color: _permToColor(permission.name)))),
     );
   }
 }
 
 List<Widget> permissionIndicatorsFromPermissions(dbc.User user) {
-  return dbc.dbPermissionsToGlobal(user.permissions) 
+  return dbc
+      .dbPermissionsToGlobal(user.permissions)
       .map((e) => PermissionTextButton(permission: e))
       .toList();
 }

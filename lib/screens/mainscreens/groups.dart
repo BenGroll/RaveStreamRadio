@@ -302,7 +302,7 @@ class EntityBrowser extends StatelessWidget {
                                       } else if (e.type == QueryCategory.user) {
                                         kIsWeb
                                             ? Beamer.of(context).beamToNamed(
-                                                "/users/${e.id}@groups")
+                                                "/users/${e.id}")
                                             : Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                     builder: (context) =>

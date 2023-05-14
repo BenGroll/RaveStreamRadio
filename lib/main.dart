@@ -56,7 +56,7 @@ class MainRoute extends StatelessWidget {
       valueListenable: selectedbranch,
       builder: (context, snapshot, foo) {
         return FutureBuilder(
-            future: Firebase.initializeApp(
+            future: Firebase.initializeApp(             
                 options: DefaultFirebaseOptions.currentPlatform),
             builder: (BuildContext context, AsyncSnapshot snap) {
               if (snap.connectionState == ConnectionState.done) {
