@@ -62,17 +62,12 @@ class EventOverviewPage extends StatelessWidget {
                                               eventUserSpecificData,
                                           builder: (context, bar, foo) {
                                             List<Widget> linkButtons = [];
-                                            /*event.value!.links
-                                                ?.forEach((key, value) {
-                                              if (key != "tickets") {
-                                                linkButtons.add(UrlLinkButton(
-                                                    value,
-                                                    key,
-                                                    const TextStyle(
-                                                        color: Colors.grey)));
-                                              }
-                                              print("BreakPoint 2");
-                                            });*/
+                                            if (eventdata?.links != null) {
+                                              eventdata!.links!
+                                                  .forEach((key, value) {
+                                                    linkButtons.add(UrlLinkButton(value, key, TextStyle(color: Colors.white)));
+                                                  });
+                                        }
                                             GlobalKey<ScaffoldState> _key =
                                                 GlobalKey();
                                             return Scaffold(
@@ -193,8 +188,14 @@ class EventOverviewPage extends StatelessWidget {
                                                                 30,
                                                         vertical: 8.0),
                                                     child: ListView(children: [
-                                                      event.value?.status == "frozen" ?
-                                                      Text("This event is currently hidden from the public by moderation.", style: TextStyle(color: Colors.red)) : Container(),
+                                                      event.value?.status ==
+                                                              "frozen"
+                                                          ? Text(
+                                                              "This event is currently hidden from the public by moderation.",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .red))
+                                                          : Container(),
                                                       Center(
                                                           child: EventTitle(
                                                               event: event
@@ -413,7 +414,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                                     ),
                                                                                     textAlign: TextAlign.center,
                                                                                   ),
-                                                                                  Text("${event.value!.genre}", style: const TextStyle(color: Colors.white)),
+                                                                                  Text("${event.value?.genre ?? 'No Genre Set'}", style: const TextStyle(color: Colors.white)),
                                                                                   Text(''),
                                                                                 ],
                                                                               ),
@@ -483,7 +484,7 @@ class EventOverviewPage extends StatelessWidget {
               /*Navigator.of(context).maybePop();
               reloadEventPage();*/
               return Scaffold(
-                appBar: AppBar(),
+                  appBar: AppBar(),
                   backgroundColor: cl.darkerGrey,
                   body: Center(
                       child: Text("This Event doesn't exist (anymore)",
