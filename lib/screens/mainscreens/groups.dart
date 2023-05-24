@@ -198,7 +198,7 @@ class EntityBrowser extends StatelessWidget {
                     "pinned_groups": currently_loggedin_as.value!.pinned_groups
                   });
                   ScaffoldMessenger.of(context)
-                      .showSnackBar(cw.hintSnackBar("Group pinned."));
+                      .showSnackBar(cw.hintSnackBar("Group unpinned."));
                   to_Notify.notifyListeners();
                 } else {
                   currently_loggedin_as.value!.pinned_groups
@@ -207,7 +207,7 @@ class EntityBrowser extends StatelessWidget {
                     "pinned_groups": currently_loggedin_as.value!.pinned_groups
                   });
                   ScaffoldMessenger.of(context)
-                      .showSnackBar(cw.hintSnackBar("Group unpinned."));
+                      .showSnackBar(cw.hintSnackBar("Group pinned."));
                   to_Notify.notifyListeners();
                 }
               },

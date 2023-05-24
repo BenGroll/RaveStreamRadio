@@ -160,10 +160,12 @@ extension Queriefy on List<dbc.Event> {
     forEach((element) {
       if ((element.locationname != null &&
               element.locationname!.contains(searchString)) ||
-          (element.eventid.contains(searchString)) ||
-          (element.title != null && element.title!.contains(searchString)) ||
+          (element.eventid.toLowerCase().contains(searchString.toLowerCase())) ||
+          (element.title != null && element.title!.toLowerCase().contains(searchString.toLowerCase())) ||
           (element.templateHostID != null &&
-              element.templateHostID!.contains(searchString))) {
+              element.templateHostID!.toLowerCase().contains(searchString.toLowerCase())) ||
+              (element.genre != null && element.genre!.toLowerCase().contains(searchString.toLowerCase()))
+              ) {
         outL.add(element);
       }
     });
