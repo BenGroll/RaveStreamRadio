@@ -38,7 +38,7 @@ enum ServerBranches { public, test, develop }
 ///
 /// Key is regex pattern for url checking, value is logo file path
 Map<String, String> urlPatternsForLogos = {
-  "instagram.com": "graphics/linkicons/instagramlogo.svg",
+  "instagram.com": "graphics/instagramlogo.svg",
   "ravestreamradio.de": "graphics/rsrvector.svg"
 };
 
