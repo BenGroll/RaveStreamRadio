@@ -19,6 +19,18 @@ const int DEFAULT_MINAGE = 18;
 
 late FirebaseApp app;
 
+//! This Versions Versioncode. Change for Update Detection !//
+const VERSIONCODE = 16;
+
+ValueNotifier<RemoteConfig?> remoteConfigValues =
+    ValueNotifier<RemoteConfig?>(null);
+
+class RemoteConfig {
+  Map<String, dynamic> downloadLinks;
+  int versioncode;
+  RemoteConfig({required this.downloadLinks, required this.versioncode});
+}
+
 double DISPLAY_LONG_SIDE(context) {
   return MediaQuery.of(context).size.height > MediaQuery.of(context).size.width
       ? MediaQuery.of(context).size.height

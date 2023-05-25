@@ -341,7 +341,7 @@ class _EventCalendarState extends State<EventCalendar> {
                     valueListenable: current_page,
                     builder: ((context, value, child) {
                       return FutureBuilder(
-                          future: db.fetchEventsFromIndexFile(),
+                          future: db.fetchEventsFromIndexFile(context),
                           builder: ((context, snapshot) {
                             if (snapshot.connectionState !=
                                 ConnectionState.done) {

@@ -15,6 +15,8 @@ import 'testdbscenario.dart';
 import 'package:ravestreamradioapp/extensions.dart'
     show Queriefy, pprint, JsonSafe;
 import 'dart:convert';
+import 'package:ravestreamradioapp/colors.dart' as cl;
+import 'package:url_launcher/url_launcher.dart';
 
 var db = FirebaseFirestore.instance;
 
@@ -263,7 +265,57 @@ class EventFilters {
 }
 
 /// Gets the list of events for current branch from firestore.
-Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
+Future<List<dbc.Event>> fetchEventsFromIndexFile(BuildContext context) async {
+  await getRemoteConfig();
+  if (!kIsWeb &&
+      remoteConfigValues.value != null &&
+      remoteConfigValues.value!.versioncode > VERSIONCODE) {
+    await showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) => WillPopScope(
+              onWillPop: () async {
+                return false;
+              },
+              child: AlertDialog(
+                backgroundColor: cl.darkerGrey,
+                title: Center(
+                    child: Text("Outdated App!",
+                        style: TextStyle(color: Colors.white))),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("Your app isn't the newest version.",
+                        style: TextStyle(color: Colors.white)),
+                    Text("You have to update it.",
+                        style: TextStyle(color: Colors.white)),
+                    TextButton(
+                        onPressed: () async {
+                          if (Platform.isAndroid) {
+                            if (!await canLaunchUrl(Uri.parse(remoteConfigValues
+                                .value!.downloadLinks["android"]))) ;
+                            await launchUrl(
+                                Uri.parse(remoteConfigValues
+                                    .value!.downloadLinks["android"]),
+                                mode: LaunchMode.externalApplication);
+                          }
+                          if (Platform.isIOS) {
+                            if (!await canLaunchUrl(Uri.parse(remoteConfigValues
+                                .value!.downloadLinks["ios"]))) ;
+                            await launchUrl(
+                                Uri.parse(remoteConfigValues
+                                    .value!.downloadLinks["ios"]),
+                                mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        child: Text("Download!",
+                            style: TextStyle(color: Colors.red)))
+                  ],
+                ),
+              ),
+            ));
+  }
   String eventIndexesJson = await readEventIndexesJson();
   List<dbc.Event> eventList = getEventListFromIndexes(eventIndexesJson.dbsafe);
   AggregateQuery eventsInDB =
@@ -282,7 +334,7 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile() async {
         eventMapToJson(eventListToJsonCompatibleMap(events));
     await writeEventIndexes(jsonindexString.dbsafe);
     await Future.delayed(Duration(seconds: 5));
-    return await fetchEventsFromIndexFile();
+    return await fetchEventsFromIndexFile(context);
   }
   return eventList;
 }
@@ -1252,4 +1304,24 @@ List<Widget> permissionIndicatorsFromPermissions(dbc.User user) {
       .dbPermissionsToGlobal(user.permissions)
       .map((e) => PermissionTextButton(permission: e))
       .toList();
+}
+
+Future<RemoteConfig?> getRemoteConfig() async {
+  DocumentSnapshot snap = await db.doc("content/remoteconfig").get();
+  if (snap.exists && snap.data() != null) {
+    Map data = snap.data() as Map;
+    if (!data.containsKey("downloadpagelinks") ||
+        !data.containsKey("versioncode")) {
+      return null;
+    }
+    RemoteConfig config = RemoteConfig(
+        downloadLinks: data["downloadpagelinks"],
+        versioncode: data["versioncode"]);
+    print("Links: ${config.downloadLinks}");
+    print("Version: ${config.versioncode}");
+    remoteConfigValues.value = config;
+    return config;
+  } else {
+    return null;
+  }
 }
