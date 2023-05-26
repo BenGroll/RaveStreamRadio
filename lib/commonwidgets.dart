@@ -1510,10 +1510,10 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                                     await newRep.update({"id": newRep.id});
                                     Navigator.of(context).pop();
                                     showFeedbackDialog(context, [
-                                "Thank you!",
-                                "Your Report has been submitted.",
-                                "It may take a while for a moderator to review and potentially act on your report."
-                              ]);
+                                      "Thank you!",
+                                      "Your Report has been submitted.",
+                                      "It may take a while for a moderator to review and potentially act on your report."
+                                    ]);
                                   },
                                   child: Text(
                                     "Report",
@@ -1670,6 +1670,41 @@ void showFeedbackDialog(context, List<String>? messages) {
                       .map(
                           (e) => Text(e, style: TextStyle(color: Colors.white)))
                       .toList(),
+            ),
+          )));
+}
+
+void showDevFeedbackDialog(context, List<String>? messages) {
+  showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          backgroundColor: cl.lighterGrey,
+          actions: [
+            TextButton(onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Dismiss", style: TextStyle(color: Colors.white))
+            )
+          ],
+          content: Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: DISPLAY_SHORT_SIDE(context) / 50,
+                vertical: DISPLAY_LONG_SIDE(context) / 50),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: messages == null
+                    ? []
+                    : messages
+                        .map((e) =>
+                            SelectableText(e, style: TextStyle(color: Colors.white)))
+                        .toList(),
+              ),
             ),
           )));
 }

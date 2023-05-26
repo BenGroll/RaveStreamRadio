@@ -219,8 +219,10 @@ class DevSettingsScreen extends StatelessWidget {
                       onPressed: () async {
                         List<Event> events = db.getEventListFromIndexes(
                             await db.readEventIndexesJson());
+                        showFeedbackDialog(
+                            context, events.map((e) => e.toString()).toList());
                         ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("Created Indexes"));
+                            .showSnackBar(hintSnackBar("Read Indexes"));
                       },
                       child: Text("Read index file for Events")),
                   ElevatedButton(
@@ -281,6 +283,7 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Chat Test")),
                   ElevatedButton(
                       onPressed: () async {
+                        showDevFeedbackDialog(context, [generateDocumentID()]);
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Chat Test"));
                       },
@@ -437,21 +440,23 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Test writing userdata")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(await readLoginDataWeb());
+                        Map asd = kIsWeb
+                            ? await readLoginDataWeb()
+                            : await readLoginDataMobile();
+                        showDevFeedbackDialog(context, [asd.toString()]);
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("File Read"));
                       },
                       child: Text("Test reading userdata")),
                   ElevatedButton(
                       onPressed: () async {
-                        print("");
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("File Read"));
                       },
                       child: Text("Test ListGen")),
                   ElevatedButton(
                       onPressed: () async {
-                        showFeedbackDialog(context, ["Hello"]);
+                        showDevFeedbackDialog(context, ["Hello"]);
                       },
                       child: Text("Test HintDialog")),
                 ],
