@@ -449,6 +449,11 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("File Read"));
                       },
                       child: Text("Test ListGen")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        showFeedbackDialog(context, ["Hello"]);
+                      },
+                      child: Text("Test HintDialog")),
                 ],
               ),
             ),

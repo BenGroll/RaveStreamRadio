@@ -159,8 +159,9 @@ class OpenSidebarButton extends StatelessWidget {
         },
         icon: Padding(
           padding: EdgeInsets.all(MediaQuery.of(context).size.height / 300),
-          child:
-              kIsWeb ? Image.asset("graphics/splash.png"): SvgPicture.asset("graphics/rsrvector.svg", color: Colors.white),
+          child: kIsWeb
+              ? Image.asset("graphics/splash.png")
+              : SvgPicture.asset("graphics/rsrvector.svg", color: Colors.white),
         ));
   }
 }
@@ -879,9 +880,12 @@ class ReportButton extends StatelessWidget {
                                 "state": "filed"
                               });
                               await newRep.update({"id": newRep.id});
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  hintSnackBar("Report was sent!"));
                               Navigator.of(context).pop();
+                              showFeedbackDialog(context, [
+                                "Thank you!",
+                                "Your Report has been submitted.",
+                                "It may take a while for a moderator to review and potentially act on your report."
+                              ]);
                             },
                             child: Text(
                               "Report",
@@ -1504,9 +1508,12 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                                       "state": "filed"
                                     });
                                     await newRep.update({"id": newRep.id});
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        hintSnackBar("Report was sent!"));
                                     Navigator.of(context).pop();
+                                    showFeedbackDialog(context, [
+                                "Thank you!",
+                                "Your Report has been submitted.",
+                                "It may take a while for a moderator to review and potentially act on your report."
+                              ]);
                                   },
                                   child: Text(
                                     "Report",
@@ -1643,6 +1650,30 @@ void showLoadingDialog(context, [String? task]) {
           ));
 }
 
+void showFeedbackDialog(context, List<String>? messages) {
+  showDialog(
+      context: context,
+      builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          backgroundColor: cl.lighterGrey,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: DISPLAY_SHORT_SIDE(context) / 50,
+                vertical: DISPLAY_LONG_SIDE(context) / 50),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: messages == null
+                  ? []
+                  : messages
+                      .map(
+                          (e) => Text(e, style: TextStyle(color: Colors.white)))
+                      .toList(),
+            ),
+          )));
+}
+
 class FeedbackScreen extends StatelessWidget {
   String feedbackcontent = "";
   dbc.FeedbackCategory category = dbc.FeedbackCategory.Idea;
@@ -1694,8 +1725,8 @@ class FeedbackScreen extends StatelessWidget {
                                 : currently_loggedin_as.value!.username)
                     .toMap());
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                    hintSnackBar("Thank you for sending us your Feedback!"));
+                showFeedbackDialog(context,
+                    ["Thank you!", "Your Feedback has been submitted."]);
               },
               child: Card(
                   color: cl.lighterGrey,
