@@ -135,7 +135,8 @@ Future<Map> readLoginDataWeb() async {
   final prefs = await SharedPreferences.getInstance();
   return DEBUG_LOGIN_RETURN_TRUE_ON_WEB
       ? {"username": "demouser", "password": ""}
-      : json.decode(await prefs.getString("credentials") ?? jsonEncode({"username": "", "password": ""}));
+      : json.decode(await prefs.getString("credentials") ??
+          jsonEncode({"username": "", "password": ""}));
   "LOGIN DATA: ${await prefs.getString("credentials")}";
   return DEBUG_LOGIN_RETURN_TRUE_ON_WEB
       ? {"username": "demouser", "password": ""}
@@ -146,6 +147,7 @@ Future<Map> readLoginDataWeb() async {
 ///
 /// Returns error image if file doesnt exists, so nullsafe
 Future<Widget?> getImage(String imagepath) async {
+  imagepath = imagepath.replaceAll("gs://ravestreammobileapp.appspot.com/", "");
   try {
     if (imagepath.isEmpty) {
       return null;
