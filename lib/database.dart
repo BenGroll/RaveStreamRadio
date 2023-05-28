@@ -1325,3 +1325,19 @@ Future<RemoteConfig?> getRemoteConfig() async {
     return null;
   }
 }
+
+Future<dbc.Host?> getDemoHost(String templateHostID) async {
+  DocumentSnapshot snap =
+      await db.doc("demohosts/$templateHostID").get();
+  if (snap.exists && snap.data() != null) {
+    try {
+      print("HALLO");
+      dbc.Host host =
+          dbc.Host.fromMap(forceStringDynamicMapFromObject(snap.data() as Map));
+      return host;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+}

@@ -459,6 +459,19 @@ class DevSettingsScreen extends StatelessWidget {
                         showDevFeedbackDialog(context, ["Hello"]);
                       },
                       child: Text("Test HintDialog")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("File Read"));
+                      },
+                      child: Text("Test ListGen")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        Host? host = await db.getDemoHost("0815events");
+                        print(host);
+                        showDevFeedbackDialog(context, [host.toString()]);
+                      },
+                      child: Text("Test Single DemoHost getter")),
                 ],
               ),
             ),

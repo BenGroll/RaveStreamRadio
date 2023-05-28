@@ -166,32 +166,34 @@ Future<Widget?> getImage(String imagepath) async {
               return "-1";
             });
           }
-          if (dldURL == "-1") return errorWhiteImage;
+          if (dldURL == "-1") return null;
 
           Reference test = firebasestorage.ref().child(imagepath);
           Uint8List? raw_image_data = await test.getData().catchError((e) {
-            return errorWhiteImage;
+            return null;
           });
-          if (raw_image_data == null) return errorWhiteImage;
+          if (raw_image_data == null) return null;
           //Save Image for later use in
-          Widget createdImage = errorWhiteImage;
+          Widget? createdImage = null;
           if (imagepath.endsWith("svg")) {
-            Widget createdImage = SvgPicture.asset(
+            Widget? createdImage = SvgPicture.asset(
               imagepath,
               color: Colors.white,
             );
           } else {
             createdImage = Image.memory(raw_image_data);
           }
-          saved_pictures[imagepath] = createdImage;
+          if (createdImage != null) {
+            saved_pictures[imagepath] = createdImage;
+          }
           return createdImage;
         } catch (e) {
-          return errorWhiteImage;
+          return null;
         }
       }
     }
   } catch (e) {
-    return errorWhiteImage;
+    return null;
   }
 }
 
@@ -203,52 +205,86 @@ Future<Widget?> getImage(String imagepath) async {
 ///
 /// Common Image path: graphics\DefaultEventTemplate.jpg
 Future<Widget> getEventIcon(dbc.Event event) async {
+  Widget? lol;
   if (event.icon != null) {
-    // Get Event's Own Icon
-    return await getImage(event.icon ?? "") ?? errorWhiteImage;
-  } else {
-    if (event.hostreference == null) {
-      if (event.templateHostID != null) {
-        String? imageLocation = await db.db
-            .doc("demohosts/${event.templateHostID}")
-            .get()
-            .then((value) => value.data()?["logopath"]);
-        if (imageLocation != null && imageLocation.isNotEmpty) {
-          return await getImage(imageLocation.replaceAll(
-                  "gs://ravestreammobileapp.appspot.com/", "")) ??
-              errorWhiteImage;
-        }
-      }
-      //pprint("@fs : No Host specified.");
-      return const Image(
-          image: AssetImage("graphics/DefaultEventTemplate.jpg"));
-    } else {
-      DocumentSnapshot<Map<String, dynamic>> host = await event.hostreference
-          ?.get() as DocumentSnapshot<Map<String, dynamic>>;
-      if (host == null) {
-        //pprint("@fs : Couldnt get Host document");
-        return errorWhiteImage;
-      }
-      if (host.data() == null) {
-        //pprint("@fs : Host data couldnt be read");
-        return errorWhiteImage;
-      }
-      if (host.data()?["profile_picture"] == null) {
-        //pprint("@fs : Host has no profile picture.");
-        return SvgPicture.asset("graphics/person_black_48dp.svg",
-            color: cl.greynothighlight);
-      }
-      Widget? hostProfilePic =
-          await getImage(host.data()?["profile_picture"] as String);
-      if (hostProfilePic == null) {
-        //pprint("@fs : Host has no profile picture.");
-        return SvgPicture.asset("graphics/person_black_48dp.svg",
-            color: cl.greynothighlight);
+    print("EVENTICON");
+    lol = await getImage(event.icon ?? "");
+    if (lol != null) {
+      return lol;
+    }
+  }
+  if (event.hostreference != null) {
+    DocumentSnapshot snap = await event.hostreference!.get();
+    if (snap.exists && snap.data() != null) {
+      Map data = snap.data() as Map;
+      if (event.hostreference!.parent.id == "${branchPrefix}users") {
+        return Image.network(await FirebaseStorage.instance
+            .ref("groupicons/${snap.id}")
+            .getDownloadURL());
       } else {
-        return hostProfilePic;
+        dbc.User? user = await db.getUser(event.hostreference!.id);
+        if (user != null && user.profile_picture != null) {
+          return Image.network(user.profile_picture ?? "");
+        }
       }
     }
   }
+  if (event.templateHostID != null) {
+    dbc.Host? host = await db.getDemoHost(event.templateHostID as String);
+    if (host != null && host.logopath != null) {
+      print(host.logopath);
+      lol = await getImage(host.logopath as String);
+      print(lol);
+      if (lol != null) return lol;
+    }
+  }
+  return errorWhiteImage;
+  /*
+  if (event.icon != null) {
+    // Get Event's Own Icon
+    Widget? lol = await getImage(event.icon ?? "");
+    if (lol != null) return lol;
+  }
+  if (event.hostreference == null) {
+    if (event.templateHostID != null) {
+      String? imageLocation = await db.db
+          .doc("demohosts/${event.templateHostID}")
+          .get()
+          .then((value) => value.data()?["logopath"]);
+      if (imageLocation != null && imageLocation.isNotEmpty) {
+        return await getImage(imageLocation.replaceAll(
+                "gs://ravestreammobileapp.appspot.com/", "")) ??
+            errorWhiteImage;
+      }
+    }
+    //pprint("@fs : No Host specified.");
+    return const Image(image: AssetImage("graphics/DefaultEventTemplate.jpg"));
+  } else {
+    DocumentSnapshot<Map<String, dynamic>> host = await event.hostreference
+        ?.get() as DocumentSnapshot<Map<String, dynamic>>;
+    if (host == null) {
+      //pprint("@fs : Couldnt get Host document");
+      return errorWhiteImage;
+    }
+    if (host.data() == null) {
+      //pprint("@fs : Host data couldnt be read");
+      return errorWhiteImage;
+    }
+    if (host.data()?["profile_picture"] == null) {
+      //pprint("@fs : Host has no profile picture.");
+      return SvgPicture.asset("graphics/person_black_48dp.svg",
+          color: cl.greynothighlight);
+    }
+    Widget? hostProfilePic =
+        await getImage(host.data()?["profile_picture"] as String);
+    if (hostProfilePic == null) {
+      //pprint("@fs : Host has no profile picture.");
+      return SvgPicture.asset("graphics/person_black_48dp.svg",
+          color: cl.greynothighlight);
+    } else {
+      return hostProfilePic;
+    }
+  }*/
 }
 
 /// Gets Flyer of Event
@@ -257,8 +293,11 @@ Future<Widget> getEventIcon(dbc.Event event) async {
 Future<Widget> getEventFlyer(dbc.Event event) async {
   if (event.flyer != null) {
     // Get Event's Own Icon
-    return await getImage(event.flyer ?? "") ?? errorWhiteImage;
-  } else {
-    return getEventIcon(event);
+    Widget? lol = await getImage(event.flyer ?? "");
+    if (lol != null) return lol;
+    print("Nicht Image");
+    lol = await getEventIcon(event);
+    return lol;
   }
+  return errorWhiteImage;
 }
