@@ -28,24 +28,24 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   // Routes for web navigation
   "/": (context, state, data) =>
       const BeamPage(child: main.MainRoute(), title: "Events"),
-  "/events": (context, state, data) => const BeamPage(child: main.MainRoute()),
+  "/events": (context, state, data) => const BeamPage(child: main.MainRoute(), title: "Events"),
   "/favorites": (context, state, data) =>
-      const BeamPage(child: main.MainRoute(startingscreen: Screens.favourites)),
+      const BeamPage(child: main.MainRoute(startingscreen: Screens.favourites), title: "Favourites"),
   "/groups": (context, state, data) =>
-      const BeamPage(child: main.MainRoute(startingscreen: Screens.forums)),
+      const BeamPage(child: main.MainRoute(startingscreen: Screens.forums), title: "Social"),
   "/groups/:groupidPOPTO": (context, state, data) {
     final groupid = state.pathParameters["groupidPOPTO"]?.split("@")[0];
     final popto = state.pathParameters["groupidPOPTO"]?.split("@")[1];
     return BeamPage(
         key: ValueKey("Group - $groupid"),
         //type: BeamPageType.scaleTransition,
-        title: "@$groupid",
+        title: "Group: @$groupid",
         child: groupid == null
             ? const Text("Empty Userid")
             : GroupOverviewPage(groupid: groupid));
   },
   "/profile": (context, state, data) =>
-      const BeamPage(child: main.MainRoute(startingscreen: Screens.profile)),
+      const BeamPage(child: main.MainRoute(startingscreen: Screens.profile), title: "Profile"),
   //"/users": (context, state, data) => const Text("No user provided"),
   "/users/:username": (context, state, data) {
     final username = state.pathParameters["username"];
@@ -53,7 +53,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
         key: ValueKey("User - $username"),
         //type: BeamPageType.scaleTransition,
         //keepQueryOnPop: true,
-        title: "@$username",
+        title: "User: @$username",
         child: username == null
             ? const Text("Empty Userid")
             : UserOverviewPage(username: username));
@@ -61,6 +61,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   "/events/:eventid": (context, state, data) {
     final eventid = state.pathParameters["eventid"]!;
     return BeamPage(
+      title: "Event: @$eventid",
         key: ValueKey("Event - $eventid"),
         popToNamed: "/",
         type: BeamPageType.scaleTransition,
@@ -68,12 +69,13 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
             ? const Text("Event not found.")
             : EventOverviewPage(eventid));
   },
-  "/login": (context, state, data) => LoginScreen(),
-  "/hostevent": (context, state, data) => EventCreationScreen(),
+  "/login": (context, state, data) => BeamPage(child: LoginScreen(), title: "Login"),
+  "/hostevent": (context, state, data) => BeamPage(child: EventCreationScreen(), title: "Host Event"),
   "/editevent/:eventid": (context, state, data) {
     final eventid = state.pathParameters["eventid"]!;
     return BeamPage(
         key: ValueKey("EditEvent - $eventid"),
+        title: "Edit @$eventid",
         //popToNamed: "/events",
         type: BeamPageType.scaleTransition,
         child: eventid.isEmpty
@@ -85,20 +87,21 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
                 },
                 child: EventCreationScreen(eventIDToBeEdited: eventid)));
   },
-  "/download": (context, state, data) => const DownloadLandingPage(),
-  "/createaccount": (context, state, data) => CreateAccountScreen(),
-  "/policy": (context, state, data) => const PrivacyPolicy(),
-  "/imprint": (context, state, data) => const ImPrint(),
-  "/social": (context, state, data) => const AboutUsPage(),
-  "/dev": (context, state, data) => const DevSettingsScreen(),
-  "/manage": (context, state, data) => ManageEventScreen(),
-  "/drafts": (context, state, data) => const DraftCalendar(),
-  "/moderate": (context, state, data) => ReportManagementScreen(),
+  "/download": (context, state, data) => const BeamPage(child: DownloadLandingPage(), title: "Download"),
+  "/createaccount": (context, state, data) => BeamPage(child: CreateAccountScreen(),  title: "Create Account"),
+  "/policy": (context, state, data) => BeamPage(child: const PrivacyPolicy(), title: "Privacy Policy"),
+  "/imprint": (context, state, data) => const BeamPage(child: ImPrint(), title: "Imprint"),
+  "/social": (context, state, data) => BeamPage(child: const AboutUsPage(), title: "Social"),
+  "/dev": (context, state, data) => const BeamPage(child: DevSettingsScreen(), title: "DevOpts"),
+  "/manage": (context, state, data) => BeamPage(child: ManageEventScreen(), title: "Manage"),
+  "/drafts": (context, state, data) => const BeamPage(child: const DraftCalendar(), title: "Drafts"),
+  "/moderate": (context, state, data) => const BeamPage(child: ReportManagementScreen(), title: "Moderate"),
   "/chat/:chatid": (context, state, data) {
     final chatid = state.pathParameters["chatid"];
     return BeamPage(
         key: ValueKey("Chat - $chatid"),
         //type: BeamPageType.scaleTransition,
+        title: "Chat",
         child: chatid == null
             ? Text("Report not Found")
             : ChatWindow(id: chatid));
@@ -106,6 +109,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
   "/report/:reportid": (context, state, data) {
     final reportid = state.pathParameters["reportid"];
     return BeamPage(
+      title: "Report: $reportid",
         key: ValueKey("Report - $reportid"),
         //type: BeamPageType.scaleTransition,
         popToNamed: "/moderate",
