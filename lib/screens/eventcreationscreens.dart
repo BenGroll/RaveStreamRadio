@@ -42,6 +42,8 @@ class EventCreationScreen extends StatelessWidget {
           title: "",
           locationname: "",
           description: "",
+          begin: Timestamp.fromDate(DateTime.now().copyWith(hour: 22, minute: 00)),
+          end: Timestamp.fromDate(DateTime.now().copyWith(hour: 22, minute: 00).add(Duration(hours: 8))),
           links: {}));
 //String? templateHostID;
 
@@ -349,17 +351,16 @@ class EventCreationScreen extends StatelessWidget {
                                                           color: Colors.white)))
                                             ],
                                           ),
-                                          body:
-                                              TabBarView(
-                                                children: [
-                                                  GeneralSettingsPage(parent: this),
-                                                  DescriptionEditingPage(
-                                                    to_Notify: currentEventData,
-                                                  ),
-                                                  LinkEditingScreen(parent: this),
-                                                  MediaEditingScreen(parent: this)
-                                                ],
-                                              ));
+                                          body: TabBarView(
+                                            children: [
+                                              GeneralSettingsPage(parent: this),
+                                              DescriptionEditingPage(
+                                                to_Notify: currentEventData,
+                                              ),
+                                              LinkEditingScreen(parent: this),
+                                              MediaEditingScreen(parent: this)
+                                            ],
+                                          ));
                                     });
                               } else {
                                 return cw.ErrorScreen(
@@ -718,6 +719,9 @@ class GeneralSettingsPage extends StatelessWidget {
                                                             .value
                                                             .begin!
                                                             .millisecondsSinceEpoch));
+                                          } else {
+                                            initialTime =
+                                                TimeOfDay(hour: 22, minute: 0);
                                           }
 
                                           TimeOfDay? picked_time = await cw
