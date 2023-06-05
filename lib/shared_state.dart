@@ -20,7 +20,7 @@ const int DEFAULT_MINAGE = 18;
 late FirebaseApp app;
 
 //! This Versions Versioncode. Change for Update Detection !//
-const VERSIONCODE = 18;
+const VERSIONCODE = 19;
 
 ValueNotifier<RemoteConfig?> remoteConfigValues =
     ValueNotifier<RemoteConfig?>(null);
