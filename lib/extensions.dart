@@ -160,12 +160,21 @@ extension Queriefy on List<dbc.Event> {
     forEach((element) {
       if ((element.locationname != null &&
               element.locationname!.contains(searchString)) ||
-          (element.eventid.toLowerCase().contains(searchString.toLowerCase())) ||
-          (element.title != null && element.title!.toLowerCase().contains(searchString.toLowerCase())) ||
+          (element.eventid
+              .toLowerCase()
+              .contains(searchString.toLowerCase())) ||
+          (element.title != null &&
+              element.title!
+                  .toLowerCase()
+                  .contains(searchString.toLowerCase())) ||
           (element.templateHostID != null &&
-              element.templateHostID!.toLowerCase().contains(searchString.toLowerCase())) ||
-              (element.genre != null && element.genre!.toLowerCase().contains(searchString.toLowerCase()))
-              ) {
+              element.templateHostID!
+                  .toLowerCase()
+                  .contains(searchString.toLowerCase())) ||
+          (element.genre != null &&
+              element.genre!
+                  .toLowerCase()
+                  .contains(searchString.toLowerCase()))) {
         outL.add(element);
       }
     });
@@ -323,4 +332,26 @@ extension JsonSafe on String {
     watch.stop;
     return value;
   }
+}
+
+extension Search on List<dbc.Link> {
+  dbc.Link? whereTitleIs(String title) {
+    for (int i = 0; i < length; i++) {
+      dbc.Link element = this[i];
+      if (element.title == title) {
+        return element;
+      }
+    }
+    return null;
+  }
+  dbc.Link? whereURLcontains(String pattern) {
+    for (int i = 0; i < length; i++) {
+      dbc.Link element = this[i];
+      if (element.url.contains(pattern)) {
+        return element;
+      }
+    }
+    return null;
+  }
+  
 }

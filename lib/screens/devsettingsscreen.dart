@@ -472,6 +472,13 @@ class DevSettingsScreen extends StatelessWidget {
                         showDevFeedbackDialog(context, [host.toString()]);
                       },
                       child: Text("Test Single DemoHost getter")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        
+                        showDevFeedbackDialog(context, ["DemoHosts Updated."]);
+                      },
+                      child: Text(
+                          "Change all instagram links to instagram (demohosts)")),
                 ],
               ),
             ),

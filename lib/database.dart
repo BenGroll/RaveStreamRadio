@@ -1327,8 +1327,7 @@ Future<RemoteConfig?> getRemoteConfig() async {
 }
 
 Future<dbc.Host?> getDemoHost(String templateHostID) async {
-  DocumentSnapshot snap =
-      await db.doc("demohosts/$templateHostID").get();
+  DocumentSnapshot snap = await db.doc("demohosts/$templateHostID").get();
   if (snap.exists && snap.data() != null) {
     try {
       print("HALLO");
@@ -1340,4 +1339,27 @@ Future<dbc.Host?> getDemoHost(String templateHostID) async {
       return null;
     }
   }
+}
+
+Future makeDemoHostsContainInstagramLink() async {
+  List<DocumentSnapshot> snap =
+      await db.collection("demohosts").get().then((value) => value.docs);
+  List<Future> futures = [];
+  snap.forEach((doc) {
+    if (doc.data() != null) {
+      dbc.Host data = dbc.Host.fromMap(
+          stringDynamicMapFromDynamicDynamic(doc.data() as Map));
+      if (data.links != null) {
+        data.links!.forEach((mapentry) {
+          if (mapentry.url.contains("instagram")) {
+            data.links!.add(dbc.Link(title: "instagram", url: mapentry.url));
+            data.links!.remove(mapentry);
+          }
+        });
+      }
+      futures.add(db.doc("demohosts/${doc.id}").set(data.toMap()));
+    }
+  });
+  await Future.wait(futures);
+  return;
 }

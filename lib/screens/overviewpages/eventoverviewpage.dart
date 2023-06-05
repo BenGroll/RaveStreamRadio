@@ -233,13 +233,11 @@ class EventOverviewPage extends StatelessWidget {
                                                               MainAxisAlignment
                                                                   .start,
                                                           children: [
-                                                            SizedBox.shrink(
-                                                              child: const Text(
+                                                            const Text(
                                                                   "by",
                                                                   style: TextStyle(
                                                                       color: Colors
                                                                           .white)),
-                                                            ),
                                                             event.value!.templateHostID ==
                                                                     null
                                                                 ? buildLinkButtonFromRef(

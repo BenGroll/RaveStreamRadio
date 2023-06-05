@@ -4,6 +4,7 @@ import 'package:beamer/beamer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/screens/overviewpages/useroverviewpage.dart';
@@ -158,12 +159,32 @@ class TemplateHostLinkButton extends StatelessWidget {
           future: db.getDemoHostIDs(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done) {
-              /*print("Host ID: $id");
-              print("Hosts: ${snapshot.data}");*/
-              return Text(
-                snapshot.data?[id] ?? "This should never display",
-                style: const TextStyle(color: Colors.white),
-              );
+              return TextButton(
+                  onPressed: () async {
+                    if (id != null && id!.isNotEmpty) {
+                      showLoadingDialog(context);
+                      dbc.Host? host = await db.getDemoHost(id ?? "");
+                      if (host == null) {
+                        Navigator.of(context).pop();
+                        showFeedbackDialog(
+                            context, ["Couldn't load host ", "ID: $id"]);
+                      } else {
+                        Navigator.of(context).pop();
+                        List<dbc.Link> links = host.links ?? [];
+                        dbc.Link? lll = links.whereURLcontains("instagram");
+                        if (lll != null) {
+                          String url = lll.url;
+                          if (!await canLaunchUrl(Uri.parse(url))) ;
+                          await launchUrl(Uri.parse(url),
+                              mode: LaunchMode.externalApplication);
+                        }
+                      }
+                    }
+                  },
+                  child: Text(
+                    snapshot.data?[id] ?? "This should never display",
+                    style: const TextStyle(color: Colors.white),
+                  ));
             } else {
               return CircularProgressIndicator(color: Colors.white);
             }
