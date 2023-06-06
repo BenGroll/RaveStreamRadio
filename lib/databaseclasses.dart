@@ -783,7 +783,7 @@ class Report {
   }
 }
 
-enum FeedbackCategory { Bug, Idea, Positive, Moderation, Content }
+enum FeedbackCategory { Bug, Idea, Positive, Moderation, Content, Other}
 
 class FeedBackCollector {
   String feedbackcontent;

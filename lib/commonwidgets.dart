@@ -1683,11 +1683,11 @@ void showDevFeedbackDialog(context, List<String>? messages) {
               borderRadius: BorderRadius.all(Radius.circular(32.0))),
           backgroundColor: cl.lighterGrey,
           actions: [
-            TextButton(onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text("Dismiss", style: TextStyle(color: Colors.white))
-            )
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("Dismiss", style: TextStyle(color: Colors.white)))
           ],
           content: Padding(
             padding: EdgeInsets.symmetric(
@@ -1701,8 +1701,8 @@ void showDevFeedbackDialog(context, List<String>? messages) {
                 children: messages == null
                     ? []
                     : messages
-                        .map((e) =>
-                            SelectableText(e, style: TextStyle(color: Colors.white)))
+                        .map((e) => SelectableText(e,
+                            style: TextStyle(color: Colors.white)))
                         .toList(),
               ),
             ),
@@ -1711,7 +1711,7 @@ void showDevFeedbackDialog(context, List<String>? messages) {
 
 class FeedbackScreen extends StatelessWidget {
   String feedbackcontent = "";
-  dbc.FeedbackCategory category = dbc.FeedbackCategory.Idea;
+  ValueNotifier<dbc.FeedbackCategory> category = ValueNotifier(dbc.FeedbackCategory.Idea);
   FeedbackScreen({super.key});
 
   @override
@@ -1728,6 +1728,7 @@ class FeedbackScreen extends StatelessWidget {
           Center(
               child: Text(
                   "Please tell us what we can improve, what you found out doesn't work, any ideas you have or really all your thoughts! We'll address all your Feedback!",
+                  maxLines: null,
                   style: TextStyle(color: Colors.white))),
           Divider(color: cl.darkerGrey),
           TextField(
@@ -1748,11 +1749,37 @@ class FeedbackScreen extends StatelessWidget {
             maxLength: null,
           ),
           Divider(color: cl.darkerGrey),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Which Category does your feedback fit in?",
+                  maxLines: 2, style: TextStyle(color: Colors.white)),
+              ValueListenableBuilder(
+                valueListenable: category,
+                builder: (context, cat, foo) {
+                  return DropdownButton(
+                    dropdownColor: cl.lighterGrey,
+                    value: cat,
+                      items: dbc.FeedbackCategory.values
+                          .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.name, style: TextStyle(color: Colors.white)),
+                              ))
+                          .toList(),
+                      onChanged: (dbc.FeedbackCategory? value) {
+                        if (value != null) {
+                          category.value = value;
+                        }
+                      });
+                }
+              )
+            ],
+          ),
           Divider(color: cl.darkerGrey),
           InkWell(
               onTap: () async {
-                await db.db.collection("feedback").add(dbc.FeedBackCollector(
-                        category: category,
+                await db.db.doc("feedback/${timestamp2precise(Timestamp.now())}").set(dbc.FeedBackCollector(
+                        category: category.value,
                         feedbackcontent: feedbackcontent,
                         feedbackSenderUserName:
                             currently_loggedin_as.value == null

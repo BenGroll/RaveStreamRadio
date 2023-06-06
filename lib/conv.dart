@@ -110,6 +110,15 @@ String timestamp2readablestamp(Timestamp? timestamp) {
   }
 }
 
+String timestamp2precise(Timestamp? timestamp) {
+  DateTime? date = timestamp?.toDate();
+  if (date == null) {
+    return "";
+  } else {
+    return "${date.day < 10 ? "0${date.day}" : date.day.toString()}.${date.month < 10 ? "0${date.month}" : date.month.toString()}.${date.year} ${date.hour < 10 ? "0${date.hour}" : date.hour.toString()}:${date.minute < 10 ? "0${date.minute}" : date.minute.toString()}:${date.second.toString()}:${date.millisecond.toString()}";
+  }
+}
+
 /// Converts Firebase Type Timestamp to Dart Timestamp
 Timestamp? firebaseTimestampToTimeStamp(Timestamp? timestamp) {
   return timestamp != null
