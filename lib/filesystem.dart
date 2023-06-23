@@ -207,7 +207,6 @@ Future<Widget?> getImage(String imagepath) async {
 Future<Widget> getEventIcon(dbc.Event event) async {
   Widget? lol;
   if (event.icon != null) {
-    print("EVENTICON");
     lol = await getImage(event.icon ?? "");
     if (lol != null) {
       return lol;
@@ -232,9 +231,7 @@ Future<Widget> getEventIcon(dbc.Event event) async {
   if (event.templateHostID != null) {
     dbc.Host? host = await db.getDemoHost(event.templateHostID as String);
     if (host != null && host.logopath != null) {
-      print(host.logopath);
       lol = await getImage(host.logopath as String);
-      print(lol);
       if (lol != null) return lol;
     }
   }
@@ -295,7 +292,6 @@ Future<Widget> getEventFlyer(dbc.Event event) async {
     // Get Event's Own Icon
     Widget? lol = await getImage(event.flyer ?? "");
     if (lol != null) return lol;
-    print("Nicht Image");
     lol = await getEventIcon(event);
     return lol;
   }

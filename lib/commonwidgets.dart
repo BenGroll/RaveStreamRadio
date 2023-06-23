@@ -171,10 +171,15 @@ class OpenChatButton extends StatelessWidget {
   late BuildContext context;
   OpenChatButton({super.key, required this.context});
   @override
-  Widget build(BuildContext contextt) {
+  Widget build(BuildContext context) {
     return IconButton(
         onPressed: () {
-          Scaffold.of(contextt).openEndDrawer();
+          if (currently_loggedin_as.value == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                hintSnackBar("You have to be logged in to view chats."));
+          } else {
+            Scaffold.of(context).openEndDrawer();
+          }
         },
         icon: Icon(Icons.question_answer));
   }
@@ -1711,7 +1716,8 @@ void showDevFeedbackDialog(context, List<String>? messages) {
 
 class FeedbackScreen extends StatelessWidget {
   String feedbackcontent = "";
-  ValueNotifier<dbc.FeedbackCategory> category = ValueNotifier(dbc.FeedbackCategory.Idea);
+  ValueNotifier<dbc.FeedbackCategory> category =
+      ValueNotifier(dbc.FeedbackCategory.Idea);
   FeedbackScreen({super.key});
 
   @override
@@ -1755,37 +1761,39 @@ class FeedbackScreen extends StatelessWidget {
               Text("Which Category does your feedback fit in?",
                   maxLines: 2, style: TextStyle(color: Colors.white)),
               ValueListenableBuilder(
-                valueListenable: category,
-                builder: (context, cat, foo) {
-                  return DropdownButton(
-                    dropdownColor: cl.lighterGrey,
-                    value: cat,
-                      items: dbc.FeedbackCategory.values
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.name, style: TextStyle(color: Colors.white)),
-                              ))
-                          .toList(),
-                      onChanged: (dbc.FeedbackCategory? value) {
-                        if (value != null) {
-                          category.value = value;
-                        }
-                      });
-                }
-              )
+                  valueListenable: category,
+                  builder: (context, cat, foo) {
+                    return DropdownButton(
+                        dropdownColor: cl.lighterGrey,
+                        value: cat,
+                        items: dbc.FeedbackCategory.values
+                            .map((e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(e.name,
+                                      style: TextStyle(color: Colors.white)),
+                                ))
+                            .toList(),
+                        onChanged: (dbc.FeedbackCategory? value) {
+                          if (value != null) {
+                            category.value = value;
+                          }
+                        });
+                  })
             ],
           ),
           Divider(color: cl.darkerGrey),
           InkWell(
               onTap: () async {
-                await db.db.doc("feedback/${timestamp2precise(Timestamp.now())}").set(dbc.FeedBackCollector(
-                        category: category.value,
-                        feedbackcontent: feedbackcontent,
-                        feedbackSenderUserName:
-                            currently_loggedin_as.value == null
-                                ? null
-                                : currently_loggedin_as.value!.username)
-                    .toMap());
+                await db.db
+                    .doc("feedback/${timestamp2precise(Timestamp.now())}")
+                    .set(dbc.FeedBackCollector(
+                            category: category.value,
+                            feedbackcontent: feedbackcontent,
+                            feedbackSenderUserName:
+                                currently_loggedin_as.value == null
+                                    ? null
+                                    : currently_loggedin_as.value!.username)
+                        .toMap());
                 Navigator.of(context).pop();
                 showFeedbackDialog(context,
                     ["Thank you!", "Your Feedback has been submitted."]);

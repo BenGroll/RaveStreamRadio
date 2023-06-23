@@ -84,9 +84,6 @@ ValueNotifier<ServerBranches> selectedbranch =
 /// Cache for saved Pictures. Saves bandwidth
 Map<String, Widget> saved_pictures = {};
 
-///
-List<Message> saved_messages = [];
-
 /// Cache for events. Saves database costs(obsolete)
 List<dbc.Event> saved_events = [];
 

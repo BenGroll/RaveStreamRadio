@@ -192,16 +192,6 @@ extension Queriefy on List<dbc.Event> {
   }
 }
 
-extension Check on List<Message> {
-  Message? checkForIDMatch(String id) {
-    Message? returnvalue;
-    forEach((element) {
-      returnvalue = element.id == id ? element : null;
-    });
-    return returnvalue;
-  }
-}
-
 extension QueryData on List<QueryEntry> {
   List<QueryEntry> matchesString(String search) {
     List<QueryEntry> matching = [];

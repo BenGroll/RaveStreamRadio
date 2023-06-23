@@ -1,5 +1,9 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 import "dart:convert";
 import "package:beamer/beamer.dart";
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/extensions.dart';
 import "package:cloud_firestore/cloud_firestore.dart";
 import "package:ravestreamradioapp/conv.dart";
@@ -16,7 +20,7 @@ import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:firebase_database/firebase_database.dart';
-
+/*
 class Message {
   /// Contains full path to the Document
   final String sender;
@@ -294,4 +298,226 @@ Future<List<Message>> loadMessagesForChat(String chatID) async {
     messages.add(Message.fromMap(element));
   });
   return messages;
+}*/
+
+class ChatsDrawer extends StatelessWidget {
+  const ChatsDrawer({super.key});
+
+  List<Widget> buildChatOutlineListTiles(List<ChatOutline>? chatoutlines) {
+    List<Widget> outL = [];
+    if (chatoutlines == null || chatoutlines.isEmpty) {
+      outL.add(Text("You don't have any chats at this moment",
+          style: TextStyle(color: Colors.white)));
+      return outL;
+    }
+
+    chatoutlines.forEach((ChatOutline outLine) {
+      String sub = "";
+      if (outLine.lastmessage == null) {
+        sub = "This chat is empty...";
+      } else {
+        sub = "@" + outLine.lastmessage!.sentFrom.split("/").last;
+        sub = sub + ": " + outLine.lastmessage!.content;
+      }
+      outL.add(ListTile(
+        tileColor: cl.darkerGrey,
+        title: Text(outLine.title ?? outLine.chatID,
+            maxLines: 1,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SingleChildScrollView(
+                child: Text(sub, style: TextStyle(color: Colors.white))),
+            outLine.lastmessage == null
+                ? SizedBox()
+                : Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                      timestamp2readablestamp(
+                          Timestamp.fromMillisecondsSinceEpoch(
+                              outLine.lastmessage!.timestampinMilliseconds)),
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.w300)),
+                )
+          ],
+        ),
+      ));
+    });
+    return outL;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: cl.darkerGrey,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            tileColor: cl.lighterGrey,
+            title: Center(child: Text("Your Chats", style: TextStyle(color: Colors.white, fontSize: DISPLAY_SHORT_SIDE(context) / 20))),
+            
+          ),
+          Expanded(
+            child: FutureBuilder(
+                future: getChatOutlinesForUserObject(
+                    currently_loggedin_as.value ?? dbc.demoUser),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return cw.LoadingIndicator(color: Colors.white);
+                  } else {
+                    if (snapshot.hasData) {
+                      return ListView(
+                        padding: EdgeInsets.symmetric(vertical: 5),
+                        children: buildChatOutlineListTiles(snapshot.data),
+                      );
+                    } else {
+                      return Center(
+                          child: Text("Couldn't load chats.",
+                              style: TextStyle(color: Colors.white)));
+                    }
+                  }
+                }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ChatWindow extends StatelessWidget {
+  String id;
+  ChatWindow({required this.id});
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
+
+class ChatOutline {
+  String chatID;
+  String? adminUserName;
+  String? description;
+  List<DocumentReference> members;
+  String? title;
+  Message? lastmessage;
+  ChatOutline(
+      {required this.chatID,
+      this.adminUserName,
+      this.description,
+      required this.members,
+      this.title,
+      this.lastmessage});
+  factory ChatOutline.fromMap(Map<String, dynamic> map) {
+    return ChatOutline(
+        chatID: map["chatID"],
+        adminUserName:
+            map.containsKey("adminUserName") ? map["adminUserName"] : null,
+        description: map.containsKey("description") ? map["description"] : null,
+        members: forceDocumentReferenceFromStringList(map["members"]),
+        title: map.containsKey("title") ? map["title"] : null,
+        lastmessage: map["lastmessage"] != null
+            ? Message.fromMap(messageMapFromDynamic(map["lastmessage"]))
+            : null);
+  }
+  Map<String, dynamic> toMap() {
+    return {
+      "chatID": chatID,
+      "adminUserName": adminUserName,
+      "description": description,
+      "members": members.map((e) => e.path).toList(),
+      "title": title,
+      "lastmessage": lastmessage != null ? lastmessage!.toMap() : null
+    };
+  }
+
+  String toString() {
+    return "ChatOutline(chatID: $chatID, adminUserName: $adminUserName, description: $description, members: $members, title: $title, lastmessage: $lastmessage)";
+  }
+}
+
+class Message {
+  String sentFrom;
+  String content;
+  int timestampinMilliseconds;
+  Message(
+      {required this.sentFrom,
+      required this.content,
+      required this.timestampinMilliseconds});
+  Map<String, dynamic> toMap() {
+    return {
+      "sentFrom": sentFrom,
+      "content": content,
+      "timestampinMilliseconds": timestampinMilliseconds
+    };
+  }
+
+  factory Message.fromMap(Map<String, dynamic> map) {
+    return Message(
+        content: map["content"],
+        sentFrom: map["sentFrom"],
+        timestampinMilliseconds: map["timestampinMilliseconds"]);
+  }
+}
+
+Map<String, dynamic> chatOutlineMapFromDynamic(dynamic i) {
+  Map<String, dynamic> map = {
+    "chatID": i["chatID"],
+    "members": forceStringType(i["members"]),
+    "lastmessage": i.containsKey("lastmessage") ? i["lastmessage"] : null
+  };
+  return map;
+}
+
+Map<String, dynamic> messageMapFromDynamic(dynamic i) {
+  return {
+    "content": i["content"],
+    "sentFrom": i["sentFrom"],
+    "timestampinMilliseconds": i["timestampinMilliseconds"]
+  };
+}
+
+Future writeChatOutline(ChatOutline chatOutline) async {
+  DatabaseReference chats = rtdb.ref("root/ChatOutlines");
+  await chats.child(chatOutline.chatID).set(chatOutline.toMap());
+}
+
+Future<ChatOutline?> readChatOutline(String chatOutlineID) async {
+  DatabaseReference chat = rtdb.ref("root/ChatOutlines/${chatOutlineID}");
+  DataSnapshot value = await chat.get();
+  try {
+    Map data = value.value as Map;
+    Map<String, dynamic> dataMap = chatOutlineMapFromDynamic(data);
+    ChatOutline outLine = ChatOutline.fromMap(dataMap);
+    return outLine;
+  } catch (e) {
+    return null;
+  }
+}
+
+Future writeLastMessage(String chatID, Message message) async {
+  DatabaseReference chat = rtdb.ref("root/ChatOutlines/$chatID");
+  DataSnapshot chatdata = await chat.get();
+  if (chatdata.value == null) return;
+  Map data = chatdata.value as Map;
+  data["lastmessage"] = message.toMap();
+  await chat.set(data);
+  return;
+}
+
+Future<List<ChatOutline>?> getChatOutlinesForUserObject(dbc.User user) async {
+  List<String> chatIDS = user.chats;
+  if (chatIDS.isEmpty) return [];
+  List<Future> futures = [];
+  chatIDS.forEach((element) {
+    futures.add(rtdb.ref("root/ChatOutlines").child(element).get());
+  });
+  Stopwatch watch = Stopwatch()..start();
+  List<dynamic> datas = await Future.wait(futures);
+  List<ChatOutline> chatOutlines = datas
+      .map((e) => ChatOutline.fromMap(chatOutlineMapFromDynamic(e.value)))
+      .toList();
+  return chatOutlines;
 }

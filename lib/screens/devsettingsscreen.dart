@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:beamer/beamer.dart';
@@ -248,7 +250,7 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("Set Hosts"));
                       },
                       child: Text("Include IDs in HostDocs")),
-                  ElevatedButton(
+                  /*ElevatedButton(
                       onPressed: () async {
                         await uploadChatToDB(Chat.fromMap(testchat));
                         ScaffoldMessenger.of(context)
@@ -281,6 +283,7 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("Chat Test"));
                       },
                       child: Text("Chat Test")),
+                  */
                   ElevatedButton(
                       onPressed: () async {
                         showDevFeedbackDialog(context, [generateDocumentID()]);
@@ -288,6 +291,7 @@ class DevSettingsScreen extends StatelessWidget {
                             .showSnackBar(hintSnackBar("Chat Test"));
                       },
                       child: Text("Generate 20-length Document ID")),
+                  /*
                   ElevatedButton(
                       onPressed: () async {
                         Message testmessage = Message(
@@ -325,7 +329,7 @@ class DevSettingsScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Messages Loaded"));
                       },
-                      child: Text("Test load Messages from IDList")),
+                      child: Text("Test load Messages from IDList")),*/
                   ElevatedButton(
                       onPressed: () async {
                         ScaffoldMessenger.of(context)
@@ -468,17 +472,55 @@ class DevSettingsScreen extends StatelessWidget {
                   ElevatedButton(
                       onPressed: () async {
                         Host? host = await db.getDemoHost("0815events");
-                        print(host);
                         showDevFeedbackDialog(context, [host.toString()]);
                       },
                       child: Text("Test Single DemoHost getter")),
                   ElevatedButton(
                       onPressed: () async {
-                        
                         showDevFeedbackDialog(context, ["DemoHosts Updated."]);
                       },
                       child: Text(
                           "Change all instagram links to instagram (demohosts)")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await writeChatOutline(ChatOutline(
+                            chatID: "PwZPV10ktzkzABtfhG4A",
+                            members: [
+                              db.db.doc("dev.users/ben"),
+                              db.db.doc("dev.users/ben2")
+                            ]));
+                      },
+                      child: Text("write Test Chat")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        ChatOutline? outL =
+                            await readChatOutline("PwZPV10ktzkzABtfhG4B");
+                        showDevFeedbackDialog(context, [outL.toString()]);
+                      },
+                      child: Text("Read Test Chat")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        List<ChatOutline>? chats =
+                            await getChatOutlinesForUserObject(
+                                currently_loggedin_as.value ?? demoUser);
+                        showDevFeedbackDialog(
+                            context,
+                            chats == null
+                                ? ["Null"]
+                                : chats.map((e) => e.toString()).toList());
+                      },
+                      child: Text("Get My Chats")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await writeLastMessage(
+                            "PwZPV10ktzkzABtfhG4A",
+                            Message(
+                                sentFrom: "dev.users/ben",
+                                content: "Hallo",
+                                timestampinMilliseconds:
+                                    Timestamp.now().millisecondsSinceEpoch));
+                      },
+                      child: Text("Write Testmessage")),
                 ],
               ),
             ),

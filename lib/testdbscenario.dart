@@ -101,18 +101,3 @@ List<dbc.Event> testeventlist = [
           "Shameless - der Name ist Programm!\nEine glamouröse Location, treibend Bässe, großartige Dj´s, Videoprojektionen,\nTänzer und Shows verschmelzen zu einem traumhaften sinnlichen Schauspiel.\nSei was Du willst, fühle Dich frei und erlebe was Dir gefällt.\nEin respektvoller Umgang mit deinen Mitmenschen ist die Voraussetzung für deine Anwesenheit.\nLGBT wird bei uns gelebt.\nDRESSCODE:\nFetish Styles, Steam Punk, sexy Leder oder Latex Outfits, Uniformen, Burlesque,\nSuicide Girl ,Kinky Fantasy, Cyber Gothic, Drag Queen, versautes Einhorn .etc.\nDeiner Fantasy sind keine Grenzen gesetzt.\nDa der Dresscode ist ein maßgeblich Bestandteil unserer Atmosphäre ist,\naber am Ende entscheidet aber immer deine Attitude (nicht ein Kleidungsstück)\nBei uns gilt ein absolutes Photoverbot\nBitte lasst eure Handys in der Garderobe\nWillkommen in unseren Wohnzimmer der Sinne,\nwillkommen auf der Shameless!\n► neue Glamour Location im WERK 3 am Ostbahnhof\n► best electronic music for kinky people \n► special Acts & Guests \n► GoGos and Shows\n► Special Visuals and Lightshows\n► Bodypainting\n► Candy Girl´s\n► Überraschungen\nLineup: \nBavarian Allstars :\nCarl Cock , BISHOP , ANDREW CLARK",
       hostreference: db.db.doc("${branchPrefix}groups/bavarianfetish")),
 ];
-
-Map<String, dynamic> testchat = Chat(members: [
-  db.db.doc("dev.users/admin"),
-  db.db.doc("dev.users/addmin")
-], messages: [
-  Message(
-      sender: "dev.users/admin",
-      sentAt: Timestamp.now(),
-      content: "Hallo Welt!"),
-  Message(
-      sender: "dev.users/addmin",
-      sentAt: Timestamp.now(),
-      content: "Hallo Zurück!"),
-], id: "TZTrs5BngHYohRGsm4w2")
-    .toMap();
