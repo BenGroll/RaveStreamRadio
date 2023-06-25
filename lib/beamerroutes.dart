@@ -104,7 +104,7 @@ Map<Pattern, dynamic Function(BuildContext, BeamState, Object?)> webroutes = {
         title: "Chat",
         child: chatid == null
             ? Text("Chat not Found")
-            : ChatWindow(id: chatid));
+            : ChatWindow(id: chatid,));
   },
   "/report/:reportid": (context, state, data) {
     final reportid = state.pathParameters["reportid"];

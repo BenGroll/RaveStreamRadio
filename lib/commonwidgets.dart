@@ -996,11 +996,40 @@ class StartChatButton extends StatelessWidget {
               builder: (BuildContext context) {
                 return Dialog(
                   backgroundColor: Colors.transparent,
-                  child:
-                      Container(child: LoadingIndicator(color: Colors.white)),
+                  child: Container(
+                      child: LoadingIndicator(
+                    color: Colors.white,
+                    message: "Loading Chat...",
+                  )),
                 );
               });
-          Beamer.of(context).beamToNamed("/");
+          ChatOutline? chatThatExists =
+              await findPrivateChatByOtherUser(other_person_username);
+          print("ChatThatExists: $chatThatExists");
+          if (chatThatExists != null) {
+            Navigator.of(context).pop();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ChatWindow(id: chatThatExists.chatID)));
+          } else {
+            Navigator.of(context).pop();
+            showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return Dialog(
+                    backgroundColor: Colors.transparent,
+                    child: Container(
+                        child: LoadingIndicator(
+                      color: Colors.white,
+                      message: "Creating Chat...",
+                    )),
+                  );
+                });
+            String newChatID = await startNewChat(other_person_username);
+            Navigator.of(context).pop();
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => ChatWindow(id: newChatID)));
+          }
         },
         icon: Icon(Icons.send, color: Colors.white));
   }
@@ -1055,20 +1084,29 @@ class ProfileWidget extends StatelessWidget {
 
 class LoadingIndicator extends StatelessWidget {
   final Color color;
-  const LoadingIndicator({super.key, required this.color});
+  final String? message;
+  const LoadingIndicator({super.key, required this.color, this.message});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Center(
-        child: AspectRatio(
-            aspectRatio: 1,
-            child: FractionallySizedBox(
-              widthFactor: 0.66,
-              heightFactor: 0.66,
-              child: CircularProgressIndicator(color: color.withOpacity(0.66)),
-            )),
+        child: Column(
+          children: [
+            AspectRatio(
+                aspectRatio: 1,
+                child: FractionallySizedBox(
+                  widthFactor: 0.66,
+                  heightFactor: 0.66,
+                  child:
+                      CircularProgressIndicator(color: color.withOpacity(0.66)),
+                )),
+            if (message != null)
+              Text(message ?? "Loading...",
+                  style: TextStyle(color: Colors.white))
+          ],
+        ),
       ),
     );
   }

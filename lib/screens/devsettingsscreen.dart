@@ -485,10 +485,10 @@ class DevSettingsScreen extends StatelessWidget {
                       onPressed: () async {
                         await writeChatOutline(ChatOutline(
                             chatID: "PwZPV10ktzkzABtfhG4A",
-                            members: [
-                              db.db.doc("dev.users/ben"),
-                              db.db.doc("dev.users/ben2")
-                            ]));
+                            members_LastOpened: {
+                              "ben": Timestamp.now().millisecondsSinceEpoch,
+                              "ben2": Timestamp.now().millisecondsSinceEpoch,
+                            }));
                       },
                       child: Text("write Test Chat")),
                   ElevatedButton(
@@ -521,6 +521,56 @@ class DevSettingsScreen extends StatelessWidget {
                                     Timestamp.now().millisecondsSinceEpoch));
                       },
                       child: Text("Write Testmessage")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(await firebasestorage
+                            .ref("chats/PwZPV10ktzkzABtfhG4A/")
+                            .listAll()
+                            .then((value) => value.items));
+                      },
+                      child: Text("Test Storage directory listing")),
+                  /*ElevatedButton(
+                      onPressed: () async {
+                        await firebasestorage
+                            .ref("chats/PwZPV10ktzkzABtfhG4A/3.json")
+                            .putString(jsonEncode({
+                              "0": Message(
+                                      content: "Äins",
+                                      sentFrom: "dev.users/ben",
+                                      timestampinMilliseconds: Timestamp.now()
+                                          .millisecondsSinceEpoch)
+                                  .toMap(),
+                              "1": Message(
+                                      content: "Zwei",
+                                      sentFrom: "dev.users/ben",
+                                      timestampinMilliseconds: Timestamp.now()
+                                          .millisecondsSinceEpoch)
+                                  .toMap(),
+                              "2": Message(
+                                      content: "Drei",
+                                      sentFrom: "dev.users/ben",
+                                      timestampinMilliseconds: Timestamp.now()
+                                          .millisecondsSinceEpoch)
+                                  .toMap(),
+                            }));
+                      },
+                      child: Text("Add Test Messages")),*/
+                  ElevatedButton(
+                      onPressed: () async {
+                        await addMessageToChat(
+                            "PwZPV10ktzkzABtfhG4A",
+                            Message(
+                                sentFrom: "ben",
+                                content: "Test2",
+                                timestampinMilliseconds:
+                                    Timestamp.now().millisecondsSinceEpoch));
+                      },
+                      child: Text("Add Test Message")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        print(await getMessagesForChat("PwZPV10ktzkzABtfhG4A"));
+                      },
+                      child: Text("Test Chat log reading")),
                 ],
               ),
             ),

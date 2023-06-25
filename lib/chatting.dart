@@ -303,7 +303,8 @@ Future<List<Message>> loadMessagesForChat(String chatID) async {
 class ChatsDrawer extends StatelessWidget {
   const ChatsDrawer({super.key});
 
-  List<Widget> buildChatOutlineListTiles(List<ChatOutline>? chatoutlines) {
+  List<Widget> buildChatOutlineListTiles(
+      List<ChatOutline>? chatoutlines, BuildContext context) {
     List<Widget> outL = [];
     if (chatoutlines == null || chatoutlines.isEmpty) {
       outL.add(Text("You don't have any chats at this moment",
@@ -316,10 +317,14 @@ class ChatsDrawer extends StatelessWidget {
       if (outLine.lastmessage == null) {
         sub = "This chat is empty...";
       } else {
-        sub = "@" + outLine.lastmessage!.sentFrom.split("/").last;
+        sub = "@" + outLine.lastmessage!.sentFrom;
         sub = sub + ": " + outLine.lastmessage!.content;
       }
       outL.add(ListTile(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => ChatWindow(id: outLine.chatID)));
+        },
         tileColor: cl.darkerGrey,
         title: Text(outLine.title ?? outLine.chatID,
             maxLines: 1,
@@ -332,14 +337,14 @@ class ChatsDrawer extends StatelessWidget {
             outLine.lastmessage == null
                 ? SizedBox()
                 : Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                      timestamp2readablestamp(
-                          Timestamp.fromMillisecondsSinceEpoch(
-                              outLine.lastmessage!.timestampinMilliseconds)),
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.w300)),
-                )
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                        timestamp2readablestamp(
+                            Timestamp.fromMillisecondsSinceEpoch(
+                                outLine.lastmessage!.timestampinMilliseconds)),
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w300)),
+                  )
           ],
         ),
       ));
@@ -357,8 +362,11 @@ class ChatsDrawer extends StatelessWidget {
         children: [
           ListTile(
             tileColor: cl.lighterGrey,
-            title: Center(child: Text("Your Chats", style: TextStyle(color: Colors.white, fontSize: DISPLAY_SHORT_SIDE(context) / 20))),
-            
+            title: Center(
+                child: Text("Your Chats",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: DISPLAY_SHORT_SIDE(context) / 20))),
           ),
           Expanded(
             child: FutureBuilder(
@@ -371,7 +379,8 @@ class ChatsDrawer extends StatelessWidget {
                     if (snapshot.hasData) {
                       return ListView(
                         padding: EdgeInsets.symmetric(vertical: 5),
-                        children: buildChatOutlineListTiles(snapshot.data),
+                        children:
+                            buildChatOutlineListTiles(snapshot.data, context),
                       );
                     } else {
                       return Center(
@@ -387,12 +396,238 @@ class ChatsDrawer extends StatelessWidget {
   }
 }
 
+class MessageCard extends StatelessWidget {
+  Message message;
+  bool sentItMyself;
+  bool isGroupChat;
+  MessageCard(
+      {super.key,
+      required this.message,
+      required this.sentItMyself,
+      this.isGroupChat = false});
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: 2,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment:
+            sentItMyself ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          sentItMyself
+              ? Container(
+                  decoration: ShapeDecoration(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0)),
+                  ),
+                )
+              : Text(
+                  "@${message.sentFrom}",
+                  style: TextStyle(color: Colors.white),
+                ),
+          ListTile(
+            tileColor: cl.lighterGrey,
+            title: Text(message.content,
+                maxLines: null, style: TextStyle(color: Colors.white)),
+            subtitle: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                timestamp2readablestamp(Timestamp.fromMillisecondsSinceEpoch(
+                    message.timestampinMilliseconds)),
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class MessageElement extends StatelessWidget {
+  Message message;
+  bool isGroupChat;
+  MessageElement({super.key, required this.message, required this.isGroupChat});
+
+  @override
+  Widget build(BuildContext context) {
+    bool sentItMyself =
+        message.sentFrom == currently_loggedin_as.value!.username;
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment:
+          sentItMyself ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: sentItMyself
+          ? [
+              Expanded(child: SizedBox(), flex: 1),
+              MessageCard(
+                  message: message,
+                  sentItMyself: sentItMyself,
+                  isGroupChat: isGroupChat)
+            ]
+          : [
+              MessageCard(
+                  message: message,
+                  sentItMyself: sentItMyself,
+                  isGroupChat: isGroupChat),
+              Expanded(child: SizedBox(), flex: 1)
+            ],
+    );
+  }
+}
+
 class ChatWindow extends StatelessWidget {
+  final ScrollController _controller = ScrollController();
+  void _scrollDown() {
+    _controller.animateTo(
+      _controller.position.maxScrollExtent,
+      duration: Duration(milliseconds: 500),
+      curve: Curves.fastOutSlowIn,
+    );
+  }
+
   String id;
+  String currentlyCuedupMessage = "";
   ChatWindow({required this.id});
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return FutureBuilder(
+        future: readChatOutline(id),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            ChatOutline? outline = snapshot.data;
+            if (outline == null)
+              return Center(child: Text("Couldn't load Chat"));
+            return Scaffold(
+              backgroundColor: cl.darkerGrey,
+              appBar: AppBar(
+                centerTitle: true,
+                title: SingleChildScrollView(
+                    child: Text(outline.title ?? outline.chatID)),
+              ),
+              body: FutureBuilder(
+                  future: getMessagesForChat(outline.chatID),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<Message>> snap) {
+                    if (snap.connectionState == ConnectionState.done &&
+                        snap.hasData) {
+                      print(snap.data);
+                      List<Message> messages = snap.data ?? [];
+                      return StreamBuilder(
+                          stream: rtdb
+                              .ref("root/MessageLogs/${outline.chatID}")
+                              .onChildAdded,
+                          builder: (BuildContext context,
+                              AsyncSnapshot<DatabaseEvent> event) {
+                            if (event.hasData &&
+                                event.data!.snapshot.value != null) {
+                              Map<String, dynamic> messageData =
+                                  messageMapFromDynamic(
+                                      event.data!.snapshot.value as Map);
+                              if (messages.length == 0 ||
+                                  messageData["timestampinMilliseconds"] !=
+                                      messages.last.timestampinMilliseconds) {
+                                messages.add(Message.fromMap(
+                                    messageMapFromDynamic(
+                                        event.data!.snapshot.value)));
+                              }
+                            }
+                            return ListView.separated(
+                                controller: _controller,
+                                itemBuilder: (context, index) {
+                                  //_scrollDown();
+                                  //! Return Card
+                                  return MessageElement(
+                                      message: messages[index],
+                                      isGroupChat:
+                                          outline.members_LastOpened.length >
+                                              2);
+                                },
+                                separatorBuilder:
+                                    (BuildContext context, int index) {
+                                  return SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              50);
+                                },
+                                itemCount: messages.length);
+                          });
+                    } else {
+                      return cw.LoadingIndicator(color: Colors.white);
+                    }
+                  }),
+              bottomNavigationBar: Padding(
+                  padding: MediaQuery.of(context).viewInsets,
+                  child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: BottomAppBar(
+                        color: Colors.transparent,
+                        child: Card(
+                          color: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(color: cl.greynothighlight),
+                            borderRadius: BorderRadius.circular(
+                                MediaQuery.of(context).size.height / 50),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                    child: TextFormField(
+                                      onTap: () => _scrollDown(),
+                                      initialValue: "",
+                                      onChanged: (value) {
+                                        currentlyCuedupMessage = value;
+                                      },
+                                      style: TextStyle(color: Colors.white),
+                                      decoration: InputDecoration(
+                                        filled: false,
+                                        fillColor: Colors.transparent,
+                                        hintText: "Send Message...",
+                                        hintStyle:
+                                            TextStyle(color: Colors.white),
+                                      ),
+                                    )),
+                              ),
+                              Expanded(
+                                  child: IconButton(
+                                      onPressed: () async {
+                                        if (DISABLE_MESSAGE_SENDING) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(cw.hintSnackBar(
+                                                  "Chatting is disabled right now."));
+                                          return;
+                                        }
+                                        currently_loggedin_as.value!.path;
+                                        Timestamp sentAt = Timestamp.now();
+                                        Message newMessage = Message(
+                                            sentFrom: currently_loggedin_as
+                                                .value!.username,
+                                            timestampinMilliseconds:
+                                                Timestamp.now()
+                                                    .millisecondsSinceEpoch,
+                                            content: currentlyCuedupMessage);
+                                        print("Message to upload: $newMessage");
+                                        await addMessageToChat(
+                                            outline.chatID, newMessage);
+                                        writeLastMessage(
+                                            outline.chatID, newMessage);
+                                        _scrollDown();
+                                      },
+                                      icon: Icon(Icons.send,
+                                          color: Colors.white)))
+                            ],
+                          ),
+                        ),
+                      ))),
+            );
+          } else {
+            return cw.LoadingIndicator(color: Colors.white);
+          }
+        });
   }
 }
 
@@ -400,24 +635,49 @@ class ChatOutline {
   String chatID;
   String? adminUserName;
   String? description;
-  List<DocumentReference> members;
+
+  /// Key: username, Value: Timestamp of last opening the chat
+  Map<String, int> members_LastOpened;
   String? title;
+
   Message? lastmessage;
   ChatOutline(
       {required this.chatID,
       this.adminUserName,
       this.description,
-      required this.members,
+      required this.members_LastOpened,
       this.title,
       this.lastmessage});
+
   factory ChatOutline.fromMap(Map<String, dynamic> map) {
+    Map<String, int> membersLastOpenedmapFromObject(Map input) {
+      Map<String, int> outM = {};
+      input.entries.forEach((element) {
+        outM[element.key.toString()] = element.value as int;
+      });
+      return outM;
+    }
+
+    String title = "";
+    if (membersLastOpenedmapFromObject(map["members_LastOpened"]).length == 2) {
+      Map members = membersLastOpenedmapFromObject(map["members_LastOpened"]);
+      if (members.entries.toList()[0].key ==
+          currently_loggedin_as.value!.username) {
+        title = "@${members.entries.toList()[1].key}";
+      } else {
+        title = "@${members.entries.toList()[0].key}";
+      }
+    } else {
+      title = map["chatID"];
+    }
     return ChatOutline(
         chatID: map["chatID"],
         adminUserName:
             map.containsKey("adminUserName") ? map["adminUserName"] : null,
         description: map.containsKey("description") ? map["description"] : null,
-        members: forceDocumentReferenceFromStringList(map["members"]),
-        title: map.containsKey("title") ? map["title"] : null,
+        members_LastOpened:
+            membersLastOpenedmapFromObject(map["members_LastOpened"]),
+        title: title,
         lastmessage: map["lastmessage"] != null
             ? Message.fromMap(messageMapFromDynamic(map["lastmessage"]))
             : null);
@@ -427,14 +687,14 @@ class ChatOutline {
       "chatID": chatID,
       "adminUserName": adminUserName,
       "description": description,
-      "members": members.map((e) => e.path).toList(),
+      "members_LastOpened": members_LastOpened,
       "title": title,
       "lastmessage": lastmessage != null ? lastmessage!.toMap() : null
     };
   }
 
   String toString() {
-    return "ChatOutline(chatID: $chatID, adminUserName: $adminUserName, description: $description, members: $members, title: $title, lastmessage: $lastmessage)";
+    return "ChatOutline(chatID: $chatID, adminUserName: $adminUserName, description: $description, members_LastOpened: $members_LastOpened, title: $title, lastmessage: $lastmessage)";
   }
 }
 
@@ -460,12 +720,15 @@ class Message {
         sentFrom: map["sentFrom"],
         timestampinMilliseconds: map["timestampinMilliseconds"]);
   }
+  String toString() {
+    return "Message(content: $content, sentFrom: $sentFrom, timestampinMilliseconds: $timestampinMilliseconds)";
+  }
 }
 
 Map<String, dynamic> chatOutlineMapFromDynamic(dynamic i) {
   Map<String, dynamic> map = {
     "chatID": i["chatID"],
-    "members": forceStringType(i["members"]),
+    "members_LastOpened": i["members_LastOpened"],
     "lastmessage": i.containsKey("lastmessage") ? i["lastmessage"] : null
   };
   return map;
@@ -489,6 +752,7 @@ Future<ChatOutline?> readChatOutline(String chatOutlineID) async {
   DataSnapshot value = await chat.get();
   try {
     Map data = value.value as Map;
+    print(data);
     Map<String, dynamic> dataMap = chatOutlineMapFromDynamic(data);
     ChatOutline outLine = ChatOutline.fromMap(dataMap);
     return outLine;
@@ -514,10 +778,64 @@ Future<List<ChatOutline>?> getChatOutlinesForUserObject(dbc.User user) async {
   chatIDS.forEach((element) {
     futures.add(rtdb.ref("root/ChatOutlines").child(element).get());
   });
-  Stopwatch watch = Stopwatch()..start();
+  //Stopwatch watch = Stopwatch()..start();
   List<dynamic> datas = await Future.wait(futures);
-  List<ChatOutline> chatOutlines = datas
-      .map((e) => ChatOutline.fromMap(chatOutlineMapFromDynamic(e.value)))
-      .toList();
+  print(datas);
+  List<ChatOutline> chatOutlines = [];
+  datas.forEach((element) {
+    if (element.value != null) {
+      chatOutlines
+          .add(ChatOutline.fromMap(chatOutlineMapFromDynamic(element.value)));
+    }
+  });
   return chatOutlines;
+}
+
+Future<List<Message>> getMessagesForChat(String chatID) async {
+  List<Message> messages = [];
+  DatabaseReference chatMessageLog = rtdb.ref("root/MessageLogs/$chatID");
+  DataSnapshot snap = await chatMessageLog.get();
+  if (snap.value == null) return [];
+  Map messagesData = snap.value as Map;
+  messagesData.entries.forEach((element) {
+    messages.add(Message.fromMap(messageMapFromDynamic(element.value)));
+  });
+  messages.sort(
+      (a, b) => a.timestampinMilliseconds.compareTo(b.timestampinMilliseconds));
+  return messages;
+}
+
+Future addMessageToChat(String chatID, Message message) async {
+  DatabaseReference chats = rtdb.ref("root/MessageLogs/$chatID");
+  await chats.push().set(message.toMap());
+  return;
+}
+
+Future<ChatOutline?> findPrivateChatByOtherUser(
+    String otherUserUsername) async {
+  List<ChatOutline>? outlines = await getChatOutlinesForUserObject(
+      currently_loggedin_as.value ?? dbc.demoUser);
+  if (outlines == null) outlines = [];
+  for (int i = 0; i < outlines.length; i++) {
+    ChatOutline element = outlines[i];
+    if (element.members_LastOpened.keys.length == 2 &&
+        element.members_LastOpened.keys.contains(otherUserUsername)) {
+      return element;
+    }
+  }
+  return null;
+}
+
+Future startNewChat(String other_person_name) async {
+  String newID = generateDocumentID();
+  await writeChatOutline(
+      ChatOutline(chatID: newID, members_LastOpened: {"ben": 0, "admin": 0}));
+  await rtdb.ref("root/MessageLogs/$newID").set([]);
+  await db.doc("${branchPrefix}users/$other_person_name").update({
+    "chats": FieldValue.arrayUnion([newID])
+  });
+  await db.doc(currently_loggedin_as.value!.path).update({
+    "chats": FieldValue.arrayUnion([newID])
+  });
+  return newID;
 }
