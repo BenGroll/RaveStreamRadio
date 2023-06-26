@@ -1316,9 +1316,13 @@ Future<RemoteConfig?> getRemoteConfig() async {
     }
     RemoteConfig config = RemoteConfig(
         downloadLinks: data["downloadpagelinks"],
-        versioncode: data["versioncode"]);
+        versioncode: data["versioncode"],
+        replaceChars: forceStringStringMapFromStringDynamic(
+                forceStringDynamicMapFromObject(data["replaceChars"])) ??
+            {});
     print("Links: ${config.downloadLinks}");
     print("Version: ${config.versioncode}");
+    print("ReplaceChars: ${config.replaceChars}");
     remoteConfigValues.value = config;
     return config;
   } else {

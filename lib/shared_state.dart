@@ -28,7 +28,8 @@ ValueNotifier<RemoteConfig?> remoteConfigValues =
 class RemoteConfig {
   Map<String, dynamic> downloadLinks;
   int versioncode;
-  RemoteConfig({required this.downloadLinks, required this.versioncode});
+  Map<String, String> replaceChars;
+  RemoteConfig({required this.downloadLinks, required this.versioncode, required this.replaceChars});
 }
 
 double DISPLAY_LONG_SIDE(context) {

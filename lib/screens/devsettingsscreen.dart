@@ -571,6 +571,14 @@ class DevSettingsScreen extends StatelessWidget {
                         print(await getMessagesForChat("PwZPV10ktzkzABtfhG4A"));
                       },
                       child: Text("Test Chat log reading")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        String test = "ÄÖÜäöüß";
+                        print("Test: $test");
+                        print("Safe: ${test.dbsafe}");
+                        print("FromSafe: ${test.fromDBSafeString}");
+                      },
+                      child: Text("Test Chat log reading")),
                 ],
               ),
             ),

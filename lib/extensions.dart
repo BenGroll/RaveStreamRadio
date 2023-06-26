@@ -286,6 +286,7 @@ extension CheckForIDvalidity on String {
   }
 }
 
+/*
 const String OE = "{Char.OE}";
 const String UE = "{Char.UE}";
 const String AE = "{Char.AE}";
@@ -293,33 +294,21 @@ const String oe = "{Char.oe}";
 const String ue = "{Char.ue}";
 const String ae = "{Char.ae}";
 const String scharfS = "{Char.scharfS}";
-
+*/
 extension JsonSafe on String {
   String get dbsafe {
-    Stopwatch watch = Stopwatch()..start();
-    String value = replaceAll("Ö", OE);
-    value = value.replaceAll("Ü", UE);
-    value = value.replaceAll("Ä", AE);
-    value = value.replaceAll("ß", scharfS);
-    value = value.replaceAll("ä", ae);
-    value = value.replaceAll("ö", oe);
-    value = value.replaceAll("ü", ue);
-    //print("String conversion took ${watch.elapsed}");
-    watch.stop;
+    String value = this;
+    remoteConfigValues.value?.replaceChars.entries.forEach((element) {
+      value = value.replaceAll(element.key, element.value);
+    });
     return value;
   }
 
   String get fromDBSafeString {
-    Stopwatch watch = Stopwatch()..start();
-    String value = replaceAll(OE, "Ö");
-    value = value.replaceAll(UE, "Ü");
-    value = value.replaceAll(AE, "Ä");
-    value = value.replaceAll(scharfS, "ß");
-    value = value.replaceAll(ae, "ä");
-    value = value.replaceAll(oe, "ö");
-    value = value.replaceAll(ue, "ü");
-    //print("String conversion took ${watch.elapsed}");
-    watch.stop;
+    String value = this;
+    remoteConfigValues.value?.replaceChars.forEach((key, value) {
+      value = value.replaceAll(value, key);
+    });
     return value;
   }
 }
@@ -334,6 +323,7 @@ extension Search on List<dbc.Link> {
     }
     return null;
   }
+
   dbc.Link? whereURLcontains(String pattern) {
     for (int i = 0; i < length; i++) {
       dbc.Link element = this[i];
@@ -343,5 +333,4 @@ extension Search on List<dbc.Link> {
     }
     return null;
   }
-  
 }
