@@ -12,15 +12,15 @@ import 'package:ravestreamradioapp/chatting.dart';
 
 /// ++++++++++++++ DEBUG SETTINGS ++++++++++++ //
 const bool DISABLE_EVENT_EDITING = false;
-const bool DISABLE_CHATWINDOW = false;
-const bool DISABLE_MESSAGE_SENDING = false;
+const bool DISABLE_CHATWINDOW = true;
+const bool DISABLE_MESSAGE_SENDING = true;
 const bool DISABLE_GROUP_CREATION = false;
 const int DEFAULT_MINAGE = 18;
 
 late FirebaseApp app;
 
 //! This Versions Versioncode. Change for Update Detection !//
-const VERSIONCODE = 20;
+const VERSIONCODE = 21;
 
 ValueNotifier<RemoteConfig?> remoteConfigValues =
     ValueNotifier<RemoteConfig?>(null);
