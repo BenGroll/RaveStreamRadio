@@ -12,7 +12,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/beamerroutes.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
   setPathUrlStrategy();
@@ -20,8 +19,6 @@ void main() async {
   app = await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform);
   //pprint("Test");
-  final fcmToken = await FirebaseMessaging.instance.getToken();
-  print("FCMToken: $fcmToken");
   runApp(const MyApp());
 }
 

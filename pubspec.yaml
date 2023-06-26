@@ -53,7 +53,6 @@ dependencies:
   auto_size_text_field:
   image_picker: 
   shared_preferences:
-  firebase_messaging: ^14.6.2
   
 dev_dependencies: 
   change_app_package_name:
