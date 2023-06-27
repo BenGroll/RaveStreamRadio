@@ -1418,3 +1418,27 @@ List<dbc.FeedEntry> feedEntryMapToList(Map map) {
   });
   return ret;
 }
+
+Future deleteUser(String uname, bool deleteEvents) async {
+  dbc.User? user = await getUser(uname);
+  if (user == null) return;
+  if (deleteEvents) {
+    List<Future> futures = [];
+    user.events.forEach((element) {
+      futures.add(element.delete());
+    });
+    await Future.wait(futures);
+    await writeEventIndexes(await readEventIndexesJson());
+  } else {
+    if (deleteEvents) {
+    List<Future> futures = [];
+    user.events.forEach((element) {
+      futures.add(element.update({"hostreference": null}));
+    });
+    await Future.wait(futures);
+    await writeEventIndexes(await readEventIndexesJson());
+  }
+  }
+  await db.doc(user.path).delete();
+  return;
+}

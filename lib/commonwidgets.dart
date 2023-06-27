@@ -117,14 +117,10 @@ AppBar ProfileAppBar(BuildContext context) {
           title: Text(user.username),
           actions: [
             IconButton(
-                onPressed: () async {
-                  kIsWeb
-                      ? await files.writeLoginDataWeb("", "")
-                      : await files.writeLoginDataMobile("", "");
-                  currently_loggedin_as.value =
-                      await db.doStartupLoginDataCheck();
+                onPressed: () {
+                  Scaffold.of(context).openEndDrawer();
                 },
-                icon: Icon(Icons.logout))
+                icon: Icon(Icons.settings))
           ],
         );
 }
@@ -1027,8 +1023,8 @@ class StartChatButton extends StatelessWidget {
                 });
             String newChatID = await startNewChat(other_person_username);
             Navigator.of(context).pop();
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => ChatWindow(id: newChatID)));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ChatWindow(id: newChatID)));
           }
         },
         icon: Icon(Icons.send, color: Colors.white));
@@ -1848,5 +1844,115 @@ class FeedbackScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class ProfileDrawer extends StatelessWidget {
+  const ProfileDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+        backgroundColor: cl.darkerGrey,
+        child: Column(
+          children: [
+            DrawerHeader(
+                child: Text("Account Settings",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: DISPLAY_LONG_SIDE(context) / 30))),
+            ListTile(
+                onTap: () async {
+                  showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (context) => cw.LoadingIndicator(
+                          color: Colors.white, message: "Logging out"));
+                  await files.writeLoginDataMobile("", "");
+                  await files.writeLoginDataWeb("", "");
+                  await Future.delayed(Duration(seconds: 3));
+                  currently_loggedin_as.value = null;
+                  Navigator.of(context).pop();
+                },
+                title: Text("Log out",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: DISPLAY_LONG_SIDE(context) / 40)),
+                trailing: Icon(Icons.logout, color: Colors.white)),
+            ListTile(
+                onTap: () async {
+                  ValueNotifier<bool> deleteEvents = ValueNotifier(true);
+                  await showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) => AlertDialog(
+                            backgroundColor: cl.darkerGrey,
+                            title: Text("Are your sure?",
+                                style: TextStyle(color: Colors.white)),
+                            content: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                      "This will permanentely delete your account.",
+                                      style: TextStyle(color: Colors.white)),
+                                  Text(
+                                      "There is no way to recover your data after deletion..",
+                                      style: TextStyle(color: Colors.white)),
+                                  Text(
+                                      "Also delete your Events? (Keeping them will just remove you as a host, but keep the event itself online.)",
+                                      style: TextStyle(color: Colors.white)),
+                                  ValueListenableBuilder(
+                                      valueListenable: deleteEvents,
+                                      builder: (context, snapshot, foo) {
+                                        return Checkbox(
+                                            value: snapshot,
+                                            onChanged: (value) {
+                                              deleteEvents.value =
+                                                  value ?? deleteEvents.value;
+                                            });
+                                      })
+                                ]),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    Scaffold.of(context).closeEndDrawer();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        hintSnackBar(
+                                            "Canceled account deletion."));
+                                  },
+                                  child: Text("Dismiss",
+                                      style: TextStyle(color: Colors.white))),
+                              TextButton(
+                                  onPressed: () async {
+                                    cw.showLoadingDialog(context);
+                                    await db.deleteUser(
+                                        currently_loggedin_as.value?.username ??
+                                            "demouser",
+                                        deleteEvents.value);
+                                    await files.writeLoginDataMobile("", "");
+                                    await files.writeLoginDataWeb("", "");
+                                    await Future.delayed(Duration(seconds: 3));
+                                    currently_loggedin_as.value = null;
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        hintSnackBar(
+                                            "Your Account has been deleted."));
+                                  },
+                                  child: Text("Delete!",
+                                      style:
+                                          TextStyle(color: Colors.redAccent)))
+                            ],
+                          ));
+                },
+                title: Text("Delete this account",
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: DISPLAY_LONG_SIDE(context) / 40)),
+                trailing: Icon(Icons.delete, color: Colors.red))
+          ],
+        ));
   }
 }

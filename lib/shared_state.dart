@@ -16,6 +16,7 @@ const bool DISABLE_CHATWINDOW = false;
 const bool DISABLE_MESSAGE_SENDING = false;
 const bool DISABLE_GROUP_CREATION = false;
 const int DEFAULT_MINAGE = 18;
+const bool SHOW_FEEDS = false;
 
 late FirebaseApp app;
 
@@ -29,7 +30,10 @@ class RemoteConfig {
   Map<String, dynamic> downloadLinks;
   int versioncode;
   Map<String, String> replaceChars;
-  RemoteConfig({required this.downloadLinks, required this.versioncode, required this.replaceChars});
+  RemoteConfig(
+      {required this.downloadLinks,
+      required this.versioncode,
+      required this.replaceChars});
 }
 
 double DISPLAY_LONG_SIDE(context) {

@@ -136,7 +136,7 @@ class NewsFeed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    return !SHOW_FEEDS ? Center(child: Text("News-Feed is disabled right now, but will be enabled by future updates.", style: TextStyle(color: Colors.white))) : FutureBuilder(
         future: db.readGroupFeedListMap(groupID),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {

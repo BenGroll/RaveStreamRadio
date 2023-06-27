@@ -136,7 +136,7 @@ AppBar? mapScreenToAppBar(
       }
     case Screens.profile:
       {
-        return cw.ProfileAppBar(context);
+        return null;
       }
     default:
       {
@@ -174,7 +174,10 @@ class HomeScreen extends StatelessWidget {
                         endDrawer:
                             currently_selected_screen.value == Screens.forums
                                 ? chats.ChatsDrawer()
-                                : null,
+                                : currently_selected_screen.value == Screens.profile
+                                ? cw.ProfileDrawer()
+                                : null
+                                ,
                         appBar: mapScreenToAppBar(
                             screen, currently_loggedin_as.value, context),
                         body: map_Widget_to_Screen(

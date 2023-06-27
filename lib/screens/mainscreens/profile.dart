@@ -72,6 +72,7 @@ class LoggedInScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: cw.ProfileAppBar(context),
         backgroundColor: cl.darkerGrey,
         body: UserView(
           username: currently_loggedin_as.value!.username,
