@@ -334,3 +334,12 @@ extension Search on List<dbc.Link> {
     return null;
   }
 }
+
+extension Sort on List<dbc.FeedEntry> {
+  List<dbc.FeedEntry> bynewest() {
+    List<dbc.FeedEntry> buffer = this;
+    buffer.sort((a, b) => a.timestamp.millisecondsSinceEpoch
+        .compareTo(b.timestamp.millisecondsSinceEpoch));
+    return buffer;
+  }
+}

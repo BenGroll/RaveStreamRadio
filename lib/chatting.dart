@@ -322,8 +322,13 @@ class ChatsDrawer extends StatelessWidget {
       }
       outL.add(ListTile(
         onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => ChatWindow(id: outLine.chatID)));
+          if (DISABLE_CHATWINDOW) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                cw.hintSnackBar("Chatting is disabled right now"));
+          } else {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => ChatWindow(id: outLine.chatID)));
+          }
         },
         tileColor: cl.darkerGrey,
         title: Text(outLine.title ?? outLine.chatID,

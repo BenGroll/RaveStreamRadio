@@ -1367,3 +1367,54 @@ Future makeDemoHostsContainInstagramLink() async {
   await Future.wait(futures);
   return;
 }
+
+Future<bool> doesGroupAlreadyHaveFeedFile(String groupID) async {
+  ListResult ref = await files.firebasestorage.ref("feeds/groups").list();
+  for (int i = 0; i < ref.items.length; i++) {
+    Reference item = ref.items[i];
+    if (item.name == "$groupID.json") {
+      return true;
+    }
+  }
+  return false;
+}
+
+Future createEmptyFeedFileForGroup(String groupID) async {
+  await files.firebasestorage
+      .ref("feeds/groups/$groupID.json")
+      .putString(json.encode({}));
+  return;
+}
+
+Future addFeedEntryToGroupFeed(String groupID, dbc.FeedEntry entry) async {
+  Map? feed = await readGroupFeedListMap(groupID);
+  if (feed != null) {
+    feed[entry.timestamp.millisecondsSinceEpoch.toString()] = entry.toMap();
+    await files.firebasestorage
+        .ref("feeds/groups/$groupID.json")
+        .putString(json.encode(feed));
+  }
+  return;
+}
+
+Future<Map?> readGroupFeedListMap(String groupID) async {
+  bool hasFile = await doesGroupAlreadyHaveFeedFile(groupID);
+  if (!hasFile) await createEmptyFeedFileForGroup(groupID);
+  Uint8List? data =
+      await files.firebasestorage.ref("feeds/groups/$groupID.json").getData();
+  if (data == null) return null;
+  String dataString = String.fromCharCodes(data);
+  print(dataString);
+  Map feed = json.decode(dataString.fromDBSafeString);
+  print(feed);
+  return feed;
+}
+
+List<dbc.FeedEntry> feedEntryMapToList(Map map) {
+  List<dbc.FeedEntry> ret = [];
+  map.entries.forEach((element) {
+    ret.add(
+        dbc.FeedEntry.fromMap(forceStringDynamicMapFromObject(element.value)));
+  });
+  return ret;
+}

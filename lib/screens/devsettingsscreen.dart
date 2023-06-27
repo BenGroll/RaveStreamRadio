@@ -579,6 +579,60 @@ class DevSettingsScreen extends StatelessWidget {
                         print("FromSafe: ${test.fromDBSafeString}");
                       },
                       child: Text("Test Chat log reading")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        ValueNotifier<String> groupID = ValueNotifier("");
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: groupID));
+                        bool doesHaveFile = await db
+                            .doesGroupAlreadyHaveFeedFile(groupID.value);
+                        showDevFeedbackDialog(context, [
+                          "Feed File exists for ${groupID.value}: ",
+                          doesHaveFile.toString()
+                        ]);
+                      },
+                      child: Text("Test Group Feed File Existance")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        ValueNotifier<String> groupID = ValueNotifier("");
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: groupID));
+                        await db.createEmptyFeedFileForGroup(groupID.value);
+                        showFeedbackDialog(context, ["Empty File created"]);
+                      },
+                      child: Text("Create empty file for feed")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        ValueNotifier<String> groupID = ValueNotifier("");
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: groupID));
+                        Map? test =
+                            await db.readGroupFeedListMap(groupID.value);
+                        print(db.feedEntryMapToList(test ?? {}));
+                      },
+                      child: Text("Read Feed file for group")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        ValueNotifier<String> groupID = ValueNotifier("");
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: groupID));
+                        await db.addFeedEntryToGroupFeed(
+                            groupID.value,
+                            FeedEntry(
+                                ownerpath: "dev.groups/rsr",
+                                timestamp: Timestamp.now(),
+                                leading_image_path_download_link: null,
+                                type: FeedEntryType.ANNOUNCEMENT));
+                      },
+                      child: Text("Add Feed Entry to Group")),
                 ],
               ),
             ),

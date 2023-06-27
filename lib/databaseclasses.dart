@@ -51,7 +51,7 @@ List<GlobalPermission> dbPermissionsToGlobal(List<String> permits) {
     outlist.add(GlobalPermission.MANAGE_EVENTS);
     outlist.add(GlobalPermission.MANAGE_HOSTS);
     outlist.add(GlobalPermission.MODERATE);
-    
+
     return outlist;
   }
   permits.forEach((element) {
@@ -783,7 +783,7 @@ class Report {
   }
 }
 
-enum FeedbackCategory { Bug, Idea, Positive, Moderation, Content, Other}
+enum FeedbackCategory { Bug, Idea, Positive, Moderation, Content, Other }
 
 class FeedBackCollector {
   String feedbackcontent;
@@ -809,3 +809,46 @@ Group demoGroup = Group(
     groupid: "demo",
     members_roles: {db.doc("${branchPrefix}/groups/demo"): "Founder"});
 Event demoEvent = Event(eventid: "demo");
+
+enum FeedEntryType { EVENT_POSTED, EVENT_UPDATED, ANNOUNCEMENT }
+
+class FeedEntry {
+  String ownerpath;
+  Timestamp timestamp;
+  String? leading_image_path_download_link;
+  FeedEntryType type;
+  String? textcontent;
+  FeedEntry(
+      {required this.ownerpath,
+      required this.timestamp,
+      this.leading_image_path_download_link,
+      required this.type,
+      this.textcontent
+      });
+  Map<String, dynamic> toMap() {
+    return {
+      "ownerpath": ownerpath,
+      "timestamp": timestamp.millisecondsSinceEpoch,
+      "leading_image_path_download_link": leading_image_path_download_link,
+      "type": type.name,
+      "textcontent" : textcontent
+    };
+  }
+
+  factory FeedEntry.fromMap(Map<String, dynamic> map) {
+    return FeedEntry(
+      textcontent: map.containsKey("textcontent") && map["textcontent"] != null ? map["textcontent"] : null,
+        ownerpath: map["ownerpath"],
+        timestamp: Timestamp.fromMillisecondsSinceEpoch(map["timestamp"]),
+        leading_image_path_download_link:
+            map.containsKey("leading_image_path_download_link") &&
+                    map["leading_image_path_download_link"] != null
+                ? map["leading_image_path_download_link"]
+                : null,
+        type: FeedEntryType.values
+            .firstWhere((element) => element.name == map["type"]));
+  }
+  String toString() {
+    return "FeedEntry(ownerpath: $ownerpath, timestamp: $timestamp, leading_image_path_download_link: $leading_image_path_download_link, type: $type, textcontent: $textcontent)";
+  }
+}

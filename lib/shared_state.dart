@@ -12,8 +12,8 @@ import 'package:ravestreamradioapp/chatting.dart';
 
 /// ++++++++++++++ DEBUG SETTINGS ++++++++++++ //
 const bool DISABLE_EVENT_EDITING = false;
-const bool DISABLE_CHATWINDOW = true;
-const bool DISABLE_MESSAGE_SENDING = true;
+const bool DISABLE_CHATWINDOW = false;
+const bool DISABLE_MESSAGE_SENDING = false;
 const bool DISABLE_GROUP_CREATION = false;
 const int DEFAULT_MINAGE = 18;
 
