@@ -148,7 +148,7 @@ String getRandString(int len) {
   return base64UrlEncode(values);
 }
 
-String generateDocumentID() {
+String generateDocumentID({int length = 20}) {
   List<String> allowed_values = [
     "a",
     "b",
@@ -213,10 +213,9 @@ String generateDocumentID() {
     "8",
     "9"
   ];
-  print(allowed_values.length);
   String returnID = "";
   var rng = Random();
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < length; i++) {
     returnID = "$returnID${allowed_values[rng.nextInt(62)]}";
   }
   return returnID;

@@ -295,12 +295,20 @@ class GroupView extends StatelessWidget {
                     fontSize: MediaQuery.of(context).size.width / 25)))
       ]),
       Divider(thickness: 2, color: cl.lighterGrey),
-      Align(
-          alignment: Alignment.centerLeft,
-          child: Text("News-Feed",
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: DISPLAY_LONG_SIDE(context) / 30))),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Align(
+              alignment: Alignment.topCenter,
+              child: Text("News-Feed",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: DISPLAY_LONG_SIDE(context) / 30))),
+        if(isGroupAdmin) IconButton(onPressed: () {
+          
+        }, icon: Icon(Icons.add, color: Colors.white))
+        ],
+      ),
       NewsFeed(groupID: group.value.groupid)
     ];
     return Scaffold(

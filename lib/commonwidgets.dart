@@ -365,7 +365,7 @@ class NavBar extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Text(
-                  "© RaveStreamRadio 2023\n v$VERSIONCODE, build 2.2.17",
+                  "© RaveStreamRadio 2023\n v$VERSIONCODE, build $BUILDVERSION",
                   style: TextStyle(color: Colors.white),
                 ),
               ),

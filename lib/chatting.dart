@@ -14,291 +14,11 @@ import 'dart:typed_data';
 import 'package:ravestreamradioapp/extensions.dart' show Stringify, Prettify;
 import 'package:flutter/material.dart';
 import "package:ravestreamradioapp/realtimedb.dart";
-import "package:ravestreamradioapp/screens/chatwindow.dart";
 import "package:ravestreamradioapp/shared_state.dart";
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
 import 'package:firebase_database/firebase_database.dart';
-/*
-class Message {
-  /// Contains full path to the Document
-  final String sender;
-  /// Unix Timestamp
-  final Timestamp sentAt;
-  /// the utf8 content of the message
-  final String content;
-  /// Unique ID
-  String? id = generateDocumentID();
-  Message(
-      {required this.sender,
-      required this.sentAt,
-      required this.content,
-      this.id});
-  factory Message.fromMap(Map<dynamic, dynamic> map) {
-    return Message(
-        content: map["content"],
-        sender: map["sender"],
-        sentAt: Timestamp.fromMillisecondsSinceEpoch(map["sentAt"]),
-        id: map["id"]);
-  }
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'sender': sender,
-      'sentAt': sentAt.millisecondsSinceEpoch,
-      'content': content,
-      'id': id
-    };
-  }
-
-  bool operator ==(covariant Message other) {
-    if (identical(this, other)) return true;
-    return other.content == content &&
-        other.sentAt == sentAt &&
-        other.id == id &&
-        other.sender == sender;
-  }
-
-  @override
-  String toString() {
-    return "Message(sender: $sender, sentAt: $sentAt, content: $content, id: $id)";
-  }
-}
-
-List<Message> dynamicListToMessageList(List<dynamic> da) {
-  List<Message> list = [];
-  da.forEach((element) {
-    Map<String, dynamic> map = element as Map<String, dynamic>;
-    list.add(Message.fromMap(map));
-  });
-  return list;
-}
-
-List<Message> chatFromDB(List<Map<String, dynamic>> map) {
-  List<Message> buffer = [];
-  map.forEach((element) {
-    buffer.add(Message(
-      sender: "dev.users/admin",
-      sentAt: Timestamp.now(),
-      content: "Hallo Welt",
-    ));
-  });
-  return buffer;
-}
-
-List<Message> messagesFromDBSnapshot(List messagelist) {
-  return messagelist
-      .map((e) => Message(
-          sender: e["sender"],
-          sentAt: Timestamp.fromMillisecondsSinceEpoch(e["sentAt"]),
-          content: e["content"]))
-      .toList();
-}
-
-class Chat {
-  final String id;
-  List<Message>? messages;
-  List<DocumentReference> members;
-  String? pathToLogo;
-  String? customName;
-  Chat(
-      {this.messages = const [],
-      required this.members,
-      this.pathToLogo,
-      this.customName,
-      required this.id});
-  factory Chat.fromMap(Map map) {
-    /*print("Members: ${map["members"]}");
-    print("Members rtt: ${map["members"].runtimeType}");
-    print("Member rtt; ${map["members"][0].runtimeType}");
-    print(map["messages"][0].runtimeType);
-    */
-    List<String> memberstringList =
-        forceStringType(map["members"]) as List<String>;
-    /*List<Message>? messagelist = map["messages"].map((e) => Message.fromMap(forceStringDynamicMapFromObject(e))).toList();*/
-    List<Message>? messagelist;
-    if (map["messages"].length == 0 ||
-        map["messages"][0].runtimeType == String) {
-      messagelist = null;
-    }
-    return Chat(
-        members: forceDocumentReferenceFromStringList(memberstringList),
-        messages: map["messages"] == null ? <Message>[] : <Message>[],
-        pathToLogo: map["pathToLogo"],
-        id: map["id"],
-        customName: map["customName"]);
-  }
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'messages': messages?.toList() ?? [],
-      'members': members.paths(),
-      "pathToLogo": pathToLogo,
-      "id": id,
-      "customName": customName
-    };
-  }
-
-  factory Chat.fromDBSnapshot(Map snap) {
-    List<String> members =
-        forceStringType(snap["members"].map((e) => e.toString()).toList());
-    List<String> messageIDS = forceStringType(snap["messages"]);
-    List<Message> messagelist = messagesFromDBSnapshot(snap["messages"]);
-    return Chat(
-        members: forceDocumentReferenceFromStringList(members),
-        id: snap["id"],
-        messages: messagelist,
-        customName: snap["customName"]);
-  }
-  @override
-  String toString() {
-    return 'Chat(members: $members, id: $id, messages: $messages, customName: $customName)';
-  }
-}
-
-/// DONT USE, REPLACED WITH RealtimeDB
-String encodeChatAsJson(Chat chat) {
-  return jsonEncode(chat.toMap());
-}
-
-/// DONT USE, REPLACED WITH RealtimeDB
-Future uploadChatToDB(Chat chat) async {
-  await firebasestorage
-      .ref("chats/${chat.id}.json")
-      .putString(encodeChatAsJson(chat));
-}
-
-/// DONT USE, REPLACED WITH RealtimeDB
-Future<Chat> readChatFromDB(String id) async {
-  dynamic pathReference = firebasestorage.ref("chats/$id.json");
-  Uint8List? data = await pathReference.getData(100 * 1024 * 1024);
-  Map map = json.decode(String.fromCharCodes(data ?? Uint8List.fromList([0])));
-  return Chat.fromMap(map);
-}
-
-/// DONT USE, REPLACED WITH RealtimeDB
-Future<List<Chat>> getUsersChats() async {
-  if (currently_loggedin_as.value == null) {
-    return [];
-  } else {
-    if (currently_loggedin_as.value!.chats == null) {
-      return [];
-    }
-    List<String> joined_chats = currently_loggedin_as.value?.chats ?? [];
-    List<Future<DataSnapshot>> futures = [];
-    joined_chats.forEach((element) {
-      futures.add(rtdb.ref("root/Chats/$element").get());
-    });
-    List<DataSnapshot> chats = await Future.wait(futures);
-    List<Chat> newchats =
-        chats.map((e) => Chat.fromMap(e.value as Map)).toList();
-    return newchats;
-  }
-}
-
-class ChatTile extends StatelessWidget {
-  Chat chat;
-  ChatTile({super.key, required this.chat});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () {
-        Beamer.of(context).beamToNamed("/chat/${chat.id}");
-        /* Navigator.of(context).push(MaterialPageRoute(
-            builder: (BuildContext context) => ChatWindow(id: chat.id)));*/
-      },
-      leading: Icon(Icons.person, color: Colors.white),
-      title: Text(getChatNameFromChat(chat),
-          style: TextStyle(color: Colors.white)),
-      subtitle: Text("Last Mess..."),
-    );
-  }
-}
-
-String getChatNameFromChat(Chat chat) {
-  //return "TestChat";
-  if (chat.customName != null && chat.customName!.isNotEmpty) {
-    return chat.customName ?? "Empty ChatName";
-  } else {
-    String? path = getOtherPersonsPathInOoOChat(chat.members);
-    if (path == null) {
-      return "If this displays look at chatting.dart";
-    } else {
-      return path.split("/").last.toCapitalized();
-    }
-  }
-}
-
-/// Must never be called when not logged in
-String? getOtherPersonsPathInOoOChat(List<DocumentReference> members) {
-  String? personspath;
-  members.forEach((element) {
-    if (element.id != currently_loggedin_as.value!.username) {
-      personspath = element.path;
-    }
-  });
-  return personspath;
-}
-
-Future<Chat> startNewChat(List<DocumentReference> members) async {
-  Chat newChatData = Chat(members: members, id: getRandString(20));
-  await setChatData(newChatData);
-  return newChatData;
-}
-
-class ChatsDrawer extends StatelessWidget {
-  const ChatsDrawer({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-        backgroundColor: cl.darkerGrey,
-        child: DISABLE_CHATWINDOW ? Center(child: Text("Chatting is disabled due to technical issues. Will be fixed soon.", maxLines: null, style: TextStyle(color: Colors.white),)) :  FutureBuilder(
-            future: getUsersChats(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return ListView(
-                  children:
-                      snapshot.data!.map((e) => ChatTile(chat: e)).toList(),
-                );
-              } else {
-                return cw.LoadingIndicator(color: Colors.white);
-              }
-            }));
-  }
-}
-
-String? getChatIDbyMembers(Map<String, List> chats) {
-  chats.keys.forEach((element) {});
-}
-
-Future<List<Message>> loadMessagesForChat(String chatID) async {
-  List ids = await rtdb
-      .ref("root/Chats/$chatID/messages")
-      .get()
-      .then((value) => value.value as List);
-  List<Future> futures = [];
-  List<Message> messages = [];
-  ids.forEach((element) {
-    Message? found_message = saved_messages.checkForIDMatch(element);
-    if (found_message == null) {
-      futures.add(rtdb.ref("root/Messages/$element").get().then((value) {
-        Map? data = value.value as Map?;
-        if (data != null) {
-          data["id"] = element;
-          return data;
-        }
-      }));
-    } else {
-      messages.add(found_message);
-    }
-  });
-  List<dynamic> messageInfos = await Future.wait(futures);
-  List<Map> data = messageInfos.map((e) => e as Map).toList();
-  data.forEach((element) {
-    messages.add(Message.fromMap(element));
-  });
-  return messages;
-}*/
 
 class ChatsDrawer extends StatelessWidget {
   const ChatsDrawer({super.key});
@@ -483,6 +203,7 @@ class MessageElement extends StatelessWidget {
 
 class ChatWindow extends StatelessWidget {
   final ScrollController _controller = ScrollController();
+  bool has_shown_info_banner = false;
   void _scrollDown() {
     _controller.animateTo(
       _controller.position.maxScrollExtent,
@@ -493,146 +214,310 @@ class ChatWindow extends StatelessWidget {
 
   String id;
   String currentlyCuedupMessage = "";
+
   ChatWindow({required this.id});
+
+  void _showMessagePolicyBanner(context, ChatOutline outline) {
+    if (has_shown_info_banner) return;
+    has_shown_info_banner = true;
+    if (outline.keepmessages) return;
+    ScaffoldMessenger.of(context).showMaterialBanner(MaterialBanner(
+        backgroundColor: cl.darkerGrey,
+        content: Align(
+          alignment: Alignment.topCenter,
+          child: Text(
+            "Messages in this app get deleted by default after both parties have seen them. To change this, edit the chat's settings in the top right corner.",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).clearMaterialBanners();
+              },
+              child: Text(
+                "Dismiss",
+                style: TextStyle(color: Colors.white),
+              )),
+          TextButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => Dialog(
+                      backgroundColor: cl.darkerGrey,
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(
+                                  "We here at RaveStreamRadio care about your Privacy.\nThis (And server-storage being expensive) made us decide to not keep private-info.\nBy default, in any private chats (no matter 1o1 or Group-Chat), all messages are deleted permanentely from our database as soon as all members of the chat have seen the message.\nThere is no way to restore or trace any deleted messages, not for you, not for the admin, not for the people whose server your data gets stored on.\nIf you want to keep messages from being deleted, you can manually change the settings for each Chat.",
+                                  style: TextStyle(color: Colors.white)),
+                            )
+                          ])),
+                );
+              },
+              child: Text(
+                "Learn More",
+                style: TextStyle(color: Colors.white),
+              ))
+        ]));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: readChatOutline(id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            ChatOutline? outline = snapshot.data;
-            if (outline == null)
-              return Center(child: Text("Couldn't load Chat"));
-            return Scaffold(
-              backgroundColor: cl.darkerGrey,
-              appBar: AppBar(
-                centerTitle: true,
-                title: SingleChildScrollView(
-                    child: Text(outline.title ?? outline.chatID)),
-              ),
-              body: FutureBuilder(
-                  future: getMessagesForChat(outline.chatID),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<List<Message>> snap) {
-                    if (snap.connectionState == ConnectionState.done &&
-                        snap.hasData) {
-                      print(snap.data);
-                      List<Message> messages = snap.data ?? [];
-                      return StreamBuilder(
-                          stream: rtdb
-                              .ref("root/MessageLogs/${outline.chatID}")
-                              .onChildAdded,
-                          builder: (BuildContext context,
-                              AsyncSnapshot<DatabaseEvent> event) {
-                            if (event.hasData &&
-                                event.data!.snapshot.value != null) {
-                              Map<String, dynamic> messageData =
-                                  messageMapFromDynamic(
-                                      event.data!.snapshot.value as Map);
-                              if (messages.length == 0 ||
-                                  messageData["timestampinMilliseconds"] !=
-                                      messages.last.timestampinMilliseconds) {
-                                messages.add(Message.fromMap(
-                                    messageMapFromDynamic(
-                                        event.data!.snapshot.value)));
-                              }
+    return WillPopScope(
+      onWillPop: () async {
+        ScaffoldMessenger.of(context).clearMaterialBanners();
+        return true;
+      },
+      child: FutureBuilder(
+          future: readChatOutline(id),
+          builder: (context, snapshot) {
+            ValueNotifier<List<Message>> buffer = ValueNotifier([]);
+            if (snapshot.connectionState == ConnectionState.done) {
+              ChatOutline? outline = snapshot.data;
+              if (outline == null)
+                return Center(child: Text("Couldn't load Chat"));
+              return Scaffold(
+                backgroundColor: cl.darkerGrey,
+                appBar: AppBar(
+                  actions: [
+                    IconButton(
+                        onPressed: () {
+                          ValueNotifier<bool> keepmessages =
+                              ValueNotifier(outline.keepmessages);
+                          showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                    backgroundColor: cl.darkerGrey,
+                                    title: Text("Settings",
+                                        style: TextStyle(color: Colors.white)),
+                                    content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                              "By default, messages get deleted permanentely after every member has seen them. If you want messages to be saved until you decide to delete them, turn the setting below on.\nThis setting is individual for every chat and has to be set manually.",
+                                              style: TextStyle(
+                                                  color: Colors.white)),
+                                          Row(children: [
+                                            Text("Keep Messages: ",
+                                                style: TextStyle(
+                                                    color: Colors.white)),
+                                            ValueListenableBuilder(
+                                                valueListenable: keepmessages,
+                                                builder:
+                                                    (context, snapshot, foo) {
+                                                  return Switch(
+                                                      activeColor: Colors.white,
+                                                      activeTrackColor:
+                                                          Colors.white,
+                                                      inactiveTrackColor:
+                                                          cl.lighterGrey,
+                                                      inactiveThumbColor:
+                                                          cl.lighterGrey,
+                                                      value: snapshot,
+                                                      onChanged: (value) =>
+                                                          keepmessages.value =
+                                                              value);
+                                                })
+                                          ])
+                                        ]),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text("Dismiss",
+                                              style: TextStyle(
+                                                  color: Colors.white))),
+                                      TextButton(
+                                          onPressed: () async {
+                                            if (outline.keepmessages !=
+                                                keepmessages.value) {
+                                              cw.showLoadingDialog(context);
+                                              outline.keepmessages =
+                                                  keepmessages.value;
+                                              await writeChatOutline(outline);
+                                              Navigator.of(context).pop();
+                                              if (keepmessages.value) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(cw.hintSnackBar(
+                                                        "From now on messages will be saved in chats."));
+                                              } else {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(cw.hintSnackBar(
+                                                        "From now on messages will be deleted once both parties have seen them."));
+                                              }
+                                            }
+
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text("Save Settings",
+                                              style: TextStyle(
+                                                  color: Colors.white)))
+                                    ],
+                                  ));
+                        },
+                        icon: Icon(Icons.settings, color: Colors.white))
+                  ],
+                  centerTitle: true,
+                  title: SingleChildScrollView(
+                      child: Text(outline.title ?? outline.chatID)),
+                ),
+                body: FutureBuilder(
+                    future: getMessagesForChat(outline.chatID),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<List<Message>> snap) {
+                      if (snap.connectionState == ConnectionState.done &&
+                          snap.hasData) {
+                        List<Message> messages = snap.data ?? [];
+                        if (messages.length > buffer.value.length)
+                          buffer.value = messages;
+                        outline.members_LastOpened[currently_loggedin_as.value!
+                            .username] = Timestamp.now().millisecondsSinceEpoch;
+                        writeLastOpened(outline.chatID,
+                            currently_loggedin_as.value!.username);
+                        if (!outline.keepmessages) {
+                          List<int> timestamps = outline
+                              .members_LastOpened.entries
+                              .map((e) => e.value)
+                              .toList()
+                            ..sort((a, b) => a.compareTo(b));
+                          int earliest_timestamp = timestamps.first;
+                          List<String> messagesReadByEveryoneByID = [];
+                          messages.forEach((element) {
+                            if (element.timestampinMilliseconds <=
+                                earliest_timestamp) {
+                              messagesReadByEveryoneByID.add(element.id);
                             }
-                            return ListView.separated(
-                                controller: _controller,
-                                itemBuilder: (context, index) {
-                                  //_scrollDown();
-                                  //! Return Card
-                                  return MessageElement(
-                                      message: messages[index],
-                                      isGroupChat:
-                                          outline.members_LastOpened.length >
-                                              2);
-                                },
-                                separatorBuilder:
-                                    (BuildContext context, int index) {
-                                  return SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height /
-                                              50);
-                                },
-                                itemCount: messages.length);
                           });
-                    } else {
-                      return cw.LoadingIndicator(color: Colors.white);
-                    }
-                  }),
-              bottomNavigationBar: Padding(
-                  padding: MediaQuery.of(context).viewInsets,
-                  child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: BottomAppBar(
-                        color: Colors.transparent,
-                        child: Card(
+                          print("WOULD DELETE");
+                          deleteMessageList(
+                              outline.chatID, messagesReadByEveryoneByID);
+                        }
+                        return StreamBuilder(
+                            stream: rtdb
+                                .ref("root/MessageLogs/${outline.chatID}")
+                                .onChildAdded,
+                            builder: (BuildContext context,
+                                AsyncSnapshot<DatabaseEvent> event) {
+                              if (event.hasData &&
+                                  event.data!.snapshot.value != null) {
+                                Map<String, dynamic> messageData =
+                                    messageMapFromDynamic(
+                                        event.data!.snapshot.value as Map);
+                                if (messages.length == 0 ||
+                                    messageData["timestampinMilliseconds"] !=
+                                        messages.last.timestampinMilliseconds) {
+                                  buffer.value.add(Message.fromMap(
+                                      messageMapFromDynamic(
+                                          event.data!.snapshot.value)));
+                                }
+                              }
+                              print("REBUILD ADD");
+                              return ListView.separated(
+                                  controller: _controller,
+                                  itemBuilder: (context, index) {
+                                    //_scrollDown();
+                                    //! Return Card
+                                    return MessageElement(
+                                        message: buffer.value[index],
+                                        isGroupChat:
+                                            outline.members_LastOpened.length >
+                                                2);
+                                  },
+                                  separatorBuilder:
+                                      (BuildContext context, int index) {
+                                    return SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height /
+                                                50);
+                                  },
+                                  itemCount: messages.length);
+                            });
+                      } else {
+                        return cw.LoadingIndicator(color: Colors.white);
+                      }
+                    }),
+                bottomNavigationBar: Padding(
+                    padding: MediaQuery.of(context).viewInsets,
+                    child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: BottomAppBar(
                           color: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            side: BorderSide(color: cl.greynothighlight),
-                            borderRadius: BorderRadius.circular(
-                                MediaQuery.of(context).size.height / 50),
+                          child: Card(
+                            color: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(color: cl.greynothighlight),
+                              borderRadius: BorderRadius.circular(
+                                  MediaQuery.of(context).size.height / 50),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: Padding(
+                                      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                      child: TextFormField(
+                                        onTap: () {
+                                          //_scrollDown();
+                                          _showMessagePolicyBanner(
+                                              context, outline);
+                                        },
+                                        initialValue: "",
+                                        onChanged: (value) {
+                                          currentlyCuedupMessage = value;
+                                        },
+                                        style: TextStyle(color: Colors.white),
+                                        decoration: InputDecoration(
+                                          filled: false,
+                                          fillColor: Colors.transparent,
+                                          hintText: "Send Message...",
+                                          hintStyle:
+                                              TextStyle(color: Colors.white),
+                                        ),
+                                      )),
+                                ),
+                                Expanded(
+                                    child: IconButton(
+                                        onPressed: () async {
+                                          if (DISABLE_MESSAGE_SENDING) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(cw.hintSnackBar(
+                                                    "Chatting is disabled right now."));
+                                            return;
+                                          }
+                                          currently_loggedin_as.value!.path;
+                                          Timestamp sentAt = Timestamp.now();
+                                          Message newMessage = Message(
+                                              id: generateDocumentID(),
+                                              sentFrom: currently_loggedin_as
+                                                  .value!.username,
+                                              timestampinMilliseconds:
+                                                  Timestamp.now()
+                                                      .millisecondsSinceEpoch,
+                                              content: currentlyCuedupMessage);
+                                          await addMessageToChat(
+                                              outline.chatID, newMessage);
+                                          writeLastMessage(
+                                              outline.chatID, newMessage);
+                                          _scrollDown();
+                                        },
+                                        icon: Icon(Icons.send,
+                                            color: Colors.white)))
+                              ],
+                            ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Padding(
-                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                    child: TextFormField(
-                                      onTap: () => _scrollDown(),
-                                      initialValue: "",
-                                      onChanged: (value) {
-                                        currentlyCuedupMessage = value;
-                                      },
-                                      style: TextStyle(color: Colors.white),
-                                      decoration: InputDecoration(
-                                        filled: false,
-                                        fillColor: Colors.transparent,
-                                        hintText: "Send Message...",
-                                        hintStyle:
-                                            TextStyle(color: Colors.white),
-                                      ),
-                                    )),
-                              ),
-                              Expanded(
-                                  child: IconButton(
-                                      onPressed: () async {
-                                        if (DISABLE_MESSAGE_SENDING) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(cw.hintSnackBar(
-                                                  "Chatting is disabled right now."));
-                                          return;
-                                        }
-                                        currently_loggedin_as.value!.path;
-                                        Timestamp sentAt = Timestamp.now();
-                                        Message newMessage = Message(
-                                            sentFrom: currently_loggedin_as
-                                                .value!.username,
-                                            timestampinMilliseconds:
-                                                Timestamp.now()
-                                                    .millisecondsSinceEpoch,
-                                            content: currentlyCuedupMessage);
-                                        print("Message to upload: $newMessage");
-                                        await addMessageToChat(
-                                            outline.chatID, newMessage);
-                                        writeLastMessage(
-                                            outline.chatID, newMessage);
-                                        _scrollDown();
-                                      },
-                                      icon: Icon(Icons.send,
-                                          color: Colors.white)))
-                            ],
-                          ),
-                        ),
-                      ))),
-            );
-          } else {
-            return cw.LoadingIndicator(color: Colors.white);
-          }
-        });
+                        ))),
+              );
+            } else {
+              return cw.LoadingIndicator(color: Colors.white);
+            }
+          }),
+    );
   }
 }
 
@@ -640,6 +525,7 @@ class ChatOutline {
   String chatID;
   String? adminUserName;
   String? description;
+  bool keepmessages = false;
 
   /// Key: username, Value: Timestamp of last opening the chat
   Map<String, int> members_LastOpened;
@@ -652,7 +538,8 @@ class ChatOutline {
       this.description,
       required this.members_LastOpened,
       this.title,
-      this.lastmessage});
+      this.lastmessage,
+      this.keepmessages = false});
 
   factory ChatOutline.fromMap(Map<String, dynamic> map) {
     Map<String, int> membersLastOpenedmapFromObject(Map input) {
@@ -675,6 +562,7 @@ class ChatOutline {
     } else {
       title = map["chatID"];
     }
+
     return ChatOutline(
         chatID: map["chatID"],
         adminUserName:
@@ -685,7 +573,8 @@ class ChatOutline {
         title: title,
         lastmessage: map["lastmessage"] != null
             ? Message.fromMap(messageMapFromDynamic(map["lastmessage"]))
-            : null);
+            : null,
+        keepmessages: map["keepmessages"]);
   }
   Map<String, dynamic> toMap() {
     return {
@@ -694,12 +583,13 @@ class ChatOutline {
       "description": description,
       "members_LastOpened": members_LastOpened,
       "title": title,
-      "lastmessage": lastmessage != null ? lastmessage!.toMap() : null
+      "lastmessage": lastmessage != null ? lastmessage!.toMap() : null,
+      "keepmessages": keepmessages
     };
   }
 
   String toString() {
-    return "ChatOutline(chatID: $chatID, adminUserName: $adminUserName, description: $description, members_LastOpened: $members_LastOpened, title: $title, lastmessage: $lastmessage)";
+    return "ChatOutline(chatID: $chatID, adminUserName: $adminUserName, description: $description, members_LastOpened: $members_LastOpened, title: $title, lastmessage: $lastmessage, keepmessages: $keepmessages)";
   }
 }
 
@@ -707,15 +597,18 @@ class Message {
   String sentFrom;
   String content;
   int timestampinMilliseconds;
+  String id;
   Message(
       {required this.sentFrom,
       required this.content,
-      required this.timestampinMilliseconds});
+      required this.timestampinMilliseconds,
+      required this.id});
   Map<String, dynamic> toMap() {
     return {
       "sentFrom": sentFrom,
       "content": content,
-      "timestampinMilliseconds": timestampinMilliseconds
+      "timestampinMilliseconds": timestampinMilliseconds,
+      "id": id
     };
   }
 
@@ -723,10 +616,11 @@ class Message {
     return Message(
         content: map["content"],
         sentFrom: map["sentFrom"],
-        timestampinMilliseconds: map["timestampinMilliseconds"]);
+        timestampinMilliseconds: map["timestampinMilliseconds"],
+        id: map["id"]);
   }
   String toString() {
-    return "Message(content: $content, sentFrom: $sentFrom, timestampinMilliseconds: $timestampinMilliseconds)";
+    return "Message(id: $id, content: $content, sentFrom: $sentFrom, timestampinMilliseconds: $timestampinMilliseconds)";
   }
 }
 
@@ -734,7 +628,8 @@ Map<String, dynamic> chatOutlineMapFromDynamic(dynamic i) {
   Map<String, dynamic> map = {
     "chatID": i["chatID"],
     "members_LastOpened": i["members_LastOpened"],
-    "lastmessage": i.containsKey("lastmessage") ? i["lastmessage"] : null
+    "lastmessage": i.containsKey("lastmessage") ? i["lastmessage"] : null,
+    "keepmessages": i["keepmessages"]
   };
   return map;
 }
@@ -743,7 +638,8 @@ Map<String, dynamic> messageMapFromDynamic(dynamic i) {
   return {
     "content": i["content"],
     "sentFrom": i["sentFrom"],
-    "timestampinMilliseconds": i["timestampinMilliseconds"]
+    "timestampinMilliseconds": i["timestampinMilliseconds"],
+    "id": i["id"]
   };
 }
 
@@ -772,6 +668,17 @@ Future writeLastMessage(String chatID, Message message) async {
   if (chatdata.value == null) return;
   Map data = chatdata.value as Map;
   data["lastmessage"] = message.toMap();
+  await chat.set(data);
+  return;
+}
+
+Future writeLastOpened(String chatID, String username) async {
+  DatabaseReference chat =
+      rtdb.ref("root/ChatOutlines/$chatID/members_LastOpened");
+  DataSnapshot chatdata = await chat.get();
+  if (chatdata.value == null) return;
+  Map data = chatdata.value as Map;
+  data[username] = Timestamp.now().millisecondsSinceEpoch;
   await chat.set(data);
   return;
 }
@@ -812,7 +719,21 @@ Future<List<Message>> getMessagesForChat(String chatID) async {
 
 Future addMessageToChat(String chatID, Message message) async {
   DatabaseReference chats = rtdb.ref("root/MessageLogs/$chatID");
-  await chats.push().set(message.toMap());
+  DatabaseReference ref = chats.push();
+  Map data = message.toMap();
+  print(ref.path);
+  data["id"] = ref.path.split("/").last;
+  await ref.set(data);
+  return;
+}
+
+Future deleteMessageList(String chatID, List<String> ids) async {
+  DatabaseReference chats = rtdb.ref("root/MessageLogs/$chatID");
+  List<Future> futures = [];
+  ids.forEach((element) {
+    futures.add(chats.child(element).remove());
+  });
+  Future.wait(futures);
   return;
 }
 

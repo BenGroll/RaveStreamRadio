@@ -306,8 +306,8 @@ extension JsonSafe on String {
 
   String get fromDBSafeString {
     String value = this;
-    remoteConfigValues.value?.replaceChars.forEach((key, value) {
-      value = value.replaceAll(value, key);
+    remoteConfigValues.value?.replaceChars.entries.forEach((element) {
+      value = value.replaceAll(element.value, element.key);
     });
     return value;
   }

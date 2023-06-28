@@ -16,12 +16,13 @@ const bool DISABLE_CHATWINDOW = false;
 const bool DISABLE_MESSAGE_SENDING = false;
 const bool DISABLE_GROUP_CREATION = false;
 const int DEFAULT_MINAGE = 18;
-const bool SHOW_FEEDS = false;
+const bool SHOW_FEEDS = true;
 
 late FirebaseApp app;
 
 //! This Versions Versioncode. Change for Update Detection !//
-const VERSIONCODE = 23;
+const VERSIONCODE = 24;
+const BUILDVERSION = "2.2.20";
 
 ValueNotifier<RemoteConfig?> remoteConfigValues =
     ValueNotifier<RemoteConfig?>(null);
