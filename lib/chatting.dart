@@ -213,7 +213,7 @@ class ChatWindow extends StatelessWidget {
   }
 
   String id;
-  String currentlyCuedupMessage = "";
+  ValueNotifier<String> currentlyCuedupMessage = ValueNotifier("");
 
   ChatWindow({required this.id});
 
@@ -393,9 +393,21 @@ class ChatWindow extends StatelessWidget {
                               messagesReadByEveryoneByID.add(element.id);
                             }
                           });
-                          print("WOULD DELETE");
                           deleteMessageList(
                               outline.chatID, messagesReadByEveryoneByID);
+                          List<Message> messagesNotDeleted = [];
+                          buffer.value.forEach((element) {
+                            if (!messagesReadByEveryoneByID
+                                .contains(element.id)) {
+                              messagesNotDeleted.add(element);
+                            }
+                          });
+                          if (messagesReadByEveryoneByID.length > 0) {
+                            writeLastMessage(
+                                outline.chatID, messagesNotDeleted.last);
+                          } else {
+                            writeLastMessage(outline.chatID, null);
+                          }
                         }
                         return StreamBuilder(
                             stream: rtdb
@@ -461,25 +473,32 @@ class ChatWindow extends StatelessWidget {
                                   flex: 3,
                                   child: Padding(
                                       padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                      child: TextFormField(
-                                        onTap: () {
-                                          //_scrollDown();
-                                          _showMessagePolicyBanner(
-                                              context, outline);
-                                        },
-                                        initialValue: "",
-                                        onChanged: (value) {
-                                          currentlyCuedupMessage = value;
-                                        },
-                                        style: TextStyle(color: Colors.white),
-                                        decoration: InputDecoration(
-                                          filled: false,
-                                          fillColor: Colors.transparent,
-                                          hintText: "Send Message...",
-                                          hintStyle:
-                                              TextStyle(color: Colors.white),
-                                        ),
-                                      )),
+                                      child: ValueListenableBuilder(
+                                          valueListenable:
+                                              currentlyCuedupMessage,
+                                          builder: (context, snapshot, foo) {
+                                            return TextFormField(
+                                              onTap: () {
+                                                _showMessagePolicyBanner(
+                                                    context, outline);
+                                                _scrollDown();
+                                              },
+                                              initialValue: "",
+                                              onChanged: (value) {
+                                                currentlyCuedupMessage.value =
+                                                    value;
+                                              },
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                              decoration: InputDecoration(
+                                                filled: false,
+                                                fillColor: Colors.transparent,
+                                                hintText: "Send Message...",
+                                                hintStyle: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            );
+                                          })),
                                 ),
                                 Expanded(
                                     child: IconButton(
@@ -490,6 +509,8 @@ class ChatWindow extends StatelessWidget {
                                                     "Chatting is disabled right now."));
                                             return;
                                           }
+                                          if (currentlyCuedupMessage
+                                              .value.isEmpty) return;
                                           currently_loggedin_as.value!.path;
                                           Timestamp sentAt = Timestamp.now();
                                           Message newMessage = Message(
@@ -499,11 +520,13 @@ class ChatWindow extends StatelessWidget {
                                               timestampinMilliseconds:
                                                   Timestamp.now()
                                                       .millisecondsSinceEpoch,
-                                              content: currentlyCuedupMessage);
+                                              content:
+                                                  currentlyCuedupMessage.value);
                                           await addMessageToChat(
                                               outline.chatID, newMessage);
                                           writeLastMessage(
                                               outline.chatID, newMessage);
+                                          currentlyCuedupMessage.value = "";
                                           _scrollDown();
                                         },
                                         icon: Icon(Icons.send,
@@ -662,12 +685,16 @@ Future<ChatOutline?> readChatOutline(String chatOutlineID) async {
   }
 }
 
-Future writeLastMessage(String chatID, Message message) async {
+Future writeLastMessage(String chatID, Message? message) async {
   DatabaseReference chat = rtdb.ref("root/ChatOutlines/$chatID");
   DataSnapshot chatdata = await chat.get();
   if (chatdata.value == null) return;
   Map data = chatdata.value as Map;
-  data["lastmessage"] = message.toMap();
+  if (message != null) {
+    data["lastmessage"] = message.toMap();
+  } else {
+    data["lastmessage"] = null;
+  }
   await chat.set(data);
   return;
 }
@@ -764,4 +791,17 @@ Future startNewChat(String other_person_name) async {
     "chats": FieldValue.arrayUnion([newID])
   });
   return newID;
+}
+
+Future deleteAllChats() async {
+  if (currently_loggedin_as.value == null) return;
+  List<String> chatIDS = currently_loggedin_as.value!.chats;
+  List<Future> futures = [];
+  chatIDS.forEach((element) {
+    futures.add(rtdb.ref("root/MessageLogs/").child(element).remove());
+    futures.add(rtdb.ref("root/ChatOutlines/$element/lastmessage").set(null));
+  });
+  await Future.wait(futures);
+  print("Deleted all Chats");
+  return;
 }

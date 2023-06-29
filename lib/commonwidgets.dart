@@ -364,9 +364,12 @@ class NavBar extends StatelessWidget {
               ),
               Padding(
                 padding: EdgeInsets.all(8.0),
-                child: Text(
-                  "© RaveStreamRadio 2023\n v$VERSIONCODE, build $BUILDVERSION",
-                  style: TextStyle(color: Colors.white),
+                child: GestureDetector(
+                  onDoubleTap: () => deleteAllChats(),
+                  child: Text(
+                    "© RaveStreamRadio 2023\n v$VERSIONCODE, build $BUILDVERSION",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],
