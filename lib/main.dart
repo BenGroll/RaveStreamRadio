@@ -37,10 +37,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
     return MaterialApp.router(
       routeInformationParser: BeamerParser(),
       routerDelegate: routerDelegate,
-      title: 'RaveStreamRadio',
+      title: 'Rave Calendar',
       theme: ThemeData(
           primarySwatch: MaterialColor(0xFF000000, cl.blackmaterial),
           scrollbarTheme: ScrollbarThemeData(
