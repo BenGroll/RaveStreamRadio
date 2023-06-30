@@ -53,7 +53,8 @@ dependencies:
   auto_size_text_field:
   image_picker: 
   shared_preferences:
-  
+  http: ^0.13.4
+
 dev_dependencies: 
   change_app_package_name:
   flutter_test:
