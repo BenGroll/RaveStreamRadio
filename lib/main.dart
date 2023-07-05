@@ -12,14 +12,9 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/beamerroutes.dart';
-import 'dart:html' as html;
 
 void main() async {
   setPathUrlStrategy();
-  html.MetaElement meta = html.MetaElement();
-  meta.content = "meta-content";
-  meta.name = "Rave Calendar";
-  html.document.head?.append(meta);
   WidgetsFlutterBinding.ensureInitialized();
   app = await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform);

@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_interpolation_to_compose_strings
+// ignore_for_file: prefer_interpolation_to_compose_strings, invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
 
 import "dart:convert";
 import "package:beamer/beamer.dart";
@@ -267,6 +267,8 @@ class ChatWindow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ValueNotifier<bool> chatRebuildTrigger = ValueNotifier<bool>(false);
+    TextEditingController _textcontroller = TextEditingController();
     return WillPopScope(
       onWillPop: () async {
         ScaffoldMessenger.of(context).clearMaterialBanners();
@@ -370,6 +372,7 @@ class ChatWindow extends StatelessWidget {
                     future: getMessagesForChat(outline.chatID),
                     builder: (BuildContext context,
                         AsyncSnapshot<List<Message>> snap) {
+                      print("POIHG");
                       if (snap.connectionState == ConnectionState.done &&
                           snap.hasData) {
                         List<Message> messages = snap.data ?? [];
@@ -402,32 +405,39 @@ class ChatWindow extends StatelessWidget {
                               messagesNotDeleted.add(element);
                             }
                           });
-                          if (messagesReadByEveryoneByID.length > 0) {
+                          if (messagesNotDeleted.length > 1) {
                             writeLastMessage(
                                 outline.chatID, messagesNotDeleted.last);
                           } else {
                             writeLastMessage(outline.chatID, null);
                           }
                         }
+                        print("Messages: $messages");
+                        print("Buffer: ${buffer.value}");
                         return StreamBuilder(
                             stream: rtdb
                                 .ref("root/MessageLogs/${outline.chatID}")
                                 .onChildAdded,
                             builder: (BuildContext context,
                                 AsyncSnapshot<DatabaseEvent> event) {
+                              print(
+                                  "Event Data: ${event.data?.snapshot.value}");
+                              print("Buffer: ${buffer.value}");
                               if (event.hasData &&
-                                  event.data!.snapshot.value != null) {
-                                Map<String, dynamic> messageData =
+                                  event.data?.snapshot.value != null) {
+                                Message messageEvent = Message.fromMap(
                                     messageMapFromDynamic(
-                                        event.data!.snapshot.value as Map);
-                                if (messages.length == 0 ||
-                                    messageData["timestampinMilliseconds"] !=
-                                        messages.last.timestampinMilliseconds) {
-                                  buffer.value.add(Message.fromMap(
-                                      messageMapFromDynamic(
-                                          event.data!.snapshot.value)));
+                                        event.data?.snapshot.value));
+                                if (buffer.value.isNotEmpty &&
+                                    buffer.value.last.timestampinMilliseconds <
+                                        messageEvent.timestampinMilliseconds) {
+                                  buffer.value.add(messageEvent);
+                                }
+                                if (buffer.value.isEmpty) {
+                                  buffer.value.add(messageEvent);
                                 }
                               }
+                              print(buffer.value);
                               print("REBUILD ADD");
                               return ListView.separated(
                                   controller: _controller,
@@ -478,12 +488,12 @@ class ChatWindow extends StatelessWidget {
                                               currentlyCuedupMessage,
                                           builder: (context, snapshot, foo) {
                                             return TextFormField(
+                                              controller: _textcontroller,
                                               onTap: () {
                                                 _showMessagePolicyBanner(
                                                     context, outline);
                                                 _scrollDown();
                                               },
-                                              initialValue: "",
                                               onChanged: (value) {
                                                 currentlyCuedupMessage.value =
                                                     value;
@@ -528,6 +538,10 @@ class ChatWindow extends StatelessWidget {
                                               outline.chatID, newMessage);
                                           currentlyCuedupMessage.value = "";
                                           _scrollDown();
+                                          _textcontroller.text = "";
+                                          /*chatRebuildTrigger.value =
+                                              !chatRebuildTrigger.value;*/
+                                          chatRebuildTrigger.notifyListeners();
                                         },
                                         icon: Icon(Icons.send,
                                             color: Colors.white)))
@@ -722,6 +736,7 @@ Future<List<ChatOutline>?> getChatOutlinesForUserObject(dbc.User user) async {
   print(datas);
   List<ChatOutline> chatOutlines = [];
   datas.forEach((element) {
+    print(element.value);
     if (element.value != null) {
       chatOutlines
           .add(ChatOutline.fromMap(chatOutlineMapFromDynamic(element.value)));
@@ -781,8 +796,8 @@ Future<ChatOutline?> findPrivateChatByOtherUser(
 
 Future startNewChat(String other_person_name) async {
   String newID = generateDocumentID();
-  await writeChatOutline(
-      ChatOutline(chatID: newID, members_LastOpened: {"ben": 0, "admin": 0}));
+  await writeChatOutline(ChatOutline(
+      chatID: newID, members_LastOpened: {"ben": 0, other_person_name: 0}));
   await rtdb.ref("root/MessageLogs/$newID").set([]);
   await db.doc("${branchPrefix}users/$other_person_name").update({
     "chats": FieldValue.arrayUnion([newID])

@@ -989,6 +989,7 @@ class StartChatButton extends StatelessWidget {
                 "Chatting is disabled right now, but will soon be available"));
             return;
           }
+          print("Other Person Username: $other_person_username");
           showDialog(
               context: context,
               barrierDismissible: false,

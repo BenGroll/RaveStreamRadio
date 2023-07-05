@@ -21,8 +21,8 @@ const bool SHOW_FEEDS = true;
 late FirebaseApp app;
 
 //! This Versions Versioncode. Change for Update Detection !//
-const VERSIONCODE = 26;
-const BUILDVERSION = "2.2.22";
+const VERSIONCODE = 28;
+const BUILDVERSION = "2.2.24";
 
 ValueNotifier<RemoteConfig?> remoteConfigValues =
     ValueNotifier<RemoteConfig?>(null);
