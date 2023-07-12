@@ -32,8 +32,8 @@ int DEFAULT_MINAGE = 18;
 late FirebaseApp app;
 
 //! This Versions Versioncode. Change for Update Detection !//
-const VERSIONCODE = 28;
-const BUILDVERSION = "2.2.24";
+const VERSIONCODE = 29;
+const BUILDVERSION = "2.2.25";
 
 ValueNotifier<RemoteConfig?> remoteConfigValues =
     ValueNotifier<RemoteConfig?>(null);
