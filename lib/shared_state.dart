@@ -9,14 +9,25 @@ import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/chatting.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+
+final remoteConfig = FirebaseRemoteConfig.instance;
 
 /// ++++++++++++++ DEBUG SETTINGS ++++++++++++ //
-const bool DISABLE_EVENT_EDITING = false;
-const bool DISABLE_CHATWINDOW = false;
-const bool DISABLE_MESSAGE_SENDING = false;
-const bool DISABLE_GROUP_CREATION = false;
-const int DEFAULT_MINAGE = 18;
-const bool SHOW_FEEDS = true;
+bool DISABLE_EVENT_EDITING = remoteConfig.getBool("DISABLE_EVENT_EDITING");
+bool DISABLE_CHATWINDOW = remoteConfig.getBool("DISABLE_CHATWINDOW");
+bool DISABLE_MESSAGE_SENDING = remoteConfig.getBool("DISABLE_MESSAGE_SENDING");
+bool DISABLE_GROUP_CREATION = remoteConfig.getBool("DISABLE_GROUP_CREATION");
+bool SHOW_FEEDS = remoteConfig.getBool("SHOW_FEEDS");
+
+String IMPRINT = remoteConfig.getString("IMPRINT");
+String Policy = remoteConfig.getString("POLICY");
+String ANDROID_DOWNLOADLINK = remoteConfig.getString("ANDROID_DOWNLOADLINK");
+String IOS_DOWNLOADLINK = remoteConfig.getString("IOS_DOWNLOADLINK");
+String WEB_DOWNLOADLINK = remoteConfig.getString("WEB_DOWNLOADLINK");
+
+int LOWEST_COMPATIBLE_VERSION = remoteConfig.getInt("LOWEST_COMPATIBLE_VERSION");
+int DEFAULT_MINAGE = 18;
 
 late FirebaseApp app;
 

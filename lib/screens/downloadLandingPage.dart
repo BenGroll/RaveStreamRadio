@@ -24,20 +24,18 @@ class DownloadLandingPage extends StatelessWidget {
               title: Text("Welcome to RSR!",
                   style: TextStyle(color: Colors.white))),
           body: FutureBuilder(
-              future: db.db.doc("content/remoteconfig").get(),
-              builder: (context, AsyncSnapshot<DocumentSnapshot> snap) {
+              future: remoteConfig.fetchAndActivate(),
+              builder: (context, AsyncSnapshot snap) {
                 if (snap.connectionState != ConnectionState.done) {
                   return Center(
                       child: Image.asset(
                           "graphics/ravestreamlogo_white_on_trans.png"));
                 } else {
-                  Map links = snap.data?.data() as Map;
-                  String androidURL = links["downloadpagelinks"]["android"];
-                  String iosURL = links["downloadpagelinks"]["ios"];
-                  String webURL = links["downloadpagelinks"]["web"];
+                  String androidURL = ANDROID_DOWNLOADLINK;
+                  String iosURL = IOS_DOWNLOADLINK;
+                  String webURL = WEB_DOWNLOADLINK;
                   return Center(
                     child: SingleChildScrollView(
-
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         mainAxisSize: MainAxisSize.max,
@@ -59,7 +57,8 @@ class DownloadLandingPage extends StatelessWidget {
                                 children: [
                                   SizedBox(
                                       height:
-                                          MediaQuery.of(context).size.height / 4,
+                                          MediaQuery.of(context).size.height /
+                                              4,
                                       width:
                                           MediaQuery.of(context).size.width / 4,
                                       child: Image.asset(
@@ -67,9 +66,10 @@ class DownloadLandingPage extends StatelessWidget {
                                   Text("Download on Google Play Now!",
                                       style: TextStyle(
                                           color: Colors.white,
-                                          fontSize:
-                                              MediaQuery.of(context).size.width /
-                                                  20))
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width /
+                                              20))
                                 ]),
                           ),
                           InkWell(
@@ -82,18 +82,25 @@ class DownloadLandingPage extends StatelessWidget {
                               await launchUrl(Uri.parse(iosURL),
                                   mode: LaunchMode.externalApplication);
                             },
-                            child: Column(mainAxisSize: MainAxisSize.min, children: [
-                              SizedBox(
-                                  height: MediaQuery.of(context).size.height / 4,
-                                  width: MediaQuery.of(context).size.width / 4,
-                                  child: Image.asset(
-                                      "graphics/app-store-png-logo-33120.png")),
-                              Text("App-Store coming Soon!",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize:
-                                          MediaQuery.of(context).size.width / 20)),
-                            ]),
+                            child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              4,
+                                      width:
+                                          MediaQuery.of(context).size.width / 4,
+                                      child: Image.asset(
+                                          "graphics/app-store-png-logo-33120.png")),
+                                  Text("App-Store coming Soon!",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width /
+                                              20)),
+                                ]),
                           ),
                           InkWell(
                             onTap: () async {

@@ -127,7 +127,7 @@ class Event {
   GeoPoint? location;
   String? locationname;
   String? genre;
-  int minAge;
+  int minAge = DEFAULT_MINAGE;
   String? icon;
   String? flyer;
   String? description;
@@ -145,7 +145,7 @@ class Event {
     this.end = null,
     this.location = null,
     this.locationname,
-    this.minAge = DEFAULT_MINAGE,
+    this.minAge = 18,
     this.genre = null,
     this.icon = null,
     this.flyer = null,

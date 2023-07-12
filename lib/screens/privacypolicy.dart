@@ -4,6 +4,7 @@ import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' show db;
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
+import 'package:ravestreamradioapp/shared_state.dart';
 
 
 /// Privacy Policy Screen
@@ -24,7 +25,7 @@ class PrivacyPolicy extends StatelessWidget {
           vertical: MediaQuery.of(context).size.height / 50,
         ),
         child: FutureBuilder(
-            future: db.doc("content/infostrings").get(),
+            future: remoteConfig.fetchAndActivate(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
                 return SingleChildScrollView(

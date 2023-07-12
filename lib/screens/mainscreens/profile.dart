@@ -132,7 +132,8 @@ class UserView extends StatelessWidget {
                                           ? "Tap here to change your Image"
                                           : "This user's profile picture",
                                       child: InkWell(
-                                        onTap: () async {
+                                        onTap: !userIsMyself ? null : () async {
+                                          
                                           ImagePicker picker = ImagePicker();
                                           XFile? image = await picker.pickImage(
                                               source: ImageSource.gallery);

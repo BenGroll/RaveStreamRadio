@@ -12,12 +12,25 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/beamerroutes.dart';
+import 'package:ravestreamradioapp/shared_state.dart' as shs;
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 void main() async {
   setPathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
   app = await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform);
+  await remoteConfig.setConfigSettings(RemoteConfigSettings(fetchTimeout: Duration(minutes: 5), minimumFetchInterval: Duration(minutes: 5)));
+  /*await remoteConfig.setDefaults(const {
+    "DEFAULT_MINAGE": 18,
+    "DISABLE_CHATWINDOW": false,
+    "DISABLE_EVENT_EDITING": false,
+    "DISABLE_GROUP_CREATION": false,
+    "DISABLE_MESSAGE_SENDING": false,
+    "SHOW_FEEDS": false,
+    "POLICY": ""
+});*/
+
   //pprint("Test");
   runApp(const MyApp());
 }
