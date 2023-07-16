@@ -10,6 +10,7 @@ import 'package:ravestreamradioapp/commonwidgets.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart';
 import 'package:ravestreamradioapp/filesystem.dart';
+import 'package:ravestreamradioapp/messaging.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:ravestreamradioapp/database.dart' as db;
@@ -514,7 +515,7 @@ class DevSettingsScreen extends StatelessWidget {
                         await writeLastMessage(
                             "PwZPV10ktzkzABtfhG4A",
                             Message(
-                              id: generateDocumentID(),
+                                id: generateDocumentID(),
                                 sentFrom: "dev.users/ben",
                                 content: "Hallo",
                                 timestampinMilliseconds:
@@ -564,8 +565,7 @@ class DevSettingsScreen extends StatelessWidget {
                                 content: "Test2",
                                 timestampinMilliseconds:
                                     Timestamp.now().millisecondsSinceEpoch,
-                                id: generateDocumentID()
-                                    ));
+                                id: generateDocumentID()));
                       },
                       child: Text("Add Test Message")),
                   ElevatedButton(
@@ -638,9 +638,18 @@ class DevSettingsScreen extends StatelessWidget {
                   ElevatedButton(
                       onPressed: () async {
                         String test = "ÄÖÜäöüß";
-                        showDevFeedbackDialog(context, [test.dbsafe, test.dbsafe.fromDBSafeString]);
+                        showDevFeedbackDialog(context,
+                            [test.dbsafe, test.dbsafe.fromDBSafeString]);
                       },
                       child: Text("Test String manipulation")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        String token = "test";
+                        dynamic data = await sendFCMMessageToToken(token, "HELLO");
+                        showDevFeedbackDialog(context,
+                            [data]);
+                      },
+                      child: Text("Test Cloud Function Calling")),
                 ],
               ),
             ),

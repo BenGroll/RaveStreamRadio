@@ -17,6 +17,7 @@ import 'package:ravestreamradioapp/extensions.dart'
 import 'dart:convert';
 import 'package:ravestreamradioapp/colors.dart' as cl;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_functions/cloud_functions.dart' as fn;
 
 var db = FirebaseFirestore.instance;
 
@@ -1431,14 +1432,19 @@ Future deleteUser(String uname, bool deleteEvents) async {
     await writeEventIndexes(await readEventIndexesJson());
   } else {
     if (deleteEvents) {
-    List<Future> futures = [];
-    user.events.forEach((element) {
-      futures.add(element.update({"hostreference": null}));
-    });
-    await Future.wait(futures);
-    await writeEventIndexes(await readEventIndexesJson());
-  }
+      List<Future> futures = [];
+      user.events.forEach((element) {
+        futures.add(element.update({"hostreference": null}));
+      });
+      await Future.wait(futures);
+      await writeEventIndexes(await readEventIndexesJson());
+    }
   }
   await db.doc(user.path).delete();
   return;
+}
+
+Future<fn.HttpsCallable> getCallableFunction(String name) async {
+  fn.HttpsCallable callable = fn.FirebaseFunctions.instance.httpsCallable(name);
+  return callable;
 }

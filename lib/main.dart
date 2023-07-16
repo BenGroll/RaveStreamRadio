@@ -20,7 +20,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   app = await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform);
-  await remoteConfig.setConfigSettings(RemoteConfigSettings(fetchTimeout: Duration(minutes: 5), minimumFetchInterval: Duration(minutes: 5)));
+  await remoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: Duration(minutes: 5),
+      minimumFetchInterval: Duration(minutes: 5)));
   /*await remoteConfig.setDefaults(const {
     "DEFAULT_MINAGE": 18,
     "DISABLE_CHATWINDOW": false,
@@ -32,6 +34,7 @@ void main() async {
 });*/
 
   //pprint("Test");
+  await db.getRemoteConfig();
   runApp(const MyApp());
 }
 

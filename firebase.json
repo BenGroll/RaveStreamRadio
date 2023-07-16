@@ -15,9 +15,6 @@
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
       ]
     }
   ],
@@ -28,10 +25,12 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [{
+    "rewrites": [
+      {
         "source": "**",
         "destination": "/index.html"
-    }]
+      }
+    ]
   },
   "storage": {
     "rules": "storage.rules"

@@ -21,7 +21,6 @@ import 'shared_state.dart';
 import 'filesystem.dart' as files;
 import 'database.dart' as db;
 import 'databaseclasses.dart' as dbc;
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:ravestreamradioapp/screens/managecalendarscreen.dart'
     as managescreen;
 import 'package:ravestreamradioapp/chatting.dart';

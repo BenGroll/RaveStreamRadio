@@ -38,7 +38,7 @@ dependencies:
   cupertino_icons:
   firebase_core:
   cloud_firestore:
-  auto_size_text: 
+  cloud_functions:
   flutter_spinkit: 
   path_provider: 
   url_launcher: 

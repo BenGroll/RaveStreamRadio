@@ -9,7 +9,6 @@ import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/filesystem.dart';
 import 'package:ravestreamradioapp/linkbuttons.dart';
 import 'package:ravestreamradioapp/screens/homescreen.dart' as home;
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:ravestreamradioapp/screens/mainscreens/calendar.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
