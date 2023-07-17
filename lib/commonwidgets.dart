@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/linkbuttons.dart';
+import 'package:ravestreamradioapp/messaging.dart';
 import 'package:ravestreamradioapp/screens/descriptioneditingscreen.dart';
 import 'package:ravestreamradioapp/screens/eventcreationscreens.dart';
 import 'package:ravestreamradioapp/pres/rave_stream_icons_icons.dart'
@@ -883,6 +884,8 @@ class ReportButton extends StatelessWidget {
                                 "state": "filed"
                               });
                               await newRep.update({"id": newRep.id});
+                              sendMessageToTopic("role_MODERATE", "New Report!",
+                                  "Target: $target");
                               Navigator.of(context).pop();
                               showFeedbackDialog(context, [
                                 "Thank you!",
@@ -1831,6 +1834,7 @@ class FeedbackScreen extends StatelessWidget {
                                     ? null
                                     : currently_loggedin_as.value!.username)
                         .toMap());
+                sendMessageToTopic("role_ADMIN", "New Feedback!", "");
                 Navigator.of(context).pop();
                 showFeedbackDialog(context,
                     ["Thank you!", "Your Feedback has been submitted."]);
@@ -1873,6 +1877,9 @@ class ProfileDrawer extends StatelessWidget {
                           color: Colors.white, message: "Logging out"));
                   await files.writeLoginDataMobile("", "");
                   await files.writeLoginDataWeb("", "");
+                  db.db.doc(currently_loggedin_as.value!.path).update({
+                    "deviceTokens": FieldValue.arrayRemove([fcmToken])
+                  });
                   await Future.delayed(Duration(seconds: 3));
                   currently_loggedin_as.value = null;
                   Navigator.of(context).pop();

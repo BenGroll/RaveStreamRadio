@@ -13,6 +13,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:ravestreamradioapp/extensions.dart' show Stringify, Prettify;
 import 'package:flutter/material.dart';
+import 'package:ravestreamradioapp/messaging.dart';
 import "package:ravestreamradioapp/realtimedb.dart";
 import "package:ravestreamradioapp/shared_state.dart";
 import 'package:ravestreamradioapp/extensions.dart';
@@ -372,7 +373,6 @@ class ChatWindow extends StatelessWidget {
                     future: getMessagesForChat(outline.chatID),
                     builder: (BuildContext context,
                         AsyncSnapshot<List<Message>> snap) {
-                      print("POIHG");
                       if (snap.connectionState == ConnectionState.done &&
                           snap.hasData) {
                         List<Message> messages = snap.data ?? [];
@@ -412,17 +412,12 @@ class ChatWindow extends StatelessWidget {
                             writeLastMessage(outline.chatID, null);
                           }
                         }
-                        print("Messages: $messages");
-                        print("Buffer: ${buffer.value}");
                         return StreamBuilder(
                             stream: rtdb
                                 .ref("root/MessageLogs/${outline.chatID}")
                                 .onChildAdded,
                             builder: (BuildContext context,
                                 AsyncSnapshot<DatabaseEvent> event) {
-                              print(
-                                  "Event Data: ${event.data?.snapshot.value}");
-                              print("Buffer: ${buffer.value}");
                               if (event.hasData &&
                                   event.data?.snapshot.value != null) {
                                 Message messageEvent = Message.fromMap(
@@ -437,8 +432,6 @@ class ChatWindow extends StatelessWidget {
                                   buffer.value.add(messageEvent);
                                 }
                               }
-                              print(buffer.value);
-                              print("REBUILD ADD");
                               return ListView.separated(
                                   controller: _controller,
                                   itemBuilder: (context, index) {
@@ -534,6 +527,17 @@ class ChatWindow extends StatelessWidget {
                                                   currentlyCuedupMessage.value);
                                           await addMessageToChat(
                                               outline.chatID, newMessage);
+                                          outline.members_LastOpened
+                                              .forEach((user, lastOpened) {
+                                            if (!(user ==
+                                                currently_loggedin_as
+                                                    .value?.username)) {
+                                              sendMessageToUsername(
+                                                  user,
+                                                  "Chats",
+                                                  "@${currently_loggedin_as.value?.username}: ${currentlyCuedupMessage.value}");
+                                            }
+                                          });
                                           writeLastMessage(
                                               outline.chatID, newMessage);
                                           currentlyCuedupMessage.value = "";

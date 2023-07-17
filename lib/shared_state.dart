@@ -26,14 +26,16 @@ String ANDROID_DOWNLOADLINK = remoteConfig.getString("ANDROID_DOWNLOADLINK");
 String IOS_DOWNLOADLINK = remoteConfig.getString("IOS_DOWNLOADLINK");
 String WEB_DOWNLOADLINK = remoteConfig.getString("WEB_DOWNLOADLINK");
 
-int LOWEST_COMPATIBLE_VERSION = remoteConfig.getInt("LOWEST_COMPATIBLE_VERSION");
+int LOWEST_COMPATIBLE_VERSION =
+    remoteConfig.getInt("LOWEST_COMPATIBLE_VERSION");
 int DEFAULT_MINAGE = 18;
 
 late FirebaseApp app;
+late String? fcmToken;
 
 //! This Versions Versioncode. Change for Update Detection !//
-const VERSIONCODE = 29;
-const BUILDVERSION = "2.2.25";
+const VERSIONCODE = 30;
+const BUILDVERSION = "2.3.25";
 
 ValueNotifier<RemoteConfig?> remoteConfigValues =
     ValueNotifier<RemoteConfig?>(null);
@@ -175,7 +177,6 @@ String get currentLogFileDay {
   return "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year.toString().padLeft(2, '0')}";
 }
 
-
 //! Add to index.html
 /*
 <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
@@ -196,3 +197,7 @@ String get currentLogFileDay {
 <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 <meta name="theme-color" content="#ffffff">
 */
+
+Future<dynamic> sync(List<Future> futures) async {
+  return Future.wait(futures);
+}

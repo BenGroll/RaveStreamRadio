@@ -11,6 +11,7 @@ import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
 import 'package:ravestreamradioapp/database.dart' as db;
 import 'package:ravestreamradioapp/filesystem.dart' as files;
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
+import 'package:ravestreamradioapp/messaging.dart';
 import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
@@ -370,6 +371,8 @@ class CreateAccountScreen extends StatelessWidget {
                       await db.addUserToIndexFile(createdUser);
                       currently_loggedin_as.value =
                           await tryUserLogin(username, password);
+                      sendMessageToTopic("role_ADMIN", "A new User signed up!",
+                          "User: @$username");
                       kIsWeb
                           ? await files.writeLoginDataWeb(username, password)
                           : await files.writeLoginDataMobile(

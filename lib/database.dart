@@ -148,6 +148,12 @@ Future<dbc.User?> tryUserLogin(String username, String password) async {
       return null;
     }
     dbc.User constructedUser = dbc.User.fromMap(doc.data() ?? {});
+    if (fcmToken != null && !constructedUser.deviceTokens.contains(fcmToken)) {
+      constructedUser.deviceTokens.add(fcmToken!);
+      db.doc(constructedUser.path).update({
+        "deviceTokens": FieldValue.arrayUnion([fcmToken])
+      });
+    }
     return constructedUser;
   } catch (e) {
     pprint(e);
@@ -1447,4 +1453,122 @@ Future deleteUser(String uname, bool deleteEvents) async {
 Future<fn.HttpsCallable> getCallableFunction(String name) async {
   fn.HttpsCallable callable = fn.FirebaseFunctions.instance.httpsCallable(name);
   return callable;
+}
+
+Future writeRoleTopicFiles() async {
+  QuerySnapshot snap = await db.collection("dev.users").get();
+  List<QueryDocumentSnapshot> snaps = snap.docs;
+  List<dbc.User> users = snaps
+      .map((QueryDocumentSnapshot singleSnap) => dbc.User.fromMap(
+          forceStringDynamicMapFromObject(singleSnap.data() ?? {})))
+      .toList();
+  List<String> ADMIN = [];
+  List<String> CHANGE_DEV_SETTINGS = [];
+  List<String> MANAGE_EVENTS = [];
+  List<String> MANAGE_HOSTS = [];
+  List<String> MODERATE = [];
+  users.forEach((user) {
+    if (user.permissions.contains("ADMIN")) {
+      ADMIN.add(user.username);
+    }
+    if (user.permissions.contains("CHANGE_DEV_SETTINGS")) {
+      CHANGE_DEV_SETTINGS.add(user.username);
+    }
+    if (user.permissions.contains("MANAGE_EVENTS")) {
+      MANAGE_EVENTS.add(user.username);
+    }
+    if (user.permissions.contains("MANAGE_HOSTS")) {
+      MANAGE_HOSTS.add(user.username);
+    }
+    if (user.permissions.contains("MODERATE")) {
+      MODERATE.add(user.username);
+    }
+  });
+  await FirebaseStorage.instance
+      .ref("topics/role_ADMIN.json")
+      .putString(jsonEncode({"users": ADMIN}));
+  await FirebaseStorage.instance
+      .ref("topics/role_CHANGE_DEV_SETTINGS.json")
+      .putString(jsonEncode({"users": CHANGE_DEV_SETTINGS}));
+  await FirebaseStorage.instance
+      .ref("topics/role_MANAGE_EVENTS.json")
+      .putString(jsonEncode({"users": MANAGE_EVENTS}));
+  await FirebaseStorage.instance
+      .ref("topics/role_MANAGE_HOSTS.json")
+      .putString(jsonEncode({"users": MANAGE_HOSTS}));
+  await FirebaseStorage.instance
+      .ref("topics/role_MODERATE.json")
+      .putString(jsonEncode({"users": MODERATE}));
+  return;
+}
+
+Future<List<String>?> getUsersForTopic(String topicname) async {
+  Map current_map;
+  try {
+    current_map = await FirebaseStorage.instance
+        .ref("topics/$topicname.json")
+        .getData()
+        .then((value) => jsonDecode(String.fromCharCodes(value ?? [])));
+  } catch (e) {
+    print("ERROR OCCURRED");
+    return null;
+  }
+  print("Current Map: $current_map");
+  List<String> currentUsers = current_map.containsKey("users")
+      ? forceStringType(current_map["users"])
+      : <String>[];
+  return currentUsers;
+}
+
+Future<List<String>?> addUserToExistingTopic(
+    String topicname, String username) async {
+  List<String>? currentUsers = await getUsersForTopic(topicname);
+  if (currentUsers == null) return null;
+  if (currentUsers.contains(username)) {
+    return currentUsers;
+  }
+  currentUsers.add(username);
+  print("Current Users: $currentUsers");
+  await FirebaseStorage.instance
+      .ref("topics/$topicname.json")
+      .putString(jsonEncode({"users": currentUsers}));
+  return currentUsers;
+}
+
+Future<void> addPermissionToUser(
+    GlobalPermission permit, String username) async {
+  if (!doIHavePermission(GlobalPermission.ADMIN)) return;
+  List<Future> futures = [];
+  futures.add(db.doc("${branchPrefix}users/$username").update({
+    "permissions": FieldValue.arrayUnion([permit.name])
+  }));
+  futures.add(addUserToExistingTopic("role_${permit.name}", username));
+  await Future.wait(futures);
+  return;
+}
+
+Future<List<String>?> removeUserFromExistingTopic(
+    String topicname, String username) async {
+  List<String>? currentUsers = await getUsersForTopic(topicname);
+  if (currentUsers == null) return null;
+  if (currentUsers.contains(username)) {
+    currentUsers.remove(username);
+  }
+  print("Current Users: $currentUsers");
+  await FirebaseStorage.instance
+      .ref("topics/$topicname.json")
+      .putString(jsonEncode({"users": currentUsers}));
+  return currentUsers;
+}
+
+Future<void> removePermissionFromUser(
+    GlobalPermission permit, String username) async {
+  if (!doIHavePermission(GlobalPermission.ADMIN)) return;
+  List<Future> futures = [];
+  futures.add(db.doc("${branchPrefix}users/$username").update({
+    "permissions": FieldValue.arrayRemove([permit.name])
+  }));
+  futures.add(removeUserFromExistingTopic("role_${permit.name}", username));
+  await Future.wait(futures);
+  return;
 }

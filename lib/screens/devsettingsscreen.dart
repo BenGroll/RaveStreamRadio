@@ -644,12 +644,83 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Test String manipulation")),
                   ElevatedButton(
                       onPressed: () async {
-                        String token = "test";
-                        dynamic data = await sendFCMMessageToToken(token, "HELLO");
-                        showDevFeedbackDialog(context,
-                            [data]);
+                        ValueNotifier<String> token = ValueNotifier("");
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: token));
+                        dynamic data = await sendFCMMessageToTokens(
+                            [token.value], "HELLO", "TestContent");
+                        showDevFeedbackDialog(context, [data.toString()]);
                       },
                       child: Text("Test Cloud Function Calling")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        showDevFeedbackDialog(
+                            context, [fcmToken ?? "No Token assigned."]);
+                      },
+                      child: Text("Read FCMToken")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await MessagingAPI()
+                            .firebaseMessaging
+                            .subscribeToTopic("TestTopic");
+                        showDevFeedbackDialog(
+                            context, [fcmToken ?? "No Token assigned."]);
+                      },
+                      child: Text("Create Topic")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        ValueNotifier<String> uname = ValueNotifier("");
+                        ValueNotifier<String> title = ValueNotifier("");
+                        ValueNotifier<String> content = ValueNotifier("");
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: uname));
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: title));
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: content));
+                        await sendMessageToUsername(
+                            uname.value, title.value, content.value);
+                        showDevFeedbackDialog(
+                            context, [fcmToken ?? "No Token assigned."]);
+                      },
+                      child: Text("Send Message to User")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await db.writeRoleTopicFiles();
+                        showDevFeedbackDialog(context, ["File Set"]);
+                      },
+                      child: Text("Write Roles for all Users")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await db.addPermissionToUser(
+                            GlobalPermission.ADMIN, "appletestuser");
+                        showDevFeedbackDialog(context, ["Permit Added"]);
+                      },
+                      child: Text("Add Permission to User")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await db.removePermissionFromUser(
+                            GlobalPermission.ADMIN, "appletestuser");
+                        showDevFeedbackDialog(context, ["Permit Removed"]);
+                      },
+                      child: Text("Remove Permission from User")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await sendMessageToTopic(
+                            "role_ADMIN",
+                            "Message Only For Admins",
+                            "If you see this, you shouldnt. Just for Testing");
+                        showDevFeedbackDialog(context, ["Permit Removed"]);
+                      },
+                      child: Text("Admin Messaging")),
                 ],
               ),
             ),

@@ -55,6 +55,7 @@ dependencies:
   shared_preferences:
   http: ^0.13.4
   firebase_remote_config:
+  firebase_messaging:
 
 dev_dependencies: 
   change_app_package_name:

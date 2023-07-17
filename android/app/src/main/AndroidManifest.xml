@@ -20,6 +20,9 @@
         android:label="RaveStreamRadio"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+          android:name="com.google.firebase.messaging.default_notification_icon"
+          android:resource="@mipmap/notifico"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -49,6 +52,10 @@
     </application>
     <!-- Put Special Requirements here (queries etc.)-->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
+    <uses-permission android:name="android.permission.MANAGE_NOTIFICATIONS"/>
 
 
 </manifest>

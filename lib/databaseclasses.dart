@@ -225,7 +225,7 @@ class Event {
           : {},
       'savedcount': savedcount,
       'templateHostID': templateHostID,
-      'status': status
+      'status': status,
     };
   }
 
@@ -253,7 +253,6 @@ class Event {
               inputmap.containsKey("status") ? inputmap["status"] : "public");
       return mapevent;
     } catch (e) {
-      pprint(e);
       return Event(eventid: "errorevent");
     }
   }
@@ -460,6 +459,7 @@ class User {
   String path;
   List<String> permissions;
   List<String> chats;
+  List<String> deviceTokens;
   List<DocumentReference> events;
   List<DocumentReference> joined_groups;
   List<DocumentReference> saved_events;
@@ -476,6 +476,7 @@ class User {
     required this.path,
     this.permissions = const <String>[],
     this.chats = const <String>[],
+    this.deviceTokens = const <String>[],
     this.events = const <DocumentReference>[],
     this.joined_groups = const <DocumentReference>[],
     this.saved_events = const <DocumentReference>[],
@@ -493,6 +494,7 @@ class User {
     String? path,
     List<String>? permissions,
     List<String>? chats,
+    List<String>? deviceTokens,
     List<DocumentReference>? events,
     List<DocumentReference>? joined_groups,
     List<DocumentReference>? saved_events,
@@ -508,6 +510,7 @@ class User {
         mail: mail ?? this.mail,
         profile_picture: profile_picture ?? this.profile_picture,
         chats: chats ?? this.chats,
+        deviceTokens: deviceTokens ?? this.deviceTokens,
         events: events ?? this.events,
         joined_groups: joined_groups ?? this.joined_groups,
         saved_events: saved_events ?? this.saved_events,
@@ -535,6 +538,7 @@ class User {
       'close_friends': close_friends.map((x) => x).toList(),
       'pinned_groups': pinned_groups.map((x) => x).toList(),
       'permissions': permissions,
+      'deviceTokens': deviceTokens
     };
   }
 
@@ -550,6 +554,7 @@ class User {
       path: map["path"] as String,
       permissions: forceStringType(map['permissions']),
       chats: forceStringType(map['chats']),
+      deviceTokens: forceStringType(map['deviceTokens']),
       events: forceDocumentReferenceType(map['events']),
       joined_groups: forceDocumentReferenceType(map['joined_groups']),
       saved_events: forceDocumentReferenceType(map['saved_events']),
@@ -566,7 +571,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, chats: $chats, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups)';
+    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, chats: $chats, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups, deviceTokens: $deviceTokens)';
   }
 
   @override
@@ -580,6 +585,7 @@ class User {
         other.profile_picture == profile_picture &&
         other.path == path &&
         other.chats == chats &&
+        other.deviceTokens == deviceTokens &&
         listEquals(other.permissions, permissions) &&
         listEquals(other.events, events) &&
         listEquals(other.joined_groups, joined_groups) &&
@@ -599,6 +605,7 @@ class User {
         profile_picture.hashCode ^
         permissions.hashCode ^
         chats.hashCode ^
+        deviceTokens.hashCode ^
         path.hashCode ^
         events.hashCode ^
         joined_groups.hashCode ^
@@ -823,21 +830,23 @@ class FeedEntry {
       required this.timestamp,
       this.leading_image_path_download_link,
       required this.type,
-      this.textcontent
-      });
+      this.textcontent});
   Map<String, dynamic> toMap() {
     return {
       "ownerpath": ownerpath,
       "timestamp": timestamp.millisecondsSinceEpoch,
       "leading_image_path_download_link": leading_image_path_download_link,
       "type": type.name,
-      "textcontent" : textcontent
+      "textcontent": textcontent
     };
   }
 
   factory FeedEntry.fromMap(Map<String, dynamic> map) {
     return FeedEntry(
-      textcontent: map.containsKey("textcontent") && map["textcontent"] != null ? map["textcontent"] : null,
+        textcontent:
+            map.containsKey("textcontent") && map["textcontent"] != null
+                ? map["textcontent"]
+                : null,
         ownerpath: map["ownerpath"],
         timestamp: Timestamp.fromMillisecondsSinceEpoch(map["timestamp"]),
         leading_image_path_download_link:

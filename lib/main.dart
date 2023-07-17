@@ -3,6 +3,7 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+import 'package:ravestreamradioapp/messaging.dart';
 import 'screens/homescreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -14,6 +15,11 @@ import 'package:ravestreamradioapp/shared_state.dart';
 import 'package:ravestreamradioapp/beamerroutes.dart';
 import 'package:ravestreamradioapp/shared_state.dart' as shs;
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+Future<void> handleBackgroundMessage(RemoteMessage? message) async {
+  print(message?.toMap());
+}
 
 void main() async {
   setPathUrlStrategy();
@@ -23,6 +29,7 @@ void main() async {
   await remoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: Duration(minutes: 5),
       minimumFetchInterval: Duration(minutes: 5)));
+  await MessagingAPI().registerApp();
   /*await remoteConfig.setDefaults(const {
     "DEFAULT_MINAGE": 18,
     "DISABLE_CHATWINDOW": false,
