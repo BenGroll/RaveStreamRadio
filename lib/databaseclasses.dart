@@ -460,6 +460,7 @@ class User {
   List<String> permissions;
   List<String> chats;
   List<String> deviceTokens;
+  List<String> topics;
   List<DocumentReference> events;
   List<DocumentReference> joined_groups;
   List<DocumentReference> saved_events;
@@ -474,6 +475,7 @@ class User {
     this.mail,
     this.profile_picture,
     required this.path,
+    this.topics = const [],
     this.permissions = const <String>[],
     this.chats = const <String>[],
     this.deviceTokens = const <String>[],
@@ -492,6 +494,7 @@ class User {
     String? mail,
     String? profile_picture,
     String? path,
+    List<String>? topics,
     List<String>? permissions,
     List<String>? chats,
     List<String>? deviceTokens,
@@ -518,7 +521,9 @@ class User {
         close_friends: close_friends ?? this.close_friends,
         pinned_groups: pinned_groups ?? this.pinned_groups,
         permissions: permissions ?? this.permissions,
-        path: path ?? this.username);
+        path: path ?? this.username,
+        topics: topics ?? this.topics
+        );
   }
 
   Map<String, dynamic> toMap() {
@@ -532,6 +537,7 @@ class User {
       'path': path,
       'events': events.map((x) => x).toList(),
       'chats': chats,
+      'topics': topics,
       'joined_groups': joined_groups.map((x) => x).toList(),
       'saved_events': saved_events.map((x) => x).toList(),
       'followed_groups': followed_groups.map((x) => x).toList(),
@@ -552,6 +558,7 @@ class User {
       mail: map['mail'] as String?,
       profile_picture: map['profile_picture'] as String?,
       path: map["path"] as String,
+      topics: map.containsKey("topics") ? forceStringType(map["topics"]) : [],
       permissions: forceStringType(map['permissions']),
       chats: forceStringType(map['chats']),
       deviceTokens: forceStringType(map['deviceTokens']),
@@ -571,7 +578,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, chats: $chats, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups, deviceTokens: $deviceTokens)';
+    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, chats: $chats, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups, deviceTokens: $deviceTokens, topics: $topics)';
   }
 
   @override
@@ -586,6 +593,7 @@ class User {
         other.path == path &&
         other.chats == chats &&
         other.deviceTokens == deviceTokens &&
+        other.topics == topics &&
         listEquals(other.permissions, permissions) &&
         listEquals(other.events, events) &&
         listEquals(other.joined_groups, joined_groups) &&
@@ -605,6 +613,7 @@ class User {
         profile_picture.hashCode ^
         permissions.hashCode ^
         chats.hashCode ^
+        topics.hashCode ^
         deviceTokens.hashCode ^
         path.hashCode ^
         events.hashCode ^

@@ -718,7 +718,7 @@ class DevSettingsScreen extends StatelessWidget {
                             "role_ADMIN",
                             "Message Only For Admins",
                             "If you see this, you shouldnt. Just for Testing");
-                        showDevFeedbackDialog(context, ["Permit Removed"]);
+                        showDevFeedbackDialog(context, ["Admins messaged"]);
                       },
                       child: Text("Admin Messaging")),
                 ],

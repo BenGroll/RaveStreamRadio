@@ -155,6 +155,7 @@ class HomeScreen extends StatelessWidget {
       this.startingscreen = Screens.events});
   @override
   Widget build(BuildContext context) {
+    FCMAPI.context = context;
     currently_selected_screen.value = startingscreen;
     currently_loggedin_as.value = loggedinas;
     return ValueListenableBuilder(

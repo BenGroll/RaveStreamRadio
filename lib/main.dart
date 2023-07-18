@@ -18,6 +18,7 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 Future<void> handleBackgroundMessage(RemoteMessage? message) async {
+  print("This opens on Background message");
   print(message?.toMap());
 }
 
@@ -29,7 +30,8 @@ void main() async {
   await remoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: Duration(minutes: 5),
       minimumFetchInterval: Duration(minutes: 5)));
-  await MessagingAPI().registerApp();
+  FCMAPI = MessagingAPI();
+  await FCMAPI.registerApp();
   /*await remoteConfig.setDefaults(const {
     "DEFAULT_MINAGE": 18,
     "DISABLE_CHATWINDOW": false,
@@ -53,6 +55,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 

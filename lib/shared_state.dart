@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ravestreamradioapp/conv.dart';
 import 'package:ravestreamradioapp/chatting.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:ravestreamradioapp/messaging.dart';
 
 final remoteConfig = FirebaseRemoteConfig.instance;
 
@@ -32,6 +33,7 @@ int DEFAULT_MINAGE = 18;
 
 late FirebaseApp app;
 late String? fcmToken;
+late MessagingAPI FCMAPI;
 
 //! This Versions Versioncode. Change for Update Detection !//
 const VERSIONCODE = 30;

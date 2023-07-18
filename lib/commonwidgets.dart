@@ -26,6 +26,7 @@ import 'package:ravestreamradioapp/screens/managecalendarscreen.dart'
     as managescreen;
 import 'package:ravestreamradioapp/chatting.dart';
 import 'package:ravestreamradioapp/commonwidgets.dart' as cw;
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 /// Function to open date picker
 ///
@@ -1966,3 +1967,18 @@ class ProfileDrawer extends StatelessWidget {
         ));
   }
 }
+
+MaterialBanner NotificationBanner(RemoteMessage message, BuildContext context) {
+    return MaterialBanner(
+          backgroundColor: cl.lighterGrey,
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text(message.notification?.title ?? "Notification", style: TextStyle(color: Colors.white)), if(message.notification?.body != null )Text(message.notification?.body ?? "", style: TextStyle(color: Colors.white))]),
+            actions: [
+              TextButton(
+                  child: Text("Dismiss", style: TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).clearMaterialBanners();
+                  })
+            ]);
+  }
