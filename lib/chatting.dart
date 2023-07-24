@@ -96,8 +96,7 @@ class ChatsDrawer extends StatelessWidget {
           ),
           Expanded(
             child: FutureBuilder(
-                future: getChatOutlinesForUserObject(
-                    currently_loggedin_as.value ?? dbc.demoUser),
+                future: getChatOutlines(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState != ConnectionState.done) {
                     return cw.LoadingIndicator(color: Colors.white);
@@ -728,7 +727,9 @@ Future writeLastOpened(String chatID, String username) async {
   return;
 }
 
-Future<List<ChatOutline>?> getChatOutlinesForUserObject(dbc.User user) async {
+Future<List<ChatOutline>?> getChatOutlines() async {
+  dbc.User? user = await getUser(currently_loggedin_as.value!.username);
+  if (user == null) return null;
   List<String> chatIDS = user.chats;
   if (chatIDS.isEmpty) return [];
   List<Future> futures = [];
@@ -737,10 +738,8 @@ Future<List<ChatOutline>?> getChatOutlinesForUserObject(dbc.User user) async {
   });
   //Stopwatch watch = Stopwatch()..start();
   List<dynamic> datas = await Future.wait(futures);
-  print(datas);
   List<ChatOutline> chatOutlines = [];
   datas.forEach((element) {
-    print(element.value);
     if (element.value != null) {
       chatOutlines
           .add(ChatOutline.fromMap(chatOutlineMapFromDynamic(element.value)));
@@ -785,8 +784,7 @@ Future deleteMessageList(String chatID, List<String> ids) async {
 
 Future<ChatOutline?> findPrivateChatByOtherUser(
     String otherUserUsername) async {
-  List<ChatOutline>? outlines = await getChatOutlinesForUserObject(
-      currently_loggedin_as.value ?? dbc.demoUser);
+  List<ChatOutline>? outlines = await getChatOutlines();
   if (outlines == null) outlines = [];
   for (int i = 0; i < outlines.length; i++) {
     ChatOutline element = outlines[i];
@@ -804,10 +802,12 @@ Future startNewChat(String other_person_name) async {
       chatID: newID, members_LastOpened: {"ben": 0, other_person_name: 0}));
   await rtdb.ref("root/MessageLogs/$newID").set([]);
   await db.doc("${branchPrefix}users/$other_person_name").update({
-    "chats": FieldValue.arrayUnion([newID])
+    "chats": FieldValue.arrayUnion([newID]),
+    "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch
   });
   await db.doc(currently_loggedin_as.value!.path).update({
-    "chats": FieldValue.arrayUnion([newID])
+    "chats": FieldValue.arrayUnion([newID]),
+    "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch
   });
   return newID;
 }

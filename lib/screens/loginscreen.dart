@@ -360,6 +360,7 @@ class CreateAccountScreen extends StatelessWidget {
                     } else {
                       cw.showLoadingDialog(context, "Creating User...");
                       dbc.User createdUser = dbc.User(
+                        lastEditedInMs: Timestamp.now().millisecondsSinceEpoch,
                           username: username,
                           password: password,
                           alias: alias,

@@ -457,6 +457,7 @@ class User {
   String? mail;
   String? profile_picture;
   String path;
+  int?  lastEditedInMs;
   List<String> permissions;
   List<String> chats;
   List<String> deviceTokens;
@@ -467,6 +468,7 @@ class User {
   List<DocumentReference> followed_groups;
   List<DocumentReference> close_friends;
   List<DocumentReference> pinned_groups;
+
   User({
     required this.username,
     this.alias,
@@ -475,6 +477,7 @@ class User {
     this.mail,
     this.profile_picture,
     required this.path,
+    required lastEditedInMs,
     this.topics = const [],
     this.permissions = const <String>[],
     this.chats = const <String>[],
@@ -494,6 +497,7 @@ class User {
     String? mail,
     String? profile_picture,
     String? path,
+    int? lastEditedInMs,
     List<String>? topics,
     List<String>? permissions,
     List<String>? chats,
@@ -506,6 +510,7 @@ class User {
     List<DocumentReference>? pinned_groups,
   }) {
     return User(
+      lastEditedInMs: lastEditedInMs ?? this.lastEditedInMs,
         username: username ?? this.username,
         alias: alias ?? this.alias,
         password: password ?? this.password,
@@ -522,8 +527,7 @@ class User {
         pinned_groups: pinned_groups ?? this.pinned_groups,
         permissions: permissions ?? this.permissions,
         path: path ?? this.username,
-        topics: topics ?? this.topics
-        );
+        topics: topics ?? this.topics);
   }
 
   Map<String, dynamic> toMap() {
@@ -535,6 +539,7 @@ class User {
       'mail': mail,
       'profile_picture': profile_picture,
       'path': path,
+      'lastEditedInMs' : lastEditedInMs,
       'events': events.map((x) => x).toList(),
       'chats': chats,
       'topics': topics,
@@ -552,6 +557,7 @@ class User {
     //pprint(map);
     return User(
       username: map['username'] as String,
+      lastEditedInMs: map['lastEditedInMs'] as int,
       alias: map['alias'] as String?,
       password: map['password'] as String,
       description: map['description'] as String?,
@@ -578,7 +584,7 @@ class User {
 
   @override
   String toString() {
-    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, chats: $chats, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups, deviceTokens: $deviceTokens, topics: $topics)';
+    return 'User(username: $username, alias: $alias, password: $password, description: $description, mail: $mail, profile_picture: $profile_picture, permissions: $permissions, path: $path, lastEditedInMs: $lastEditedInMs, chats: $chats, events: $events, joined_groups: $joined_groups, saved_events: $saved_events, followed_groups: $followed_groups, close_friends: $close_friends, pinned_groups: $pinned_groups, deviceTokens: $deviceTokens, topics: $topics)';
   }
 
   @override
@@ -594,6 +600,7 @@ class User {
         other.chats == chats &&
         other.deviceTokens == deviceTokens &&
         other.topics == topics &&
+        other.lastEditedInMs == other &&
         listEquals(other.permissions, permissions) &&
         listEquals(other.events, events) &&
         listEquals(other.joined_groups, joined_groups) &&
@@ -606,6 +613,7 @@ class User {
   @override
   int get hashCode {
     return username.hashCode ^
+        lastEditedInMs.hashCode ^
         alias.hashCode ^
         password.hashCode ^
         description.hashCode ^
@@ -820,7 +828,7 @@ class FeedBackCollector {
 
 // Demo Objects
 User demoUser =
-    User(username: "demo", password: "demo", path: "dev.users/demo");
+    User(username: "demo", password: "demo", path: "dev.users/demo", lastEditedInMs: Timestamp.now().millisecondsSinceEpoch);
 Group demoGroup = Group(
     groupid: "demo",
     members_roles: {db.doc("${branchPrefix}/groups/demo"): "Founder"});

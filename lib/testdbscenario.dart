@@ -9,7 +9,7 @@ import 'package:ravestreamradioapp/extensions.dart';
 
 
 List<dbc.User> testuserlist = [
-  dbc.User(username: "admin", password: "Admin", path: "${branchPrefix}users/admin")
+  dbc.User(username: "admin", password: "Admin", path: "${branchPrefix}users/admin", lastEditedInMs: Timestamp.now().millisecondsSinceEpoch)
 ];
 List<dbc.Group> testgrouplist = [
   dbc.Group(

@@ -84,19 +84,10 @@ class UserView extends StatelessWidget {
   String username;
   UserView({super.key, required this.username});
 
-  Future<dbc.User?> _getUser() async {
-    if (currently_loggedin_as.value != null) {
-      if (currently_loggedin_as.value!.username == username) {
-        return currently_loggedin_as.value;
-      }
-    }
-    return await db.getUser(username);
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: _getUser(),
+        future: db.getUser(username),
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             return cw.LoadingIndicator(color: Colors.white);

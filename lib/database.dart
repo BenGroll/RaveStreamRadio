@@ -183,9 +183,30 @@ Future<dbc.User?> doStartupLoginDataCheck() async {
 /// Fetch User from database
 Future<dbc.User?> getUser(String username) async {
   if (username.isEmpty) return null;
+  if (username == currently_loggedin_as.value?.username) {
+    AggregateQuerySnapshot snap = await db
+        .collection("${branchPrefix}users")
+        .where("username", isEqualTo: currently_loggedin_as.value!.username)
+        .where("lastEditedInMs",
+            isGreaterThan: currently_loggedin_as.value!.lastEditedInMs)
+        .count()
+        .get();
+    print("Docs with equal name and lastedtedInMs: ${snap.count}");
+    if (snap.count == 0) {
+      print("UserObject on Track. No db snapshot needed.");
+
+      return currently_loggedin_as.value;
+    }
+  }
   DocumentSnapshot userdoc =
       await db.doc("${branchPrefix}users/$username").get();
   if (userdoc.exists && userdoc.data() != null) {
+    print("UserObject not on Track. DB snapshot needed.");
+    if (username == currently_loggedin_as.value?.username) {
+      currently_loggedin_as.value!.lastEditedInMs =
+          Timestamp.now().millisecondsSinceEpoch;
+      print("Current User Check updated.!");
+    }
     return dbc.User.fromMap(userdoc.data() as Map<String, dynamic>);
   } else {
     return null;
@@ -1200,7 +1221,7 @@ Future uploadProfilePicture(String username, File file) async {
   String dldURL = await ref.child("${username}").getDownloadURL();
   await db
       .doc("${branchPrefix}users/$username")
-      .update({"profile_picture": dldURL});
+      .update({"profile_picture": dldURL, "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch});
   return dldURL;
 }
 
@@ -1519,14 +1540,13 @@ Future writeRoleTopicFiles() async {
 }
 
 Future<Map<String, dynamic>?> getUsersForTopic(String topicname) async {
-
   try {
     print("topics/$topicname.json");
     Uint8List? data =
         await FirebaseStorage.instance.ref("topics/$topicname.json").getData();
     if (data == null) throw Exception("Data is null");
     print("Data Gotten");
-    Map <String, dynamic> current_map = jsonDecode(String.fromCharCodes(data));
+    Map<String, dynamic> current_map = jsonDecode(String.fromCharCodes(data));
     return current_map;
   } catch (e) {
     print(e);
@@ -1561,7 +1581,9 @@ Future<void> addPermissionToUser(
   if (!doIHavePermission(GlobalPermission.ADMIN)) return;
   await sync([
     db.doc("${branchPrefix}users/$username").update({
-      "permissions": FieldValue.arrayUnion([permit.name])
+      "permissions": FieldValue.arrayUnion([permit.name]),
+      "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch
+      
     }),
     addUserToExistingTopic("role_${permit.name}", username)
   ]);
@@ -1580,7 +1602,8 @@ Future<Map<String, dynamic>?> removeUserFromExistingTopic(
         .ref("topics/$topicname.json")
         .putString(jsonEncode({"users": currentUsers})),
     db.doc("${branchPrefix}user/$username").update({
-      "topics": FieldValue.arrayRemove([topicname])
+      "topics": FieldValue.arrayRemove([topicname]),
+      "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch
     })
   ]);
   return currentUsers;
@@ -1591,7 +1614,8 @@ Future<void> removePermissionFromUser(
   if (!doIHavePermission(GlobalPermission.ADMIN)) return;
   List<Future> futures = [];
   futures.add(db.doc("${branchPrefix}users/$username").update({
-    "permissions": FieldValue.arrayRemove([permit.name])
+    "permissions": FieldValue.arrayRemove([permit.name]),
+    "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch
   }));
   futures.add(removeUserFromExistingTopic("role_${permit.name}", username));
   await Future.wait(futures);

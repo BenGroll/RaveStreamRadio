@@ -29,7 +29,6 @@ Future<List> sendMessageToUsersDevices(
   try {
     List<String> deviceTokens = user.deviceTokens;
     return await sendFCMMessageToTokens(deviceTokens, title, content);
-    ;
   } catch (e) {
     return [];
   }

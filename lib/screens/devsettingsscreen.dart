@@ -501,8 +501,7 @@ class DevSettingsScreen extends StatelessWidget {
                   ElevatedButton(
                       onPressed: () async {
                         List<ChatOutline>? chats =
-                            await getChatOutlinesForUserObject(
-                                currently_loggedin_as.value ?? demoUser);
+                            await getChatOutlines();
                         showDevFeedbackDialog(
                             context,
                             chats == null
@@ -668,7 +667,7 @@ class DevSettingsScreen extends StatelessWidget {
                         showDevFeedbackDialog(
                             context, [fcmToken ?? "No Token assigned."]);
                       },
-                      child: Text("Create Topic")),
+                      child: Text("Create Topic (deprecated)")),
                   ElevatedButton(
                       onPressed: () async {
                         ValueNotifier<String> uname = ValueNotifier("");
@@ -721,6 +720,23 @@ class DevSettingsScreen extends StatelessWidget {
                         showDevFeedbackDialog(context, ["Admins messaged"]);
                       },
                       child: Text("Admin Messaging")),
+                  ElevatedButton(
+                      onPressed: () async {
+                        String fieldname = "lastEditedInMs";
+                        QuerySnapshot allDocs = await db.db
+                            .collection("${branchPrefix}users")
+                            .get();
+                        List<DocumentReference> refs =
+                            allDocs.docs.map((doc) => doc.reference).toList();
+                        await sync(refs.map((e) {
+                          return e.update({
+                            fieldname: Timestamp.now().millisecondsSinceEpoch
+                          });
+                        }).toList());
+                        showDevFeedbackDialog(context, ["Added Field"]);
+                      },
+                      child:
+                          Text("Add field to all documents of a collection")),
                 ],
               ),
             ),
