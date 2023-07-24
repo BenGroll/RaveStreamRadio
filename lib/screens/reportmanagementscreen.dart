@@ -72,14 +72,14 @@ class ReportManagementScreen extends StatelessWidget {
                     leading: leadingIcon(e),
                     title: Text(
                       e.target?.id ?? "Report has no ID",
-                      style: TextStyle(color: Colors.white),
+                      style: cl.df,
                     ),
                     trailing: trailingIcon(e),
                     subtitle: Row(
                       children: [
                         Text(
                           "Filed at ${timestamp2readablestamp(e.timestamp)}",
-                          style: TextStyle(color: Colors.white),
+                          style: cl.df,
                         )
                       ],
                     ),

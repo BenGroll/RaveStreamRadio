@@ -32,7 +32,7 @@ class PrivacyPolicy extends StatelessWidget {
                     scrollDirection: Axis.vertical,
                     child: RichText(
                         text: TextSpan(
-                            style: TextStyle(color: Colors.white),
+                            style: cl.df,
                             children: stringToTextSpanList(
                                 /*snapshot.data!.data()!["privacypolicy"] ??
                                     privacypolicystring*/

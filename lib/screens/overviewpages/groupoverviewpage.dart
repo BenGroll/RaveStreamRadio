@@ -103,13 +103,13 @@ class ANNOUNCEMENT extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(timestamp2readablestamp(entry.timestamp),
-                style: TextStyle(color: Colors.white)),
+                style: cl.df),
             Divider(
               thickness: 1,
               color: cl.lighterGrey,
             ),
             Text(entry.textcontent ?? "This Announcment is empty.",
-                style: TextStyle(color: Colors.white))
+                style: cl.df)
           ],
         ),
       ),
@@ -136,7 +136,7 @@ class NewsFeed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return !SHOW_FEEDS ? Center(child: Text("News-Feed is disabled right now, but will be enabled by future updates.", style: TextStyle(color: Colors.white))) : FutureBuilder(
+    return !SHOW_FEEDS ? Center(child: Text("News-Feed is disabled right now, but will be enabled by future updates.", style: cl.df)) : FutureBuilder(
         future: db.readGroupFeedListMap(groupID),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {

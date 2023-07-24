@@ -29,7 +29,7 @@ class GroupCreationScreen extends StatelessWidget {
       backgroundColor: cl.darkerGrey,
       appBar: AppBar(
         backgroundColor: cl.lighterGrey,
-        title: Text("Create Group", style: TextStyle(color: Colors.white)),
+        title: Text("Create Group", style: cl.df),
         actions: [
           TextButton(
               onPressed: () async {
@@ -46,7 +46,7 @@ class GroupCreationScreen extends StatelessWidget {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(cw.hintSnackBar("Group created"));
               },
-              child: Text("Upload", style: TextStyle(color: Colors.white)))
+              child: Text("Upload", style: cl.df))
         ],
       ),
       body: Padding(
@@ -55,7 +55,7 @@ class GroupCreationScreen extends StatelessWidget {
           children: [
             ListTile(
                 title: Text("Give your group a name: ",
-                    style: TextStyle(color: Colors.white)),
+                    style: cl.df),
                 trailing: ValueListenableBuilder(
                     valueListenable: title,
                     builder: (context, snapshot, foo) {
@@ -67,13 +67,13 @@ class GroupCreationScreen extends StatelessWidget {
                                     to_notify: title, name: "Title"));
                           },
                           child: Text(snapshot.isEmpty ? "Title" : snapshot,
-                              style: TextStyle(color: Colors.white)));
+                              style: cl.df));
                     })),
             ListTile(
                 title: Text("Choose a unique id",
-                    style: TextStyle(color: Colors.white)),
+                    style: cl.df),
                 subtitle: Text("This cannot be changed later",
-                    style: TextStyle(color: Colors.white)),
+                    style: cl.df),
                 trailing: ValueListenableBuilder(
                     valueListenable: groupid,
                     builder: (context, snapshot, foo) {
@@ -85,11 +85,11 @@ class GroupCreationScreen extends StatelessWidget {
                                     to_notify: groupid, name: "GroupID"));
                           },
                           child: Text(snapshot.isEmpty ? "ID" : snapshot,
-                              style: TextStyle(color: Colors.white)));
+                              style: cl.df));
                     })),
             ListTile(
                 title: Text("Describe your Group: ",
-                    style: TextStyle(color: Colors.white)),
+                    style: cl.df),
                 trailing: ValueListenableBuilder(
                     valueListenable: description,
                     builder: (context, snapshot, foo) {
@@ -101,11 +101,11 @@ class GroupCreationScreen extends StatelessWidget {
                                     to_notify: description, name: "Description"));
                           },
                           child: Text("Edit description here",
-                              style: TextStyle(color: Colors.white)));
+                              style: cl.df));
                     })),
             ListTile(
                 title: Text("Pick an Icon: ",
-                    style: TextStyle(color: Colors.white)),
+                    style: cl.df),
                 trailing: ValueListenableBuilder(
                     valueListenable: fileToUpload,
                     builder: (context, snapshot, foo) {
@@ -123,7 +123,7 @@ class GroupCreationScreen extends StatelessWidget {
                               fileToUpload.value == null
                                   ? "Upload"
                                   : "Image Uploaded.",
-                              style: TextStyle(color: Colors.white)));
+                              style: cl.df));
                     })),
           ],
         ),

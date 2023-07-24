@@ -98,7 +98,7 @@ class UserView extends StatelessWidget {
                 backgroundColor: cl.darkerGrey,
                 body: Center(
                     child: Text("Couldn't load user $username",
-                        style: TextStyle(color: Colors.white))));
+                        style: cl.df)));
           }
           ValueNotifier<dbc.User> user =
               ValueNotifier<dbc.User>(snapshot.data ?? dbc.demoUser);

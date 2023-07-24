@@ -215,7 +215,7 @@ class EventCreationScreen extends StatelessWidget {
                                   return value
                                       .map((e) => Text(e,
                                           style:
-                                              TextStyle(color: Colors.white)))
+                                              cl.df))
                                       .toList();
                                 });
                                 block_upload = false;
@@ -237,7 +237,7 @@ class EventCreationScreen extends StatelessWidget {
                               }
                             },
                             child: Text("Upload",
-                                style: TextStyle(color: Colors.white)))
+                                style: cl.df))
                       ],
                     ),
                     body: TabBarView(
@@ -420,7 +420,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                       color:
                                           Color.fromARGB(255, 179, 179, 179))),
                               Text("Choose Host",
-                                  style: TextStyle(color: Colors.white)),
+                                  style: cl.df),
                               Expanded(
                                   child: Divider(
                                       color:
@@ -563,7 +563,7 @@ class GeneralSettingsPage extends StatelessWidget {
                         parent.eventIDToBeEdited != null
                             ? Text(
                                 "EventID: ${parent.currentEventData.value.eventid}",
-                                style: TextStyle(color: Colors.white),
+                                style: cl.df,
                               )
                             : TextFormField(
                                 initialValue:
@@ -596,7 +596,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                   parent.currentEventData.value.eventid =
                                       newValue ?? "";
                                 },
-                                style: const TextStyle(color: Colors.white),
+                                style: cl.df,
                                 cursorColor: Colors.white,
                                 decoration: InputDecoration(
                                   icon: Icon(
@@ -606,7 +606,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                       color: Colors.white),
                                   labelText: "Event-ID",
                                   labelStyle:
-                                      const TextStyle(color: Colors.white),
+                                      cl.df,
                                   hintText: "only letters and numbers allowed.",
                                   hintStyle:
                                       const TextStyle(color: Colors.grey),
@@ -636,7 +636,7 @@ class GeneralSettingsPage extends StatelessWidget {
                           onChanged: (value) async {
                             parent.currentEventData.value.title = value;
                           },
-                          style: const TextStyle(color: Colors.white),
+                          style: cl.df,
                           cursorColor: Colors.white,
                           decoration: InputDecoration(
                             icon: Icon(
@@ -645,7 +645,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                     : Icons.check_circle_outline,
                                 color: Colors.white),
                             labelText: "Event Title",
-                            labelStyle: const TextStyle(color: Colors.white),
+                            labelStyle: cl.df,
                             hintText: "Give your event a title!",
                             hintStyle: const TextStyle(color: Colors.grey),
                           ),
@@ -703,7 +703,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                         },
                                         child: const Text(
                                           "Pick begin date",
-                                          style: TextStyle(color: Colors.white),
+                                          style: cl.df,
                                         )),
                                     TextButton(
                                         onPressed: () async {
@@ -750,7 +750,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                         },
                                         child: const Text(
                                           "Pick begin time",
-                                          style: TextStyle(color: Colors.white),
+                                          style: cl.df,
                                         ))
                                   ],
                                 )),
@@ -801,7 +801,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                         },
                                         child: const Text(
                                           "Pick end date",
-                                          style: TextStyle(color: Colors.white),
+                                          style: cl.df,
                                         )),
                                     TextButton(
                                         onPressed: () async {
@@ -838,7 +838,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                         },
                                         child: const Text(
                                           "Pick end time",
-                                          style: TextStyle(color: Colors.white),
+                                          style: cl.df,
                                         ))
                                   ],
                                 )),
@@ -854,7 +854,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                     style: TextStyle(color: Colors.grey))
                                 : Text(
                                     "Begins at: ${timestamp2readablestamp(eventData.begin)}",
-                                    style: TextStyle(color: Colors.white),
+                                    style: cl.df,
                                   );
                             ;
                           },
@@ -866,7 +866,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                 ? SizedBox(height: 0)
                                 : Text(
                                     "Ends at: ${timestamp2readablestamp(event.end)}",
-                                    style: TextStyle(color: Colors.white),
+                                    style: cl.df,
                                   );
                           },
                         )
@@ -879,12 +879,12 @@ class GeneralSettingsPage extends StatelessWidget {
               onChanged: (value) {
                 parent.currentEventData.value.locationname = value;
               },
-              style: const TextStyle(color: Colors.white),
+              style: cl.df,
               cursorColor: Colors.white,
               decoration: const InputDecoration(
                 icon: Icon(Icons.location_on, color: Colors.white),
                 labelText: "Event Location",
-                labelStyle: TextStyle(color: Colors.white),
+                labelStyle: cl.df,
                 hintText: "Describe where to find your event",
                 hintStyle: TextStyle(color: Colors.grey),
               ),
@@ -894,13 +894,13 @@ class GeneralSettingsPage extends StatelessWidget {
               onChanged: (value) async {
                 parent.currentEventData.value.minAge = int.parse(value);
               },
-              style: const TextStyle(color: Colors.white),
+              style: cl.df,
               cursorColor: Colors.white,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 icon: Icon(Icons.warning, color: Colors.white),
                 labelText: "Min. Age",
-                labelStyle: const TextStyle(color: Colors.white),
+                labelStyle: cl.df,
                 hintText: "Put in the required age for your event!",
                 hintStyle: const TextStyle(color: Colors.grey),
               ),
@@ -910,12 +910,12 @@ class GeneralSettingsPage extends StatelessWidget {
               onChanged: (value) async {
                 parent.currentEventData.value.genre = value;
               },
-              style: const TextStyle(color: Colors.white),
+              style: cl.df,
               cursorColor: Colors.white,
               decoration: InputDecoration(
                 icon: Icon(Icons.music_note, color: Colors.white),
                 labelText: "Event Genre",
-                labelStyle: const TextStyle(color: Colors.white),
+                labelStyle: cl.df,
                 hintText: "Describe the genre of your Event!",
                 hintStyle: const TextStyle(color: Colors.grey),
               ),
@@ -1028,7 +1028,7 @@ class LinkListCard extends StatelessWidget {
       },
       tileColor: Colors.black,
       title: Center(
-          child: Text(link.title, style: TextStyle(color: Colors.white))),
+          child: Text(link.title, style: cl.df)),
     );
   }
 }
@@ -1047,12 +1047,12 @@ class LinkCreateDialog extends StatelessWidget {
               BorderRadius.circular(MediaQuery.of(context).size.width / 50),
           side: BorderSide(color: Color.fromARGB(255, 60, 60, 60))),
       backgroundColor: cl.darkerGrey,
-      title: Text("Enter Link Data", style: TextStyle(color: Colors.white)),
+      title: Text("Enter Link Data", style: cl.df),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextFormField(
-            style: TextStyle(color: Colors.white),
+            style: cl.df,
             autofocus: true,
             decoration: InputDecoration(
                 disabledBorder: UnderlineInputBorder(
@@ -1060,7 +1060,7 @@ class LinkCreateDialog extends StatelessWidget {
                 enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white)),
                 hintText: "Label, e.g 'Instagram'",
-                hintStyle: TextStyle(color: Colors.white)),
+                hintStyle: cl.df),
             cursorColor: Colors.white,
             onChanged: (value) {
               label = value;
@@ -1069,13 +1069,13 @@ class LinkCreateDialog extends StatelessWidget {
           ),
           TextFormField(
             autofocus: true,
-            style: TextStyle(color: Colors.white),
+            style: cl.df,
             decoration: InputDecoration(
                 enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white)),
                 focusColor: Colors.white,
                 hintText: "URL",
-                hintStyle: TextStyle(color: Colors.white)),
+                hintStyle: cl.df),
             cursorColor: Colors.white,
             onChanged: (value) {
               url = value;
@@ -1096,7 +1096,7 @@ class LinkCreateDialog extends StatelessWidget {
               parent.currentEventData.notifyListeners();
             },
             child: Text("Add link to event",
-                style: TextStyle(color: Colors.white)))
+                style: cl.df))
       ],
     );
   }
@@ -1110,7 +1110,7 @@ class LinkEditDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: cl.darkerGrey,
-      title: Text("Edit Link", style: TextStyle(color: Colors.white)),
+      title: Text("Edit Link", style: cl.df),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1119,7 +1119,7 @@ class LinkEditDialog extends StatelessWidget {
             autofocus: true,
             decoration: InputDecoration(
                 hintText: "Label, e.g 'Instagram'",
-                hintStyle: TextStyle(color: Colors.white)),
+                hintStyle: cl.df),
             onChanged: (value) {
               link.title = value;
             },
@@ -1129,7 +1129,7 @@ class LinkEditDialog extends StatelessWidget {
             initialValue: link.url,
             autofocus: true,
             decoration: InputDecoration(
-                hintText: "URL", hintStyle: TextStyle(color: Colors.white)),
+                hintText: "URL", hintStyle: cl.df),
             onChanged: (value) {
               link.url = value;
             },
@@ -1147,7 +1147,7 @@ class LinkEditDialog extends StatelessWidget {
                   dbc.mapFromLinkList(editLinkInList(formerlist, link));
             },
             child: Text("Save changes to Link",
-                style: TextStyle(color: Colors.white)))
+                style: cl.df))
       ],
     );
   }
@@ -1202,18 +1202,18 @@ class UploadEventDialog extends StatelessWidget {
             backgroundColor: cl.darkerGrey,
             title: uploading
                 ? null
-                : Text("Finished?", style: TextStyle(color: Colors.white)),
+                : Text("Finished?", style: cl.df),
             content: uploading
                 ? Center(child: loader)
                 : Text(
                     "Post the event?\nYou can also save your event to publish later.",
-                    style: TextStyle(color: Colors.white)),
+                    style: cl.df),
             actions: uploading
                 ? null
                 : [
                     TextButton(
                       child: Text("Discard",
-                          style: TextStyle(color: Colors.white)),
+                          style: cl.df),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -1226,13 +1226,13 @@ class UploadEventDialog extends StatelessWidget {
                           uploadEvent(newEventData, context);
                         },
                         child: Text("Save(TBA)",
-                            style: TextStyle(color: Colors.white))),
+                            style: cl.df)),
                     TextButton(
                         onPressed: () {
                           uploadEvent(parent.currentEventData.value, context);
                         },
                         child: Text("Publish",
-                            style: TextStyle(color: Colors.white))),
+                            style: cl.df)),
                   ],
           );
         });
@@ -1249,7 +1249,7 @@ class UploadingErrorDialog extends StatelessWidget {
     return AlertDialog(
       backgroundColor: cl.darkerGrey,
       title:
-          Text("Couldn't upload Event", style: TextStyle(color: Colors.white)),
+          Text("Couldn't upload Event", style: cl.df),
       content: FutureBuilder(
           future: parent.validateUpload(),
           builder: (context, snapshot) {
@@ -1278,11 +1278,11 @@ class MediaEditingScreen extends StatelessWidget {
                 const Text(
                   "The Icon is the image shown in the calendar overview.",
                   maxLines: 23,
-                  style: TextStyle(color: Colors.white),
+                  style: cl.df,
                 ),
                 TextFormField(
                   maxLines: 3,
-                  style: const TextStyle(color: Colors.white),
+                  style: cl.df,
                   initialValue: parent.currentEventData.value.icon,
                   cursorColor: Colors.white,
                   decoration: const InputDecoration(
@@ -1292,7 +1292,7 @@ class MediaEditingScreen extends StatelessWidget {
                   : Icons.check_circle_outline,
                 color: Colors.white),*/
                     labelText: "Location of Icon Image",
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: cl.df,
                     hintText: "If left empty defaults to host's pfp.",
                     hintStyle: TextStyle(color: Colors.grey),
                   ),
@@ -1306,11 +1306,11 @@ class MediaEditingScreen extends StatelessWidget {
                 const Text(
                   "The Flyer is the image shown when users click on your event in the calendar",
                   maxLines: 23,
-                  style: TextStyle(color: Colors.white),
+                  style: cl.df,
                 ),
                 TextFormField(
                   maxLines: 3,
-                  style: const TextStyle(color: Colors.white),
+                  style: cl.df,
                   initialValue: parent.currentEventData.value.icon,
                   cursorColor: Colors.white,
                   decoration: const InputDecoration(
@@ -1320,7 +1320,7 @@ class MediaEditingScreen extends StatelessWidget {
                   : Icons.check_circle_outline,
                 color: Colors.white),*/
                     labelText: "Location of Flyer Image",
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: cl.df,
                     hintText: "If left empty defaults to icon",
                     hintStyle: TextStyle(color: Colors.grey),
                   ),

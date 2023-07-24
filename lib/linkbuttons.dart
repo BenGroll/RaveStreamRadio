@@ -13,6 +13,7 @@ import 'package:ravestreamradioapp/screens/overviewpages/eventoverviewpage.dart'
 import 'package:url_launcher/url_launcher.dart';
 import 'shared_state.dart';
 import 'package:ravestreamradioapp/extensions.dart';
+import 'package:ravestreamradioapp/colors.dart' as cl;
 
 /// Tests if the document contains a user, a group or event, and returns the corresponding linkbutton
 Widget buildLinkButtonFromRef(DocumentReference? doc, TextStyle labelstyle) {
@@ -183,7 +184,7 @@ class TemplateHostLinkButton extends StatelessWidget {
                   },
                   child: Text(
                     snapshot.data?[id] ?? "This should never display",
-                    style: const TextStyle(color: Colors.white),
+                    style: cl.df,
                   ));
             } else {
               return CircularProgressIndicator(color: Colors.white);

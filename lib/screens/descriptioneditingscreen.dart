@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:ravestreamradioapp/databaseclasses.dart' as dbc;
+import 'package:ravestreamradioapp/colors.dart' as cl;
 
 /// Page to edit description (Richtext)
 class DescriptionEditingPage extends StatelessWidget {
@@ -18,7 +19,7 @@ class DescriptionEditingPage extends StatelessWidget {
           return TextFormField(
             autofocus: true,
             initialValue: ev.description,
-            style: const TextStyle(color: Colors.white),
+            style: cl.df,
             keyboardType: TextInputType.multiline,
             maxLines: null,
             expands: true,

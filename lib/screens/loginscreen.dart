@@ -81,7 +81,7 @@ class LoginScreen extends StatelessWidget {
                           username = value;
                         },
                         cursorColor: Colors.grey,
-                        style: const TextStyle(color: Colors.white),
+                        style: cl.df,
                         autocorrect: false,
                         validator: usernamevalidator,
                         decoration: InputDecoration(
@@ -119,7 +119,7 @@ class LoginScreen extends StatelessWidget {
                         },
                         autocorrect: false,
                         cursorColor: Colors.grey,
-                        style: const TextStyle(color: Colors.white),
+                        style: cl.df,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16.0)),
@@ -276,7 +276,7 @@ class CreateAccountScreen extends StatelessWidget {
                           username = value ?? "";
                         },
                         cursorColor: Colors.grey,
-                        style: const TextStyle(color: Colors.white),
+                        style: cl.df,
                         autocorrect: false,
                         validator: usernamevalidator,
                         decoration: InputDecoration(
@@ -314,7 +314,7 @@ class CreateAccountScreen extends StatelessWidget {
                         },
                         autocorrect: false,
                         cursorColor: Colors.grey,
-                        style: const TextStyle(color: Colors.white),
+                        style: cl.df,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(16.0)),
@@ -424,7 +424,7 @@ class CreateAccountScreen extends StatelessWidget {
 /// Shows the dialog to tell the user the username they chose is already taken
 Widget _showUsernameTakenDialog(BuildContext context, String? uname) {
   return AlertDialog(
-    title: Text("Username Taken", style: TextStyle(color: Colors.white)),
+    title: Text("Username Taken", style: cl.df),
     backgroundColor: cl.lighterGrey,
     content: Column(
       mainAxisSize: MainAxisSize.min,
@@ -433,21 +433,21 @@ Widget _showUsernameTakenDialog(BuildContext context, String? uname) {
       children: [
         uname == null || uname.isEmpty
             ? Text("Username can't be empty",
-                style: TextStyle(color: Colors.white))
+                style: cl.df)
             : Text("Username has to be unique. Account @$uname exists already.",
-                style: TextStyle(color: Colors.white))
+                style: cl.df)
       ],
     ),
     actions: [
       TextButton(
-        child: const Text("Retry", style: TextStyle(color: Colors.white)),
+        child: const Text("Retry", style: cl.df),
         onPressed: () {
           Navigator.of(context).pop();
         },
       ),
       TextButton(
         child: const Text("Browse Anonymously",
-            style: TextStyle(color: Colors.white)),
+            style: cl.df),
         onPressed: () {
           if (kIsWeb) {
             Beamer.of(context).beamToNamed("/events/");
@@ -467,17 +467,17 @@ Widget _showLoginFailedDialog(BuildContext context) {
   return AlertDialog(
     backgroundColor: cl.lighterGrey,
     content: const Text("Couldn't login using this data.",
-        style: TextStyle(color: Colors.white)),
+        style: cl.df),
     actions: [
       TextButton(
-        child: const Text("Retry", style: TextStyle(color: Colors.white)),
+        child: const Text("Retry", style: cl.df),
         onPressed: () {
           Navigator.of(context).pop();
         },
       ),
       TextButton(
         child: const Text("Browse Anonymously",
-            style: TextStyle(color: Colors.white)),
+            style: cl.df),
         onPressed: () {
           if (kIsWeb) {
             Beamer.of(context).beamToNamed("/events/");

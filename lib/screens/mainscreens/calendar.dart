@@ -53,7 +53,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                 /*ListTile(
                   dense: false,
                   title: Text("Only After:",
-                      style: TextStyle(color: Colors.white)),
+                      style: cl.df),
                   trailing:
                       IconButton(onPressed: () {}, icon: Icon(Icons.undo)),
                 ),
@@ -70,7 +70,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                                     ? "Select onlyAfter"
                                     : timestamp2readablestamp(
                                         filters.value.onlyAfter),
-                                style: TextStyle(color: Colors.white)))
+                                style: cl.df))
                       ],
                     ),
                   ),
@@ -78,19 +78,19 @@ class EventFilterBottomSheet extends StatelessWidget {
                 ListTile(
                   dense: false,
                   title: Text("Only Before:",
-                      style: TextStyle(color: Colors.white)),
+                      style: cl.df),
                   trailing:
                       IconButton(onPressed: () {}, icon: Icon(Icons.undo)),
                 ),
                 ListTile(
                   dense: true,
                   title: Text("Select Only Before",
-                      style: TextStyle(color: Colors.white)),
+                      style: cl.df),
                 ),*/
                 ListTile(
                   dense: false,
                   title: Text("Can go with this Age:",
-                      style: TextStyle(color: Colors.white)),
+                      style: cl.df),
                   trailing: IconButton(
                       onPressed: () {
                         filters.value.canGoByAge = 18;
@@ -146,7 +146,7 @@ class EventFilterBottomSheet extends StatelessWidget {
                     ? ListTile(
                         dense: false,
                         title: Text("Status:",
-                            style: TextStyle(color: Colors.white)),
+                            style: cl.df),
                         trailing: IconButton(
                             onPressed: () {}, icon: Icon(Icons.undo)),
                       )
@@ -307,7 +307,7 @@ class _EventCalendarState extends State<EventCalendar> {
                     children: <Widget>[
                       Expanded(
                         child: TextField(
-                          style: TextStyle(color: Colors.white),
+                          style: cl.df,
                           onChanged: (value) {
                             filters.value.searchString = value;
                             filters.notifyListeners();
@@ -457,7 +457,7 @@ class CalendarEventCard extends StatelessWidget {
                 horizontal: MediaQuery.of(context).size.width / 10),
             child:
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: const [
-              Text("Edit event", style: TextStyle(color: Colors.white)),
+              Text("Edit event", style: cl.df),
               Icon(Icons.settings, color: Colors.white)
             ]),
           ),
@@ -687,7 +687,7 @@ class _CalendarEventCardBody extends StatelessWidget {
                                   ? Text(
                                       "Minimum Age: ${event.minAge}",
                                       style:
-                                          const TextStyle(color: Colors.white),
+                                          cl.df,
                                     )
                                   : const SizedBox(height: 0),
                               SingleChildScrollView(
@@ -696,7 +696,7 @@ class _CalendarEventCardBody extends StatelessWidget {
                                   "Location: ${event.locationname ?? "Unknown"}",
                                   maxLines: 1,
                                   softWrap: true,
-                                  style: const TextStyle(color: Colors.white),
+                                  style: cl.df,
                                 ),
                               ),
                             ],

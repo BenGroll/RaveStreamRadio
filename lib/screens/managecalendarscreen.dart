@@ -125,7 +125,7 @@ class HostScreens extends StatelessWidget {
                 builder: (BuildContext context) =>
                     ViewHostPage(isEditingHostID: key, toNotify: demoHosts)));
           },
-          title: Text(hosts[key] ?? "", style: TextStyle(color: Colors.white)),
+          title: Text(hosts[key] ?? "", style: cl.df),
           subtitle: Text("@$key",
               style: TextStyle(color: Color.fromARGB(255, 184, 184, 184))),
           trailing:
@@ -488,7 +488,7 @@ class ViewHostPage extends StatelessWidget {
                                     nameValue.isEmpty
                                         ? "No Name Set"
                                         : nameValue,
-                                    style: TextStyle(color: Colors.white));
+                                    style: cl.df);
                               }),
                           //! Continue Here
                           onPressed: () {
@@ -500,7 +500,7 @@ class ViewHostPage extends StatelessWidget {
                           },
                         ),
                         title: Text("Name",
-                            style: TextStyle(color: Colors.white))),
+                            style: cl.df)),
                     ListTile(
                         trailing: isEditingHostID == null
                             ? TextButton(
@@ -512,7 +512,7 @@ class ViewHostPage extends StatelessWidget {
                                               ? "No Name Set"
                                               : idValue,
                                           style:
-                                              TextStyle(color: Colors.white));
+                                              cl.df);
                                     }),
                                 onPressed: () {
                                   showDialog(
@@ -524,9 +524,9 @@ class ViewHostPage extends StatelessWidget {
                                 },
                               )
                             : Text(id.value,
-                                style: TextStyle(color: Colors.white)),
+                                style: cl.df),
                         title:
-                            Text("ID", style: TextStyle(color: Colors.white))),
+                            Text("ID", style: cl.df)),
                     ListTile(
                         trailing: ValueListenableBuilder(
                             valueListenable: category,
@@ -547,10 +547,10 @@ class ViewHostPage extends StatelessWidget {
                               );
                             }),
                         title: Text("Category",
-                            style: TextStyle(color: Colors.white))),
+                            style: cl.df)),
                     ListTile(
                         title: Text("Logopath",
-                            style: TextStyle(color: Colors.white)),
+                            style: cl.df),
                         trailing: TextButton(
                           child: ValueListenableBuilder(
                               valueListenable: logopath,
@@ -562,7 +562,7 @@ class ViewHostPage extends StatelessWidget {
                                         : logopathValue!.replaceAll(
                                             "gs://ravestreammobileapp.appspot.com/",
                                             ""),
-                                    style: TextStyle(color: Colors.white));
+                                    style: cl.df);
                               }),
                           onPressed: () {
                             showDialog(
@@ -583,8 +583,9 @@ class ViewHostPage extends StatelessWidget {
                                   onChanged: (value) {
                                     permit.value = value ?? permit.value;
                                   },
-                                  items: const [
-                                    DropdownMenuItem(
+                                  items: 
+                                  [
+                                    const DropdownMenuItem(
                                         value: true,
                                         child: Text("Yes",
                                             style: TextStyle(
@@ -593,11 +594,11 @@ class ViewHostPage extends StatelessWidget {
                                         value: false,
                                         child: Text("No",
                                             style:
-                                                TextStyle(color: Colors.white)))
+                                                cl.df))
                                   ]);
                             }),
                         title: Text("Permit:",
-                            style: TextStyle(color: Colors.white))),
+                            style: cl.df)),
                     ListTile(
                         trailing: ValueListenableBuilder(
                             valueListenable: official_logo,
@@ -608,8 +609,8 @@ class ViewHostPage extends StatelessWidget {
                                   onChanged: (value) {
                                     official_logo.value = value ?? permit.value;
                                   },
-                                  items: const [
-                                    DropdownMenuItem(
+                                  items: [
+                                    const DropdownMenuItem(
                                         value: true,
                                         child: Text("Yes",
                                             style: TextStyle(
@@ -618,21 +619,21 @@ class ViewHostPage extends StatelessWidget {
                                         value: false,
                                         child: Text("No",
                                             style:
-                                                TextStyle(color: Colors.white)))
+                                                cl.df))
                                   ]);
                             }),
                         title: Text("Official Logo",
-                            style: TextStyle(color: Colors.white))),
+                            style: cl.df)),
                     ListTile(
                       trailing: ValueListenableBuilder(
                         valueListenable: links,
                         builder: (context, linklist, foo) {
                           return Text("${linklist.length} link(s).",
-                              style: TextStyle(color: Colors.white));
+                              style: cl.df);
                         }
                       ),
                       title:
-                          Text("Links", style: TextStyle(color: Colors.white)),
+                          Text("Links", style: cl.df),
                       onTap: () async {
                         await showDialog(
                           context: context,

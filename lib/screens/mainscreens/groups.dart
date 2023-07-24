@@ -74,7 +74,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   children: <Widget>[
                     Expanded(
                       child: TextField(
-                        style: TextStyle(color: Colors.white),
+                        style: cl.df,
                         onChanged: (value) {
                           searchString.value = value;
                         },
@@ -212,7 +212,7 @@ class EntityBrowser extends StatelessWidget {
                 }
               },
               title: Text(e.title ?? "@${e.groupid}",
-                  style: TextStyle(color: Colors.white)),
+                  style: cl.df),
               leading: CircleAvatar(),
               trailing: db.hasGroupPinned(
                       e, currently_loggedin_as.value ?? dbc.demoUser)
@@ -267,16 +267,16 @@ class EntityBrowser extends StatelessWidget {
                         ? [
                             Center(
                                 child: Text(shownEntrysString,
-                                    style: TextStyle(color: Colors.white)))
+                                    style: cl.df))
                           ]
                         : shownEntrys
                             .map((e) => ListTile(
                                   title: Text(e.name,
                                       style:
-                                          const TextStyle(color: Colors.white)),
+                                          cl.df),
                                   subtitle: Text(e.id,
                                       style:
-                                          const TextStyle(color: Colors.white)),
+                                          cl.df),
                                   trailing: e.icon,
                                   onTap: () {
                                     if (to_Notify_on_Pick == null) {

@@ -19,7 +19,7 @@ class SingleReportScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: cl.darkerGrey,
       appBar: AppBar(
-        title: Text("Edit Report", style: TextStyle(color: Colors.white)),
+        title: Text("Edit Report", style: cl.df),
         backgroundColor: cl.lighterGrey,
       ),
       body: FutureBuilder(
@@ -36,22 +36,22 @@ class SingleReportScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text("Report ID: ${reportid}",
-                        style: TextStyle(color: Colors.white)),
+                        style: cl.df),
                     Row(
                       children: [
                         Text(
                           "Target: ",
-                          style: TextStyle(color: Colors.white),
+                          style: cl.df,
                         ),
                         buildLinkButtonFromRef(
-                            report.target, TextStyle(color: Colors.white))
+                            report.target, cl.df)
                       ],
                     ),
                     Row(
                       children: [
                         Text(
                           "State: ${report.state.name}",
-                          style: TextStyle(color: Colors.white),
+                          style: cl.df,
                         ),
                         IconButton(
                             onPressed: () async {
@@ -63,7 +63,7 @@ class SingleReportScreen extends StatelessWidget {
                                       backgroundColor: cl.darkerGrey,
                                       title: Text("Change Status",
                                           style:
-                                              TextStyle(color: Colors.white)),
+                                              cl.df),
                                       actions: [
                                         TextButton(
                                             onPressed: () async {
@@ -148,7 +148,7 @@ class SingleReportScreen extends StatelessWidget {
                     ),
                     Text(
                       "Description: ",
-                      style: TextStyle(color: Colors.white),
+                      style: cl.df,
                     ),
                     Expanded(
                       child: Padding(padding: EdgeInsets.all(8.0),
@@ -164,7 +164,7 @@ class SingleReportScreen extends StatelessWidget {
                   )),
                         child: Padding(padding: EdgeInsets.all(8.0),child: Text(
                             "${!report.description!.isEmpty ? report.description : 'No Description included.'}",
-                            style: TextStyle(color: Colors.white),
+                            style: cl.df,
                             maxLines: 1000),
                       )),),)
                     ),

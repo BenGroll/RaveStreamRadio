@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 
-
 Color darkerGrey = Color.fromARGB(255, 17, 17, 17);
 Color lighterGrey = Color.fromARGB(255, 40, 40, 40);
 
 Color greynothighlight = const Color.fromARGB(255, 158, 158, 158);
+const TextStyle df = TextStyle(color: Colors.white);
 
 Map<int, Color> blackmaterial = {
   50: const Color.fromRGBO(256, 256, 256, .1),

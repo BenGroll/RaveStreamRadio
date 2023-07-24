@@ -41,7 +41,7 @@ class EventOverviewPage extends StatelessWidget {
                   child: event.value == null
                       ? Container(
                           child: Text("Couldn't load Event",
-                              style: TextStyle(color: Colors.white)))
+                              style: cl.df))
                       : ValueListenableBuilder(
                           valueListenable: event,
                           builder: (context, eventdata, foo) {
@@ -64,7 +64,7 @@ class EventOverviewPage extends StatelessWidget {
                                             if (eventdata?.links != null) {
                                               eventdata!.links!
                                                   .forEach((key, value) {
-                                                    linkButtons.add(UrlLinkButton(value, key, TextStyle(color: Colors.white)));
+                                                    linkButtons.add(UrlLinkButton(value, key, cl.df));
                                                   });
                                         }
                                             GlobalKey<ScaffoldState> _key =
@@ -317,7 +317,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                                 Text('Location', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                                                                                 Text(
                                                                                   event.value!.locationname ?? "Unknown",
-                                                                                  style: const TextStyle(color: Colors.white),
+                                                                                  style: cl.df,
                                                                                   textAlign: TextAlign.center,
                                                                                 ),
                                                                                 Text(' '),
@@ -384,7 +384,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                                   padding: EdgeInsets.all(4.0),
                                                                                   child: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                                                                                     Text('Min. Age', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                                                                                    Text("${event.value!.minAge}", style: const TextStyle(color: Colors.white)),
+                                                                                    Text("${event.value!.minAge}", style: cl.df),
                                                                                     Text(' ')
                                                                                   ]),
                                                                                 ))
@@ -411,7 +411,7 @@ class EventOverviewPage extends StatelessWidget {
                                                                                     ),
                                                                                     textAlign: TextAlign.center,
                                                                                   ),
-                                                                                  Text("${event.value?.genre ?? 'No Genre Set'}", style: const TextStyle(color: Colors.white)),
+                                                                                  Text("${event.value?.genre ?? 'No Genre Set'}", style: cl.df),
                                                                                   Text(''),
                                                                                 ],
                                                                               ),
@@ -448,8 +448,8 @@ class EventOverviewPage extends StatelessWidget {
                                                                                           crossAxisAlignment: CrossAxisAlignment.center,
                                                                                           children: [
                                                                                             Wrap(children: linkButtons),
-                                                                                            event.value!.links?.containsKey("sales") ?? false ? Text("Ticketlink", style: TextStyle(color: Colors.white)) : const SizedBox(height: 0),
-                                                                                            event.value!.links?.containsKey("sales") ?? false ? UrlLinkButton(event.value!.links!["sales"] ?? "", "Entry/Tickets", const TextStyle(color: Colors.white)) : const SizedBox(height: 0)
+                                                                                            event.value!.links?.containsKey("sales") ?? false ? Text("Ticketlink", style: cl.df) : const SizedBox(height: 0),
+                                                                                            event.value!.links?.containsKey("sales") ?? false ? UrlLinkButton(event.value!.links!["sales"] ?? "", "Entry/Tickets", cl.df) : const SizedBox(height: 0)
                                                                                           ],
                                                                                         ),
                                                                                       )
@@ -485,7 +485,7 @@ class EventOverviewPage extends StatelessWidget {
                   backgroundColor: cl.darkerGrey,
                   body: Center(
                       child: Text("This Event doesn't exist (anymore)",
-                          style: TextStyle(color: Colors.white))));
+                          style: cl.df)));
             }
           } else {
             return cw.LoadingIndicator(color: Colors.white);

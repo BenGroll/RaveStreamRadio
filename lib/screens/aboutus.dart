@@ -15,7 +15,7 @@ class AboutUsPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: cl.darkerGrey,
         centerTitle: true,
-        title: const Text("About Us", style: TextStyle(color: Colors.white)),
+        title: const Text("About Us", style: cl.df),
       ),
       body: Center(
         child: ListView(
@@ -29,13 +29,13 @@ class AboutUsPage extends StatelessWidget {
             UrlLinkButton(
                 "https://www.youtube.com/channel/UCYODAI5WVxwmXFDS9n-Dr_Q",
                 "RSR Youtube Kanal",
-                const TextStyle(color: Colors.white)),
+                cl.df),
             UrlLinkButton("https://soundcloud.com/user-261391065",
-                "RSR Soundcloud", const TextStyle(color: Colors.white)),
+                "RSR Soundcloud", cl.df),
             RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
-                    style: TextStyle(color: Colors.white),
+                    style: cl.df,
                     children: stringToTextSpanList(aboutusstring)))
           ],
         ),

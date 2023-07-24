@@ -29,7 +29,7 @@ class ChatsDrawer extends StatelessWidget {
     List<Widget> outL = [];
     if (chatoutlines == null || chatoutlines.isEmpty) {
       outL.add(Text("You don't have any chats at this moment",
-          style: TextStyle(color: Colors.white)));
+          style: cl.df));
       return outL;
     }
 
@@ -59,7 +59,7 @@ class ChatsDrawer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SingleChildScrollView(
-                child: Text(sub, style: TextStyle(color: Colors.white))),
+                child: Text(sub, style: cl.df)),
             outLine.lastmessage == null
                 ? SizedBox()
                 : Align(
@@ -110,7 +110,7 @@ class ChatsDrawer extends StatelessWidget {
                     } else {
                       return Center(
                           child: Text("Couldn't load chats.",
-                              style: TextStyle(color: Colors.white)));
+                              style: cl.df));
                     }
                   }
                 }),
@@ -148,18 +148,18 @@ class MessageCard extends StatelessWidget {
                 )
               : Text(
                   "@${message.sentFrom}",
-                  style: TextStyle(color: Colors.white),
+                  style: cl.df,
                 ),
           ListTile(
             tileColor: cl.lighterGrey,
             title: Text(message.content,
-                maxLines: null, style: TextStyle(color: Colors.white)),
+                maxLines: null, style: cl.df),
             subtitle: Align(
               alignment: Alignment.centerRight,
               child: Text(
                 timestamp2readablestamp(Timestamp.fromMillisecondsSinceEpoch(
                     message.timestampinMilliseconds)),
-                style: TextStyle(color: Colors.white),
+                style: cl.df,
               ),
             ),
           )
@@ -227,7 +227,7 @@ class ChatWindow extends StatelessWidget {
           alignment: Alignment.topCenter,
           child: Text(
             "Messages in this app get deleted by default after both parties have seen them. To change this, edit the chat's settings in the top right corner.",
-            style: TextStyle(color: Colors.white),
+            style: cl.df,
           ),
         ),
         actions: [
@@ -237,7 +237,7 @@ class ChatWindow extends StatelessWidget {
               },
               child: Text(
                 "Dismiss",
-                style: TextStyle(color: Colors.white),
+                style: cl.df,
               )),
           TextButton(
               onPressed: () {
@@ -253,14 +253,14 @@ class ChatWindow extends StatelessWidget {
                               padding: const EdgeInsets.all(16.0),
                               child: Text(
                                   "We here at RaveStreamRadio care about your Privacy.\nThis (And server-storage being expensive) made us decide to not keep private-info.\nBy default, in any private chats (no matter 1o1 or Group-Chat), all messages are deleted permanentely from our database as soon as all members of the chat have seen the message.\nThere is no way to restore or trace any deleted messages, not for you, not for the admin, not for the people whose server your data gets stored on.\nIf you want to keep messages from being deleted, you can manually change the settings for each Chat.",
-                                  style: TextStyle(color: Colors.white)),
+                                  style: cl.df),
                             )
                           ])),
                 );
               },
               child: Text(
                 "Learn More",
-                style: TextStyle(color: Colors.white),
+                style: cl.df,
               ))
         ]));
   }
@@ -295,7 +295,7 @@ class ChatWindow extends StatelessWidget {
                               builder: (context) => AlertDialog(
                                     backgroundColor: cl.darkerGrey,
                                     title: Text("Settings",
-                                        style: TextStyle(color: Colors.white)),
+                                        style: cl.df),
                                     content: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [

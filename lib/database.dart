@@ -309,15 +309,15 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile(BuildContext context) async {
                 backgroundColor: cl.darkerGrey,
                 title: Center(
                     child: Text("Outdated App!",
-                        style: TextStyle(color: Colors.white))),
+                        style: cl.df)),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text("Your app isn't the newest version.",
-                        style: TextStyle(color: Colors.white)),
+                        style: cl.df),
                     Text("You have to update it.",
-                        style: TextStyle(color: Colors.white)),
+                        style: cl.df),
                     TextButton(
                         onPressed: () async {
                           if (Platform.isAndroid) {

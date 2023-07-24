@@ -47,7 +47,7 @@ class DevSettingsScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text("Branch: ",
-                                style: TextStyle(color: Colors.white)),
+                                style: cl.df),
                             DropdownButton(
                                 dropdownColor: cl.darkerGrey,
                                 value: BranchVal,
@@ -74,12 +74,12 @@ class DevSettingsScreen extends StatelessWidget {
                       children: [
                         const Expanded(
                             child: Text("Length of Event lists:",
-                                style: TextStyle(color: Colors.white))),
+                                style: cl.df)),
                         Expanded(
                             child: TextFormField(
                           keyboardType: TextInputType.number,
                           initialValue: ITEMS_PER_PAGE_IN_EVENTSHOW.toString(),
-                          style: TextStyle(color: Colors.white),
+                          style: cl.df,
                           onSaved: (newValue) {
                             ITEMS_PER_PAGE_IN_EVENTSHOW = int.parse(newValue ??
                                 ITEMS_PER_PAGE_IN_EVENTSHOW.toString());
@@ -137,14 +137,14 @@ class DevSettingsScreen extends StatelessWidget {
                             return AlertDialog(
                               backgroundColor: Colors.black,
                               title: Text("Enter Collection Names",
-                                  style: TextStyle(color: Colors.white)),
+                                  style: cl.df),
                               content: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     TextFormField(
                                       autofocus: true,
                                       style:
-                                          const TextStyle(color: Colors.white),
+                                          cl.df,
                                       decoration: const InputDecoration(
                                           enabledBorder: UnderlineInputBorder(
                                               borderSide: BorderSide(
@@ -152,7 +152,7 @@ class DevSettingsScreen extends StatelessWidget {
                                           focusColor: Colors.white,
                                           hintText: "Input Collection Path",
                                           hintStyle:
-                                              TextStyle(color: Colors.white)),
+                                              cl.df),
                                       cursorColor: Colors.white,
                                       onChanged: (value) {
                                         toCopy = value;
@@ -162,7 +162,7 @@ class DevSettingsScreen extends StatelessWidget {
                                     TextFormField(
                                       autofocus: true,
                                       style:
-                                          const TextStyle(color: Colors.white),
+                                          cl.df,
                                       decoration: const InputDecoration(
                                           enabledBorder: UnderlineInputBorder(
                                               borderSide: BorderSide(
@@ -170,7 +170,7 @@ class DevSettingsScreen extends StatelessWidget {
                                           focusColor: Colors.white,
                                           hintText: "Output Collection Path",
                                           hintStyle:
-                                              TextStyle(color: Colors.white)),
+                                              cl.df),
                                       cursorColor: Colors.white,
                                       onChanged: (value) {
                                         toCopyTo = value;
@@ -186,14 +186,14 @@ class DevSettingsScreen extends StatelessWidget {
                                       return;
                                     },
                                     child: Text("Enter",
-                                        style: TextStyle(color: Colors.white))),
+                                        style: cl.df)),
                                 TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
                                       return;
                                     },
                                     child: Text("Cancel",
-                                        style: TextStyle(color: Colors.white))),
+                                        style: cl.df)),
                               ],
                             );
                           });
@@ -770,7 +770,7 @@ class DevSettingsScreen extends StatelessWidget {
             body: Center(
                 child: Text(
               "You dont have permission to edit developer settings.",
-              style: TextStyle(color: Colors.white),
+              style: cl.df,
             )),
           );
   }
