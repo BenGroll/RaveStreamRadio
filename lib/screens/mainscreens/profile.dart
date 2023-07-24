@@ -211,7 +211,9 @@ class UserView extends StatelessWidget {
                                             context: context,
                                             builder: (BuildContext context) {
                                               return cw.SimpleStringEditDialog(
-                                                  to_notify: aliasNot);
+                                                  to_notify: aliasNot,
+                                                  name: "alias",
+                                                  );
                                             });
 
                                         if (aliasNot.value != null &&
@@ -270,7 +272,9 @@ class UserView extends StatelessWidget {
                                             context: context,
                                             builder: (BuildContext context) {
                                               return cw.SimpleStringEditDialog(
-                                                  to_notify: descriptionNot);
+                                                  to_notify: descriptionNot,
+                                                  name: "description",
+                                                  );
                                             });
 
                                         if (descriptionNot.value != null &&

@@ -1117,13 +1117,17 @@ class LoadingIndicator extends StatelessWidget {
 
 class SimpleStringEditDialog extends StatelessWidget {
   ValueNotifier to_notify;
-  SimpleStringEditDialog({super.key, required this.to_notify});
+  String? name;
+  SimpleStringEditDialog({
+    required this.to_notify,
+    this.name
+  });
 
   @override
   Widget build(BuildContext context) {
     String stringcontent = to_notify.value ?? "";
     return AlertDialog(
-      title: Text("Edit", style: TextStyle(color: Colors.white)),
+      title: Text(name == null ? "Edit: " : "Edit $name: ", style: TextStyle(color: Colors.white)),
       backgroundColor: cl.lighterGrey,
       content: TextFormField(
         autofocus: true,
@@ -1969,16 +1973,20 @@ class ProfileDrawer extends StatelessWidget {
 }
 
 MaterialBanner NotificationBanner(RemoteMessage message, BuildContext context) {
-    return MaterialBanner(
-          backgroundColor: cl.lighterGrey,
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text(message.notification?.title ?? "Notification", style: TextStyle(color: Colors.white)), if(message.notification?.body != null )Text(message.notification?.body ?? "", style: TextStyle(color: Colors.white))]),
-            actions: [
-              TextButton(
-                  child: Text("Dismiss", style: TextStyle(color: Colors.white)),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).clearMaterialBanners();
-                  })
-            ]);
-  }
+  return MaterialBanner(
+      backgroundColor: cl.lighterGrey,
+      content: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(message.notification?.title ?? "Notification",
+            style: TextStyle(color: Colors.white)),
+        if (message.notification?.body != null)
+          Text(message.notification?.body ?? "",
+              style: TextStyle(color: Colors.white))
+      ]),
+      actions: [
+        TextButton(
+            child: Text("Dismiss", style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              ScaffoldMessenger.of(context).clearMaterialBanners();
+            })
+      ]);
+}

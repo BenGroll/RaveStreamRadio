@@ -64,7 +64,7 @@ class GroupCreationScreen extends StatelessWidget {
                             showDialog(
                                 context: context,
                                 builder: (context) => cw.SimpleStringEditDialog(
-                                    to_notify: title));
+                                    to_notify: title, name: "Title"));
                           },
                           child: Text(snapshot.isEmpty ? "Title" : snapshot,
                               style: TextStyle(color: Colors.white)));
@@ -82,7 +82,7 @@ class GroupCreationScreen extends StatelessWidget {
                             showDialog(
                                 context: context,
                                 builder: (context) => cw.SimpleStringEditDialog(
-                                    to_notify: groupid));
+                                    to_notify: groupid, name: "GroupID"));
                           },
                           child: Text(snapshot.isEmpty ? "ID" : snapshot,
                               style: TextStyle(color: Colors.white)));
@@ -98,7 +98,7 @@ class GroupCreationScreen extends StatelessWidget {
                             showDialog(
                                 context: context,
                                 builder: (context) => cw.SimpleStringEditDialog(
-                                    to_notify: description));
+                                    to_notify: description, name: "Description"));
                           },
                           child: Text("Edit description here",
                               style: TextStyle(color: Colors.white)));

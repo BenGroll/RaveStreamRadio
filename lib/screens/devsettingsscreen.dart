@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:beamer/beamer.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:ravestreamradioapp/extensions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -91,25 +92,25 @@ class DevSettingsScreen extends StatelessWidget {
                   ElevatedButton(
                     onPressed: (() async {
                       Beamer.of(context).beamToNamed("/download");
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(hintSnackBar("Opened DownloadLink"));
+                      showDevFeedbackDialog(
+                          context, ["Should have opened /download."]);
                     }),
                     child: ValueListenableBuilder(
                         valueListenable: selectedbranch,
                         builder: (context, branch, foo) {
-                          return Text("Open DownloadLink");
+                          return Text("Open Download-LandingPage");
                         }),
                   ),
                   ElevatedButton(
                     onPressed: (() async {
                       await db.setTestDBScenario();
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(hintSnackBar("Added testevents"));
+                      showDevFeedbackDialog(context, ["Added test events"]);
                     }),
                     child: ValueListenableBuilder(
                         valueListenable: selectedbranch,
                         builder: (context, branch, foo) {
-                          return Text("Add test events to $branch");
+                          return Text(
+                              "Add test events to $branch (deprecated)");
                         }),
                   ),
                   ElevatedButton(
@@ -121,7 +122,8 @@ class DevSettingsScreen extends StatelessWidget {
                     child: ValueListenableBuilder(
                         valueListenable: selectedbranch,
                         builder: (context, branch, foo) {
-                          return Text("Remove all events from $branch");
+                          return Text(
+                              "Remove all events from $branch (Does Nothing)");
                         }),
                   ),
                   ElevatedButton(
@@ -216,15 +218,15 @@ class DevSettingsScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Created Indexes"));
                       },
-                      child: Text("Write index file for Events")),
+                      child: Text("Write index file for Events (All data)")),
                   ElevatedButton(
                       onPressed: () async {
                         List<Event> events = db.getEventListFromIndexes(
                             await db.readEventIndexesJson());
-                        showFeedbackDialog(
+                        showDevFeedbackDialog(
                             context, events.map((e) => e.toString()).toList());
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("Read Indexes"));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            hintSnackBar("Read Indexes (All data)"));
                       },
                       child: Text("Read index file for Events")),
                   ElevatedButton(
@@ -235,14 +237,15 @@ class DevSettingsScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Payment"));
                       },
-                      child: Text("Test Paypal Payment")),
+                      child: Text("Test Paypal Payment (WIP)")),
                   ElevatedButton(
                       onPressed: () async {
-                        await db.getDemoHosts();
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("Got Hosts"));
+                        List<Host> hosts = await db.getDemoHosts();
+                        showDevFeedbackDialog(
+                            context, hosts.map((e) => e.toString()).toList());
                       },
-                      child: Text("Get Hosts")),
+                      child: Text(
+                          "Get All Demohosts (From Firestore Collection)")),
                   ElevatedButton(
                       onPressed: () async {
                         await db.writeIDStoDemoHosts();
@@ -332,53 +335,46 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Test load Messages from IDList")),*/
                   ElevatedButton(
                       onPressed: () async {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("Messages Loaded"));
-                      },
-                      child: Text("Log Timestamp Test")),
-                  ElevatedButton(
-                      onPressed: () async {
                         await db.addLogEntry("'changedAttribute': 1 -> 2",
                             category: db.LogEntryCategory.unknown,
                             action: db.LogEntryAction.unknown);
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Messages Loaded"));
                       },
-                      child: Text("Log Adding Test")),
+                      child: Text("Add a test Entry to current logfile (NF)")),
                   ElevatedButton(
                       onPressed: () async {
-                        db.createUserIndexFiles();
+                        await db.createUserIndexFiles();
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Users Indexed"));
                       },
-                      child: Text("Create User Index")),
+                      child: Text(
+                          "Create User Indexfile ({Username: Alias}) (NF)")),
                   ElevatedButton(
                       onPressed: () async {
-                        db.createGroupIndexFiles();
+                        await db.createGroupIndexFiles();
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Groups Loaded"));
                       },
-                      child: Text("Create Group Index")),
+                      child: Text(
+                        "Create Group Index, ({groupid: title}) (NF)",
+                      )),
                   ElevatedButton(
                       onPressed: () async {
                         db.createEventIndexFiles();
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("Events Indexed"));
                       },
-                      child: Text("Create Event Index")),
+                      child:
+                          Text("Create Event Index ({eventid: title}) (NF)")),
                   ElevatedButton(
                       onPressed: () async {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("Events Loaded"));
+                        List<Map> maps = await db.getIndexedEntitys();
+                        showDevFeedbackDialog(
+                            context, maps.map((e) => e.toString()).toList());
                       },
-                      child: Text("Read Indexed Entitys")),
-                  ElevatedButton(
-                      onPressed: () async {
-                        await db.addEventToIndexFile(demoEvent);
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("Events read"));
-                      },
-                      child: Text("Read Eventindex")),
+                      child: Text(
+                          "Read All Indexed Entitys (Groups, Events, Users)")),
                   ElevatedButton(
                       onPressed: () async {
                         QuerySnapshot snap = await db.db
@@ -399,10 +395,16 @@ class DevSettingsScreen extends StatelessWidget {
                                 }))
                             .toList();
                         await Future.wait(futures);
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("Events read"));
+                        await db.writeEventIndexes(eventMapToJson(
+                            eventListToJsonCompatibleMap(
+                                await db.getEvents())));
+                        showFeedbackDialog(context, [
+                          "Rewritten all Event Flyers",
+                          "Updated Indexfile Too"
+                        ]);
                       },
-                      child: Text("Rewrite Event Flyer links")),
+                      child: Text(
+                          "Rewrite Event Flyer links with 2000x2000 instead of 1000x1000")),
                   ElevatedButton(
                       onPressed: () async {
                         String lmao = await db.readEventIndexesJson();
@@ -411,37 +413,46 @@ class DevSettingsScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("File Written"));
                       },
-                      child: Text("Test Index-File-Writing")),
+                      child: Text("Test Index-File-Writing (deprecated)")),
                   ElevatedButton(
                       onPressed: () async {
                         print(await getSavedIndexFile("dev.eventsIndex.json"));
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("File Read."));
                       },
-                      child: Text("Test Index-File-Reading")),
+                      child: Text("Test Index-File-Reading(deprecated)")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(await getSavedIndexFileLastChanged(
-                            "dev.eventsIndex.json"));
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("File Read"));
+                        List<DateTime?> das = [
+                          await getSavedIndexFileLastChanged(
+                              "dev.eventsIndex.json"),
+                          await getSavedIndexFileLastChanged("dev.events.json"),
+                          await getSavedIndexFileLastChanged("dev.users.json"),
+                          await getSavedIndexFileLastChanged("dev.groups.json")
+                        ];
+                        showDevFeedbackDialog(context, [
+                          "Events(full) : ${das[0]}",
+                          "Events(small): ${das[1]}",
+                          "Users:       : ${das[2]}",
+                          "Groups:      : ${das[3]}",
+                        ]);
                       },
-                      child: Text("Test Index-File-LastModified")),
+                      child:
+                          Text("Get Last-Modified for all Index-Files(local)")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(await db
-                            .getIndexFileContent("${branchPrefix}users.json"));
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("File Read"));
+                        String asd = await db
+                            .getIndexFileContent("${branchPrefix}users.json");
+                        showDevFeedbackDialog(context, [asd]);
                       },
-                      child: Text("Get Groups Index File")),
+                      child: Text("Get Users Index File")),
                   ElevatedButton(
                       onPressed: () async {
                         await writeLoginDataWeb("admin", "admin");
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("File Read"));
                       },
-                      child: Text("Test writing userdata")),
+                      child: Text("Test writing userdata (Web)")),
                   ElevatedButton(
                       onPressed: () async {
                         Map asd = kIsWeb
@@ -451,13 +462,7 @@ class DevSettingsScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(hintSnackBar("File Read"));
                       },
-                      child: Text("Test reading userdata")),
-                  ElevatedButton(
-                      onPressed: () async {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("File Read"));
-                      },
-                      child: Text("Test ListGen")),
+                      child: Text("Test reading userdata (Web)")),
                   ElevatedButton(
                       onPressed: () async {
                         showDevFeedbackDialog(context, ["Hello"]);
@@ -465,14 +470,16 @@ class DevSettingsScreen extends StatelessWidget {
                       child: Text("Test HintDialog")),
                   ElevatedButton(
                       onPressed: () async {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(hintSnackBar("File Read"));
-                      },
-                      child: Text("Test ListGen")),
-                  ElevatedButton(
-                      onPressed: () async {
-                        Host? host = await db.getDemoHost("0815events");
-                        showDevFeedbackDialog(context, [host.toString()]);
+                        ValueNotifier<String> HostName = ValueNotifier("");
+                        await showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: HostName, name: "Hostname"));
+                        Host? host = await db.getDemoHost(HostName.value);
+                        showDevFeedbackDialog(context, [
+                          "HostName: ${HostName.value}",
+                          "Data: ${host.toString()}"
+                        ]);
                       },
                       child: Text("Test Single DemoHost getter")),
                   ElevatedButton(
@@ -480,7 +487,7 @@ class DevSettingsScreen extends StatelessWidget {
                         showDevFeedbackDialog(context, ["DemoHosts Updated."]);
                       },
                       child: Text(
-                          "Change all instagram links to instagram (demohosts)")),
+                          "Change all instagram links to instagram (demohosts) (Does Nothing)")),
                   ElevatedButton(
                       onPressed: () async {
                         await writeChatOutline(ChatOutline(
@@ -490,25 +497,26 @@ class DevSettingsScreen extends StatelessWidget {
                               "ben2": Timestamp.now().millisecondsSinceEpoch,
                             }));
                       },
-                      child: Text("write Test Chat")),
+                      child: Text(
+                          "write Test Chat (PwZPV10ktzkzABtfhG4A, ben:ben2)")),
                   ElevatedButton(
                       onPressed: () async {
                         ChatOutline? outL =
                             await readChatOutline("PwZPV10ktzkzABtfhG4B");
                         showDevFeedbackDialog(context, [outL.toString()]);
                       },
-                      child: Text("Read Test Chat")),
+                      child:
+                          Text("Read Test ChatOutline (PwZPV10ktzkzABtfhG4B)")),
                   ElevatedButton(
                       onPressed: () async {
-                        List<ChatOutline>? chats =
-                            await getChatOutlines();
+                        List<ChatOutline>? chats = await getChatOutlines();
                         showDevFeedbackDialog(
                             context,
                             chats == null
                                 ? ["Null"]
                                 : chats.map((e) => e.toString()).toList());
                       },
-                      child: Text("Get My Chats")),
+                      child: Text("Get My ChatOutlines")),
                   ElevatedButton(
                       onPressed: () async {
                         await writeLastMessage(
@@ -520,15 +528,19 @@ class DevSettingsScreen extends StatelessWidget {
                                 timestampinMilliseconds:
                                     Timestamp.now().millisecondsSinceEpoch));
                       },
-                      child: Text("Write Testmessage")),
+                      child: Text(
+                          "Write Test-LastMessage (ChatID: PwZPV10ktzkzABtfhG4B)")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(await firebasestorage
+                        List<Reference> refs = await firebasestorage
                             .ref("chats/PwZPV10ktzkzABtfhG4A/")
                             .listAll()
-                            .then((value) => value.items));
+                            .then((value) => value.items);
+                        showDevFeedbackDialog(
+                            context, refs.map((e) => e.name).toList());
                       },
-                      child: Text("Test Storage directory listing")),
+                      child: Text(
+                          "Test Storage directory listing (PwZPV10ktzkzABtfhG4B)")),
                   /*ElevatedButton(
                       onPressed: () async {
                         await firebasestorage
@@ -566,27 +578,32 @@ class DevSettingsScreen extends StatelessWidget {
                                     Timestamp.now().millisecondsSinceEpoch,
                                 id: generateDocumentID()));
                       },
-                      child: Text("Add Test Message")),
+                      child: Text("Add Test Message (PwZPV10ktzkzABtfhG4B)")),
                   ElevatedButton(
                       onPressed: () async {
-                        print(await getMessagesForChat("PwZPV10ktzkzABtfhG4A"));
+                        List<Message> messages =
+                            await getMessagesForChat("PwZPV10ktzkzABtfhG4A");
+                        showDevFeedbackDialog(context,
+                            messages.map((e) => e.toString()).toList());
                       },
                       child: Text("Test Chat log reading")),
                   ElevatedButton(
                       onPressed: () async {
                         String test = "ÄÖÜäöüß";
-                        print("Test: $test");
-                        print("Safe: ${test.dbsafe}");
-                        print("FromSafe: ${test.fromDBSafeString}");
+                        showDevFeedbackDialog(context, [
+                          "Test: $test",
+                          "Safe: ${test.dbsafe}",
+                          "FromSafe: ${test.fromDBSafeString}"
+                        ]);
                       },
-                      child: Text("Test Chat log reading")),
+                      child: Text("Test String conversion")),
                   ElevatedButton(
                       onPressed: () async {
                         ValueNotifier<String> groupID = ValueNotifier("");
                         await showDialog(
                             context: context,
                             builder: (context) =>
-                                SimpleStringEditDialog(to_notify: groupID));
+                                SimpleStringEditDialog(to_notify: groupID, name: "GroupID"));
                         bool doesHaveFile = await db
                             .doesGroupAlreadyHaveFeedFile(groupID.value);
                         showDevFeedbackDialog(context, [
@@ -601,7 +618,7 @@ class DevSettingsScreen extends StatelessWidget {
                         await showDialog(
                             context: context,
                             builder: (context) =>
-                                SimpleStringEditDialog(to_notify: groupID));
+                                SimpleStringEditDialog(to_notify: groupID, name: "GroupID"));
                         await db.createEmptyFeedFileForGroup(groupID.value);
                         showFeedbackDialog(context, ["Empty File created"]);
                       },
@@ -612,10 +629,15 @@ class DevSettingsScreen extends StatelessWidget {
                         await showDialog(
                             context: context,
                             builder: (context) =>
-                                SimpleStringEditDialog(to_notify: groupID));
+                                SimpleStringEditDialog(to_notify: groupID, name: "GroupID"));
                         Map? test =
                             await db.readGroupFeedListMap(groupID.value);
-                        print(db.feedEntryMapToList(test ?? {}));
+                        showDevFeedbackDialog(
+                            context,
+                            db
+                                .feedEntryMapToList(test ?? {})
+                                .map((e) => e.toString())
+                                .toList());
                       },
                       child: Text("Read Feed file for group")),
                   ElevatedButton(
@@ -624,7 +646,7 @@ class DevSettingsScreen extends StatelessWidget {
                         await showDialog(
                             context: context,
                             builder: (context) =>
-                                SimpleStringEditDialog(to_notify: groupID));
+                                SimpleStringEditDialog(to_notify: groupID, name: "GroupID"));
                         await db.addFeedEntryToGroupFeed(
                             groupID.value,
                             FeedEntry(
@@ -632,33 +654,29 @@ class DevSettingsScreen extends StatelessWidget {
                                 timestamp: Timestamp.now(),
                                 leading_image_path_download_link: null,
                                 type: FeedEntryType.ANNOUNCEMENT));
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(hintSnackBar("FeedEntry Added"));
                       },
-                      child: Text("Add Feed Entry to Group")),
-                  ElevatedButton(
-                      onPressed: () async {
-                        String test = "ÄÖÜäöüß";
-                        showDevFeedbackDialog(context,
-                            [test.dbsafe, test.dbsafe.fromDBSafeString]);
-                      },
-                      child: Text("Test String manipulation")),
+                      child: Text("Add Test Feed Entry to Group")),
                   ElevatedButton(
                       onPressed: () async {
                         ValueNotifier<String> token = ValueNotifier("");
                         await showDialog(
                             context: context,
                             builder: (context) =>
-                                SimpleStringEditDialog(to_notify: token));
+                                SimpleStringEditDialog(to_notify: token, name: "Token",));
                         dynamic data = await sendFCMMessageToTokens(
                             [token.value], "HELLO", "TestContent");
                         showDevFeedbackDialog(context, [data.toString()]);
                       },
-                      child: Text("Test Cloud Function Calling")),
+                      child: Text(
+                          "Test Cloud Function Calling (Sends a single Message to token via Cloud Message Function)")),
                   ElevatedButton(
                       onPressed: () async {
                         showDevFeedbackDialog(
                             context, [fcmToken ?? "No Token assigned."]);
                       },
-                      child: Text("Read FCMToken")),
+                      child: Text("Read This Device's FCMToken")),
                   ElevatedButton(
                       onPressed: () async {
                         await MessagingAPI()
@@ -676,15 +694,15 @@ class DevSettingsScreen extends StatelessWidget {
                         await showDialog(
                             context: context,
                             builder: (context) =>
-                                SimpleStringEditDialog(to_notify: uname));
+                                SimpleStringEditDialog(to_notify: uname, name: "reciever username"));
                         await showDialog(
                             context: context,
                             builder: (context) =>
-                                SimpleStringEditDialog(to_notify: title));
+                                SimpleStringEditDialog(to_notify: title, name: "Title"));
                         await showDialog(
                             context: context,
                             builder: (context) =>
-                                SimpleStringEditDialog(to_notify: content));
+                                SimpleStringEditDialog(to_notify: content, name: "Content"));
                         await sendMessageToUsername(
                             uname.value, title.value, content.value);
                         showDevFeedbackDialog(
@@ -703,14 +721,14 @@ class DevSettingsScreen extends StatelessWidget {
                             GlobalPermission.ADMIN, "appletestuser");
                         showDevFeedbackDialog(context, ["Permit Added"]);
                       },
-                      child: Text("Add Permission to User")),
+                      child: Text("Add Permission to User (test)")),
                   ElevatedButton(
                       onPressed: () async {
                         await db.removePermissionFromUser(
                             GlobalPermission.ADMIN, "appletestuser");
                         showDevFeedbackDialog(context, ["Permit Removed"]);
                       },
-                      child: Text("Remove Permission from User")),
+                      child: Text("Remove Permission from User (test)")),
                   ElevatedButton(
                       onPressed: () async {
                         await sendMessageToTopic(
@@ -719,24 +737,27 @@ class DevSettingsScreen extends StatelessWidget {
                             "If you see this, you shouldnt. Just for Testing");
                         showDevFeedbackDialog(context, ["Admins messaged"]);
                       },
-                      child: Text("Admin Messaging")),
+                      child: Text("Send Test message to all Admins")),
                   ElevatedButton(
                       onPressed: () async {
-                        String fieldname = "lastEditedInMs";
+                        ValueNotifier<String> fieldname =
+                            ValueNotifier("lastEditedInMs");
+                        showDialog(
+                            context: context,
+                            builder: (context) =>
+                                SimpleStringEditDialog(to_notify: fieldname, name: "fieldname"));
                         QuerySnapshot allDocs = await db.db
                             .collection("${branchPrefix}users")
                             .get();
                         List<DocumentReference> refs =
                             allDocs.docs.map((doc) => doc.reference).toList();
                         await sync(refs.map((e) {
-                          return e.update({
-                            fieldname: Timestamp.now().millisecondsSinceEpoch
-                          });
+                          return e.update({fieldname: null});
                         }).toList());
                         showDevFeedbackDialog(context, ["Added Field"]);
                       },
-                      child:
-                          Text("Add field to all documents of a collection")),
+                      child: Text(
+                          "Add field to all documents of a collection (value: null)")),
                 ],
               ),
             ),

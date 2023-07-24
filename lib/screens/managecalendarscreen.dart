@@ -496,7 +496,7 @@ class ViewHostPage extends StatelessWidget {
                                 context: context,
                                 barrierDismissible: true,
                                 builder: (BuildContext context) =>
-                                    cw.SimpleStringEditDialog(to_notify: name));
+                                    cw.SimpleStringEditDialog(to_notify: name, name: "Name"));
                           },
                         ),
                         title: Text("Name",
@@ -520,7 +520,7 @@ class ViewHostPage extends StatelessWidget {
                                       barrierDismissible: true,
                                       builder: (BuildContext context) =>
                                           cw.SimpleStringEditDialog(
-                                              to_notify: id));
+                                              to_notify: id, name: "ID"));
                                 },
                               )
                             : Text(id.value,
@@ -570,7 +570,7 @@ class ViewHostPage extends StatelessWidget {
                                 barrierDismissible: true,
                                 builder: (BuildContext context) =>
                                     cw.SimpleStringEditDialog(
-                                        to_notify: logopath));
+                                        to_notify: logopath, name: "LogoPath",));
                           },
                         )),
                     ListTile(

@@ -260,7 +260,7 @@ class GroupView extends StatelessWidget {
                   await showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        return cw.SimpleStringEditDialog(to_notify: titleNot);
+                        return cw.SimpleStringEditDialog(to_notify: titleNot, name: "Group title");
                       });
 
                   if (titleNot.value != null &&
