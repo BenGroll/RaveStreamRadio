@@ -33,11 +33,11 @@ int DEFAULT_MINAGE = 18;
 
 late FirebaseApp app;
 late String? fcmToken;
-late MessagingAPI FCMAPI;
+late MessagingAPI FCMAPI = MessagingAPI();
 
 //! This Versions Versioncode. Change for Update Detection !//
-const VERSIONCODE = 31;
-const BUILDVERSION = "2.3.26";
+const VERSIONCODE = 33;
+const BUILDVERSION = "2.3.28";
 
 ValueNotifier<RemoteConfig?> remoteConfigValues =
     ValueNotifier<RemoteConfig?>(null);

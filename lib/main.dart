@@ -30,9 +30,10 @@ void main() async {
   await remoteConfig.setConfigSettings(RemoteConfigSettings(
       fetchTimeout: Duration(minutes: 5),
       minimumFetchInterval: Duration(minutes: 5)));
-  FCMAPI = MessagingAPI();
-  await FCMAPI.registerApp();
-  /*await remoteConfig.setDefaults(const {
+  if (!kIsWeb) {
+    FCMAPI = MessagingAPI();
+    await FCMAPI.registerApp();
+    /*await remoteConfig.setDefaults(const {
     "DEFAULT_MINAGE": 18,
     "DISABLE_CHATWINDOW": false,
     "DISABLE_EVENT_EDITING": false,
@@ -42,7 +43,8 @@ void main() async {
     "POLICY": ""
 });*/
 
-  //pprint("Test");
+    //pprint("Test");
+  }
   await db.getRemoteConfig();
   runApp(const MyApp());
 }
@@ -55,7 +57,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
