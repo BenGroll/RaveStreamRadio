@@ -36,8 +36,8 @@ late String? fcmToken;
 late MessagingAPI FCMAPI = MessagingAPI();
 
 //! This Versions Versioncode. Change for Update Detection !//
-const VERSIONCODE = 33;
-const BUILDVERSION = "2.3.28";
+const VERSIONCODE = 34;
+const BUILDVERSION = "2.3.29";
 
 ValueNotifier<RemoteConfig?> remoteConfigValues =
     ValueNotifier<RemoteConfig?>(null);
