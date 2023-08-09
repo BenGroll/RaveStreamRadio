@@ -26,6 +26,16 @@ enum Screen { general, description, links, media }
 /// Loading Animation
 const loader = cw.LoadingIndicator(color: Colors.white);
 
+String craftEventIDFromHostAndBegin(String hostID, DateTime beginTimestamp) {
+  hostID = hostID == HOST_YOURSELF_ID
+      ? currently_loggedin_as.value!.username
+      : hostID;
+  String yyyy = beginTimestamp.year.toString();
+  String mm = beginTimestamp.month.toString().padLeft(2, '0');
+  String dd = beginTimestamp.day.toString().padLeft(2, '0');
+  return "$yyyy$mm$dd$hostID";
+}
+
 class EventCreationScreen extends StatelessWidget {
   final String? eventIDToBeEdited;
 
@@ -42,8 +52,11 @@ class EventCreationScreen extends StatelessWidget {
           title: "",
           locationname: "",
           description: "",
-          begin: Timestamp.fromDate(DateTime.now().copyWith(hour: 22, minute: 00)),
-          end: Timestamp.fromDate(DateTime.now().copyWith(hour: 22, minute: 00).add(Duration(hours: 8))),
+          begin:
+              Timestamp.fromDate(DateTime.now().copyWith(hour: 22, minute: 00)),
+          end: Timestamp.fromDate(DateTime.now()
+              .copyWith(hour: 22, minute: 00)
+              .add(Duration(hours: 8))),
           links: {}));
 //String? templateHostID;
 
@@ -213,9 +226,7 @@ class EventCreationScreen extends StatelessWidget {
                                 List<Widget> errorcontent =
                                     await validateUpload().then((value) {
                                   return value
-                                      .map((e) => Text(e,
-                                          style:
-                                              cl.df))
+                                      .map((e) => Text(e, style: cl.df))
                                       .toList();
                                 });
                                 block_upload = false;
@@ -236,8 +247,7 @@ class EventCreationScreen extends StatelessWidget {
                                 }
                               }
                             },
-                            child: Text("Upload",
-                                style: cl.df))
+                            child: Text("Upload", style: cl.df))
                       ],
                     ),
                     body: TabBarView(
@@ -401,16 +411,16 @@ class GeneralSettingsPage extends StatelessWidget {
     return Padding(
         padding: EdgeInsets.symmetric(
             horizontal: MediaQuery.of(context).size.width / 25),
-        child: ListView(
-          children: [
-            ValueListenableBuilder(
-                valueListenable: eventidvalidator,
-                builder: (context, eventidvalidatedstring, child) {
-                  return Padding(
-                      padding: EdgeInsets.symmetric(
-                          vertical: MediaQuery.of(context).size.height / 100,
-                          horizontal: MediaQuery.of(context).size.width / 50),
-                      child: Column(children: [
+        child: ListView(children: [
+          ValueListenableBuilder(
+              valueListenable: eventidvalidator,
+              builder: (context, eventidvalidatedstring, child) {
+                return Padding(
+                    padding: EdgeInsets.symmetric(
+                        vertical: MediaQuery.of(context).size.height / 100,
+                        horizontal: MediaQuery.of(context).size.width / 50),
+                    child: Column(
+                      children: [
                         Row(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -419,8 +429,7 @@ class GeneralSettingsPage extends StatelessWidget {
                                   child: Divider(
                                       color:
                                           Color.fromARGB(255, 179, 179, 179))),
-                              Text("Choose Host",
-                                  style: cl.df),
+                              Text("Choose Host", style: cl.df),
                               Expanded(
                                   child: Divider(
                                       color:
@@ -474,27 +483,42 @@ class GeneralSettingsPage extends StatelessWidget {
                                                     onChanged: (value) {
                                                       pprint(
                                                           "New Build Invoked");
+                                                      String? newHostID = "";
                                                       if (value ==
                                                           HOST_YOURSELF_ID) {
-                                                        parent
-                                                                .currentEventData
-                                                                .value
-                                                                .templateHostID =
+                                                        newHostID =
                                                             HOST_YOURSELF_ID;
                                                       } else {
-                                                        parent
-                                                                .currentEventData
-                                                                .value
-                                                                .templateHostID =
+                                                        newHostID =
                                                             getKeyMatchingValueFromMap(
                                                                 snapshot.data ??
                                                                     {},
                                                                 value);
                                                       }
+                                                      parent
+                                                              .currentEventData
+                                                              .value
+                                                              .templateHostID =
+                                                          newHostID;
+                                                      if (!parent
+                                                          .is_overriding_existing_event) {
+                                                        parent.currentEventData
+                                                                .value.eventid =
+                                                            craftEventIDFromHostAndBegin(
+                                                                newHostID ?? "",
+                                                                DateTime.fromMillisecondsSinceEpoch(parent
+                                                                        .currentEventData
+                                                                        .value
+                                                                        .begin
+                                                                        ?.millisecondsSinceEpoch ??
+                                                                    0));
+                                                      }
                                                       pprint(parent
                                                           .currentEventData
                                                           .value
                                                           .templateHostID);
+                                                      parent.currentEventData
+                                                          .notifyListeners();
                                                     },
                                                     popupProps: const PopupProps
                                                             .menu(
@@ -560,368 +584,391 @@ class GeneralSettingsPage extends StatelessWidget {
                                 },
                               ), // Continue Here After DropDownSearch
 
-                        parent.eventIDToBeEdited != null
-                            ? Text(
-                                "EventID: ${parent.currentEventData.value.eventid}",
+                        ValueListenableBuilder(
+                            valueListenable: parent.currentEventData,
+                            builder: (context, snapshot, foo) {
+                              return Text(
+                                "EventID: ${snapshot.eventid}",
                                 style: cl.df,
-                              )
-                            : TextFormField(
-                                initialValue:
-                                    parent.currentEventData.value.eventid,
-                                onChanged: (value) async {
-                                  pprint(
-                                      "onCH tH: ${parent.currentEventData.value.templateHostID}");
-                                  eventidvalidator.value =
-                                      parent.validateEventIDFieldLight(value);
-                                  pprint(
-                                      "onCH tH2: ${parent.currentEventData.value.templateHostID}");
-                                  parent.currentEventData.value.eventid = value;
-                                },
-                                onFieldSubmitted: (value) async {
-                                  pprint(
-                                      "onFS tH: ${parent.currentEventData.value.templateHostID}");
-                                  eventidvalidator.value = await parent
-                                      .validateEventIDFieldDB(value);
-                                  pprint(
-                                      "onFS tH2: ${parent.currentEventData.value.templateHostID}");
-                                  parent.currentEventData.value.eventid = value;
-                                },
-                                onSaved: (newValue) async {
-                                  pprint(
-                                      "onS tH: ${parent.currentEventData.value.templateHostID}");
-                                  eventidvalidator.value = await parent
-                                      .validateEventIDFieldDB(newValue ?? "");
-                                  pprint(
-                                      "onS tH2: ${parent.currentEventData.value.templateHostID}");
-                                  parent.currentEventData.value.eventid =
-                                      newValue ?? "";
-                                },
-                                style: cl.df,
-                                cursorColor: Colors.white,
-                                decoration: InputDecoration(
-                                  icon: Icon(
-                                      eventidvalidatedstring != null
-                                          ? Icons.highlight_off
-                                          : Icons.check_circle_outline,
-                                      color: Colors.white),
-                                  labelText: "Event-ID",
-                                  labelStyle:
-                                      cl.df,
-                                  hintText: "only letters and numbers allowed.",
-                                  hintStyle:
-                                      const TextStyle(color: Colors.grey),
+                              );
+                            }),
+
+                        ValueListenableBuilder(
+                            valueListenable: parent.currentEventData,
+                            builder: ((context, ev, child) {
+                              bool eventtitleIsEmpty =
+                                  ev.title == null || ev.title!.isEmpty;
+                              return Padding(
+                                padding: EdgeInsets.symmetric(
+                                    vertical:
+                                        MediaQuery.of(context).size.height /
+                                            100,
+                                    horizontal:
+                                        MediaQuery.of(context).size.width / 50),
+                                child: Column(
+                                  children: [
+                                    TextFormField(
+                                      initialValue:
+                                          parent.currentEventData.value.title,
+                                      onChanged: (value) async {
+                                        parent.currentEventData.value.title =
+                                            value;
+                                      },
+                                      style: cl.df,
+                                      cursorColor: Colors.white,
+                                      decoration: InputDecoration(
+                                        icon: Icon(
+                                            eventtitleIsEmpty
+                                                ? Icons.highlight_off
+                                                : Icons.check_circle_outline,
+                                            color: Colors.white),
+                                        labelText: "Event Title",
+                                        labelStyle: cl.df,
+                                        hintText: "Give your event a title!",
+                                        hintStyle:
+                                            const TextStyle(color: Colors.grey),
+                                      ),
+                                    ),
+                                    Text(
+                                      eventtitleIsEmpty ? "Can't be empty" : "",
+                                      style:
+                                          const TextStyle(color: Colors.grey),
+                                    ),
+                                    const Divider(
+                                        color: Color.fromARGB(255, 66, 66, 66)),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      mainAxisSize: MainAxisSize.max,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Card(
+                                            color: cl.lighterGrey,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                            MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .height) /
+                                                        75,
+                                                side: const BorderSide(
+                                                  width: 1,
+                                                  color: Color.fromARGB(
+                                                      26, 255, 255, 255),
+                                                )),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                TextButton(
+                                                    onPressed: () async {
+                                                      DateTime? initialDate;
+                                                      if (parent
+                                                              .currentEventData
+                                                              .value
+                                                              .begin !=
+                                                          null) {
+                                                        initialDate = DateTime
+                                                            .fromMillisecondsSinceEpoch(parent
+                                                                .currentEventData
+                                                                .value
+                                                                .begin!
+                                                                .millisecondsSinceEpoch);
+                                                      }
+                                                      DateTime? picked_date =
+                                                          await cw.pick_date(
+                                                              context,
+                                                              initialDate);
+                                                      if (picked_date != null) {
+                                                        parent.currentEventData
+                                                                .value.begin =
+                                                            Timestamp.fromDate(
+                                                                picked_date);
+                                                        parent.currentEventData
+                                                                .value.eventid =
+                                                            craftEventIDFromHostAndBegin(
+                                                                parent
+                                                                        .currentEventData
+                                                                        .value
+                                                                        .templateHostID ??
+                                                                    parent
+                                                                        .currentEventData
+                                                                        .value
+                                                                        .hostreference
+                                                                        ?.id ??
+                                                                    "",
+                                                                picked_date);
+                                                        pprint(parent
+                                                            .currentEventData
+                                                            .value
+                                                            .begin);
+                                                        parent.currentEventData
+                                                            .notifyListeners();
+                                                      }
+                                                    },
+                                                    child: const Text(
+                                                      "Pick begin date",
+                                                      style: cl.df,
+                                                    )),
+                                                TextButton(
+                                                    onPressed: () async {
+                                                      TimeOfDay? initialTime;
+                                                      if (parent
+                                                              .currentEventData
+                                                              .value
+                                                              .begin !=
+                                                          null) {
+                                                        initialTime = TimeOfDay
+                                                            .fromDateTime(DateTime
+                                                                .fromMillisecondsSinceEpoch(parent
+                                                                    .currentEventData
+                                                                    .value
+                                                                    .begin!
+                                                                    .millisecondsSinceEpoch));
+                                                      } else {
+                                                        initialTime = TimeOfDay(
+                                                            hour: 22,
+                                                            minute: 0);
+                                                      }
+
+                                                      TimeOfDay? picked_time =
+                                                          await cw.pick_time(
+                                                              context,
+                                                              initialTime);
+                                                      if (picked_time != null) {
+                                                        DateTime currentTime = parent
+                                                                    .currentEventData
+                                                                    .value
+                                                                    .begin ==
+                                                                null
+                                                            ? DateTime.now()
+                                                            : parent
+                                                                .currentEventData
+                                                                .value
+                                                                .begin!
+                                                                .toDate();
+                                                        parent.currentEventData
+                                                                .value.begin =
+                                                            Timestamp.fromDate(
+                                                                DateTime(
+                                                                    currentTime
+                                                                        .year,
+                                                                    currentTime
+                                                                        .month,
+                                                                    currentTime
+                                                                        .day,
+                                                                    picked_time
+                                                                        .hour,
+                                                                    picked_time
+                                                                        .minute));
+                                                        parent.currentEventData
+                                                            .notifyListeners();
+                                                      }
+                                                    },
+                                                    child: const Text(
+                                                      "Pick begin time",
+                                                      style: cl.df,
+                                                    ))
+                                              ],
+                                            )),
+                                        const VerticalDivider(
+                                          color: Color.fromARGB(
+                                              255, 232, 232, 232),
+                                          thickness: 2,
+                                        ),
+                                        Card(
+                                            color: cl.lighterGrey,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                            MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .height) /
+                                                        75,
+                                                side: const BorderSide(
+                                                  width: 1,
+                                                  color: Color.fromARGB(
+                                                      26, 255, 255, 255),
+                                                )),
+                                            child: Column(
+                                              children: [
+                                                TextButton(
+                                                    onPressed: () async {
+                                                      DateTime? initialDate;
+                                                      if (parent
+                                                              .currentEventData
+                                                              .value
+                                                              .end !=
+                                                          null) {
+                                                        initialDate = DateTime
+                                                            .fromMillisecondsSinceEpoch(parent
+                                                                .currentEventData
+                                                                .value
+                                                                .end!
+                                                                .millisecondsSinceEpoch);
+                                                      }
+
+                                                      DateTime? picked_date =
+                                                          await cw.pick_date(
+                                                              context,
+                                                              initialDate);
+                                                      if (picked_date != null) {
+                                                        parent.currentEventData
+                                                                .value.end =
+                                                            Timestamp.fromDate(
+                                                                picked_date);
+                                                        pprint(timestamp2readablestamp(
+                                                            parent
+                                                                .currentEventData
+                                                                .value
+                                                                .end));
+                                                        parent.currentEventData
+                                                            .notifyListeners();
+                                                      }
+                                                    },
+                                                    child: const Text(
+                                                      "Pick end date",
+                                                      style: cl.df,
+                                                    )),
+                                                TextButton(
+                                                    onPressed: () async {
+                                                      TimeOfDay initialTime = TimeOfDay
+                                                          .fromDateTime(DateTime
+                                                              .fromMillisecondsSinceEpoch(parent
+                                                                  .currentEventData
+                                                                  .value
+                                                                  .begin!
+                                                                  .millisecondsSinceEpoch));
+
+                                                      TimeOfDay? picked_time =
+                                                          await cw.pick_time(
+                                                              context,
+                                                              initialTime);
+                                                      if (picked_time != null) {
+                                                        DateTime currentTime = parent
+                                                                    .currentEventData
+                                                                    .value
+                                                                    .end ==
+                                                                null
+                                                            ? DateTime.now()
+                                                            : parent
+                                                                .currentEventData
+                                                                .value
+                                                                .end!
+                                                                .toDate();
+                                                        parent.currentEventData
+                                                                .value.end =
+                                                            Timestamp.fromDate(
+                                                                DateTime(
+                                                                    currentTime
+                                                                        .year,
+                                                                    currentTime
+                                                                        .month,
+                                                                    currentTime
+                                                                        .day,
+                                                                    picked_time
+                                                                        .hour,
+                                                                    picked_time
+                                                                        .minute));
+                                                        parent.currentEventData
+                                                            .notifyListeners();
+                                                      }
+                                                    },
+                                                    child: const Text(
+                                                      "Pick end time",
+                                                      style: cl.df,
+                                                    ))
+                                              ],
+                                            )),
+                                      ],
+                                    ),
+                                    ValueListenableBuilder(
+                                      valueListenable: parent.currentEventData,
+                                      builder: (context, eventData, child) {
+                                        return eventData.begin == null &&
+                                                eventData.end == null
+                                            ? Text(
+                                                "If you dont provide at least 'end date', your event will not be visible in default calendar",
+                                                style: TextStyle(
+                                                    color: Colors.grey))
+                                            : Text(
+                                                "Begins at: ${timestamp2readablestamp(eventData.begin)}",
+                                                style: cl.df,
+                                              );
+                                        ;
+                                      },
+                                    ),
+                                    ValueListenableBuilder(
+                                      valueListenable: parent.currentEventData,
+                                      builder: (context, event, child) {
+                                        return event.end == null
+                                            ? SizedBox(height: 0)
+                                            : Text(
+                                                "Ends at: ${timestamp2readablestamp(event.end)}",
+                                                style: cl.df,
+                                              );
+                                      },
+                                    )
+                                  ],
                                 ),
-                              ),
-                        parent.eventIDToBeEdited == null
-                            ? SizedBox(height: 0)
-                            : Text(
-                                eventidvalidatedstring ?? "",
-                                style: const TextStyle(color: Colors.grey),
-                              )
-                      ]));
-                }),
-            ValueListenableBuilder(
-                valueListenable: parent.currentEventData,
-                builder: ((context, ev, child) {
-                  bool eventtitleIsEmpty =
-                      ev.title == null || ev.title!.isEmpty;
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                        vertical: MediaQuery.of(context).size.height / 100,
-                        horizontal: MediaQuery.of(context).size.width / 50),
-                    child: Column(
-                      children: [
+                              );
+                            })),
                         TextFormField(
-                          initialValue: parent.currentEventData.value.title,
+                          initialValue:
+                              parent.currentEventData.value.locationname,
+                          onChanged: (value) {
+                            parent.currentEventData.value.locationname = value;
+                          },
+                          style: cl.df,
+                          cursorColor: Colors.white,
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.location_on, color: Colors.white),
+                            labelText: "Event Location",
+                            labelStyle: cl.df,
+                            hintText: "Describe where to find your event",
+                            hintStyle: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                        TextFormField(
+                          initialValue:
+                              parent.currentEventData.value.minAge.toString(),
                           onChanged: (value) async {
-                            parent.currentEventData.value.title = value;
+                            parent.currentEventData.value.minAge =
+                                int.parse(value);
+                          },
+                          style: cl.df,
+                          cursorColor: Colors.white,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            icon: Icon(Icons.warning, color: Colors.white),
+                            labelText: "Min. Age",
+                            labelStyle: cl.df,
+                            hintText: "Put in the required age for your event!",
+                            hintStyle: const TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                        TextFormField(
+                          initialValue: parent.currentEventData.value.genre,
+                          onChanged: (value) async {
+                            parent.currentEventData.value.genre = value;
                           },
                           style: cl.df,
                           cursorColor: Colors.white,
                           decoration: InputDecoration(
-                            icon: Icon(
-                                eventtitleIsEmpty
-                                    ? Icons.highlight_off
-                                    : Icons.check_circle_outline,
-                                color: Colors.white),
-                            labelText: "Event Title",
+                            icon: Icon(Icons.music_note, color: Colors.white),
+                            labelText: "Event Genre",
                             labelStyle: cl.df,
-                            hintText: "Give your event a title!",
+                            hintText: "Describe the genre of your Event!",
                             hintStyle: const TextStyle(color: Colors.grey),
                           ),
                         ),
-                        Text(
-                          eventtitleIsEmpty ? "Can't be empty" : "",
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                        const Divider(color: Color.fromARGB(255, 66, 66, 66)),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Card(
-                                color: cl.lighterGrey,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                            MediaQuery.of(context)
-                                                .size
-                                                .height) /
-                                        75,
-                                    side: const BorderSide(
-                                      width: 1,
-                                      color: Color.fromARGB(26, 255, 255, 255),
-                                    )),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    TextButton(
-                                        onPressed: () async {
-                                          DateTime? initialDate;
-                                          if (parent.currentEventData.value
-                                                  .begin !=
-                                              null) {
-                                            initialDate = DateTime
-                                                .fromMillisecondsSinceEpoch(
-                                                    parent
-                                                        .currentEventData
-                                                        .value
-                                                        .begin!
-                                                        .millisecondsSinceEpoch);
-                                          }
-                                          DateTime? picked_date = await cw
-                                              .pick_date(context, initialDate);
-                                          if (picked_date != null) {
-                                            parent.currentEventData.value
-                                                    .begin =
-                                                Timestamp.fromDate(picked_date);
-                                            pprint(parent
-                                                .currentEventData.value.begin);
-                                            parent.currentEventData
-                                                .notifyListeners();
-                                          }
-                                        },
-                                        child: const Text(
-                                          "Pick begin date",
-                                          style: cl.df,
-                                        )),
-                                    TextButton(
-                                        onPressed: () async {
-                                          TimeOfDay? initialTime;
-                                          if (parent.currentEventData.value
-                                                  .begin !=
-                                              null) {
-                                            initialTime =
-                                                TimeOfDay.fromDateTime(DateTime
-                                                    .fromMillisecondsSinceEpoch(
-                                                        parent
-                                                            .currentEventData
-                                                            .value
-                                                            .begin!
-                                                            .millisecondsSinceEpoch));
-                                          } else {
-                                            initialTime =
-                                                TimeOfDay(hour: 22, minute: 0);
-                                          }
-
-                                          TimeOfDay? picked_time = await cw
-                                              .pick_time(context, initialTime);
-                                          if (picked_time != null) {
-                                            DateTime currentTime = parent
-                                                        .currentEventData
-                                                        .value
-                                                        .begin ==
-                                                    null
-                                                ? DateTime.now()
-                                                : parent.currentEventData.value
-                                                    .begin!
-                                                    .toDate();
-                                            parent.currentEventData.value
-                                                    .begin =
-                                                Timestamp.fromDate(DateTime(
-                                                    currentTime.year,
-                                                    currentTime.month,
-                                                    currentTime.day,
-                                                    picked_time.hour,
-                                                    picked_time.minute));
-                                            parent.currentEventData
-                                                .notifyListeners();
-                                          }
-                                        },
-                                        child: const Text(
-                                          "Pick begin time",
-                                          style: cl.df,
-                                        ))
-                                  ],
-                                )),
-                            const VerticalDivider(
-                              color: Color.fromARGB(255, 232, 232, 232),
-                              thickness: 2,
-                            ),
-                            Card(
-                                color: cl.lighterGrey,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                            MediaQuery.of(context)
-                                                .size
-                                                .height) /
-                                        75,
-                                    side: const BorderSide(
-                                      width: 1,
-                                      color: Color.fromARGB(26, 255, 255, 255),
-                                    )),
-                                child: Column(
-                                  children: [
-                                    TextButton(
-                                        onPressed: () async {
-                                          DateTime? initialDate;
-                                          if (parent
-                                                  .currentEventData.value.end !=
-                                              null) {
-                                            initialDate = DateTime
-                                                .fromMillisecondsSinceEpoch(
-                                                    parent
-                                                        .currentEventData
-                                                        .value
-                                                        .end!
-                                                        .millisecondsSinceEpoch);
-                                          }
-
-                                          DateTime? picked_date = await cw
-                                              .pick_date(context, initialDate);
-                                          if (picked_date != null) {
-                                            parent.currentEventData.value.end =
-                                                Timestamp.fromDate(picked_date);
-                                            pprint(timestamp2readablestamp(
-                                                parent.currentEventData.value
-                                                    .end));
-                                            parent.currentEventData
-                                                .notifyListeners();
-                                          }
-                                        },
-                                        child: const Text(
-                                          "Pick end date",
-                                          style: cl.df,
-                                        )),
-                                    TextButton(
-                                        onPressed: () async {
-                                          TimeOfDay initialTime =
-                                              TimeOfDay.fromDateTime(DateTime
-                                                  .fromMillisecondsSinceEpoch(parent
-                                                      .currentEventData
-                                                      .value
-                                                      .begin!
-                                                      .millisecondsSinceEpoch));
-
-                                          TimeOfDay? picked_time = await cw
-                                              .pick_time(context, initialTime);
-                                          if (picked_time != null) {
-                                            DateTime currentTime = parent
-                                                        .currentEventData
-                                                        .value
-                                                        .end ==
-                                                    null
-                                                ? DateTime.now()
-                                                : parent
-                                                    .currentEventData.value.end!
-                                                    .toDate();
-                                            parent.currentEventData.value.end =
-                                                Timestamp.fromDate(DateTime(
-                                                    currentTime.year,
-                                                    currentTime.month,
-                                                    currentTime.day,
-                                                    picked_time.hour,
-                                                    picked_time.minute));
-                                            parent.currentEventData
-                                                .notifyListeners();
-                                          }
-                                        },
-                                        child: const Text(
-                                          "Pick end time",
-                                          style: cl.df,
-                                        ))
-                                  ],
-                                )),
-                          ],
-                        ),
-                        ValueListenableBuilder(
-                          valueListenable: parent.currentEventData,
-                          builder: (context, eventData, child) {
-                            return eventData.begin == null &&
-                                    eventData.end == null
-                                ? Text(
-                                    "If you dont provide at least 'end date', your event will not be visible in default calendar",
-                                    style: TextStyle(color: Colors.grey))
-                                : Text(
-                                    "Begins at: ${timestamp2readablestamp(eventData.begin)}",
-                                    style: cl.df,
-                                  );
-                            ;
-                          },
-                        ),
-                        ValueListenableBuilder(
-                          valueListenable: parent.currentEventData,
-                          builder: (context, event, child) {
-                            return event.end == null
-                                ? SizedBox(height: 0)
-                                : Text(
-                                    "Ends at: ${timestamp2readablestamp(event.end)}",
-                                    style: cl.df,
-                                  );
-                          },
-                        )
                       ],
-                    ),
-                  );
-                })),
-            TextFormField(
-              initialValue: parent.currentEventData.value.locationname,
-              onChanged: (value) {
-                parent.currentEventData.value.locationname = value;
-              },
-              style: cl.df,
-              cursorColor: Colors.white,
-              decoration: const InputDecoration(
-                icon: Icon(Icons.location_on, color: Colors.white),
-                labelText: "Event Location",
-                labelStyle: cl.df,
-                hintText: "Describe where to find your event",
-                hintStyle: TextStyle(color: Colors.grey),
-              ),
-            ),
-            TextFormField(
-              initialValue: parent.currentEventData.value.minAge.toString(),
-              onChanged: (value) async {
-                parent.currentEventData.value.minAge = int.parse(value);
-              },
-              style: cl.df,
-              cursorColor: Colors.white,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                icon: Icon(Icons.warning, color: Colors.white),
-                labelText: "Min. Age",
-                labelStyle: cl.df,
-                hintText: "Put in the required age for your event!",
-                hintStyle: const TextStyle(color: Colors.grey),
-              ),
-            ),
-            TextFormField(
-              initialValue: parent.currentEventData.value.genre,
-              onChanged: (value) async {
-                parent.currentEventData.value.genre = value;
-              },
-              style: cl.df,
-              cursorColor: Colors.white,
-              decoration: InputDecoration(
-                icon: Icon(Icons.music_note, color: Colors.white),
-                labelText: "Event Genre",
-                labelStyle: cl.df,
-                hintText: "Describe the genre of your Event!",
-                hintStyle: const TextStyle(color: Colors.grey),
-              ),
-            ),
-          ],
-        ));
+                    ));
+              })
+        ]));
   }
 }
 
@@ -1027,8 +1074,7 @@ class LinkListCard extends StatelessWidget {
         }
       },
       tileColor: Colors.black,
-      title: Center(
-          child: Text(link.title, style: cl.df)),
+      title: Center(child: Text(link.title, style: cl.df)),
     );
   }
 }
@@ -1095,8 +1141,7 @@ class LinkCreateDialog extends StatelessWidget {
                   dbc.mapFromLinkList(formerlist);
               parent.currentEventData.notifyListeners();
             },
-            child: Text("Add link to event",
-                style: cl.df))
+            child: Text("Add link to event", style: cl.df))
       ],
     );
   }
@@ -1118,8 +1163,7 @@ class LinkEditDialog extends StatelessWidget {
             initialValue: link.title,
             autofocus: true,
             decoration: InputDecoration(
-                hintText: "Label, e.g 'Instagram'",
-                hintStyle: cl.df),
+                hintText: "Label, e.g 'Instagram'", hintStyle: cl.df),
             onChanged: (value) {
               link.title = value;
             },
@@ -1128,8 +1172,7 @@ class LinkEditDialog extends StatelessWidget {
           TextFormField(
             initialValue: link.url,
             autofocus: true,
-            decoration: InputDecoration(
-                hintText: "URL", hintStyle: cl.df),
+            decoration: InputDecoration(hintText: "URL", hintStyle: cl.df),
             onChanged: (value) {
               link.url = value;
             },
@@ -1146,8 +1189,7 @@ class LinkEditDialog extends StatelessWidget {
               parent.currentEventData.value.links =
                   dbc.mapFromLinkList(editLinkInList(formerlist, link));
             },
-            child: Text("Save changes to Link",
-                style: cl.df))
+            child: Text("Save changes to Link", style: cl.df))
       ],
     );
   }
@@ -1200,9 +1242,7 @@ class UploadEventDialog extends StatelessWidget {
         builder: (context, uploading, foo) {
           return AlertDialog(
             backgroundColor: cl.darkerGrey,
-            title: uploading
-                ? null
-                : Text("Finished?", style: cl.df),
+            title: uploading ? null : Text("Finished?", style: cl.df),
             content: uploading
                 ? Center(child: loader)
                 : Text(
@@ -1212,8 +1252,7 @@ class UploadEventDialog extends StatelessWidget {
                 ? null
                 : [
                     TextButton(
-                      child: Text("Discard",
-                          style: cl.df),
+                      child: Text("Discard", style: cl.df),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -1225,14 +1264,12 @@ class UploadEventDialog extends StatelessWidget {
                           newEventData.status = EventStatus.draft.name;
                           uploadEvent(newEventData, context);
                         },
-                        child: Text("Save(TBA)",
-                            style: cl.df)),
+                        child: Text("Save(TBA)", style: cl.df)),
                     TextButton(
                         onPressed: () {
                           uploadEvent(parent.currentEventData.value, context);
                         },
-                        child: Text("Publish",
-                            style: cl.df)),
+                        child: Text("Publish", style: cl.df)),
                   ],
           );
         });
@@ -1248,8 +1285,7 @@ class UploadingErrorDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: cl.darkerGrey,
-      title:
-          Text("Couldn't upload Event", style: cl.df),
+      title: Text("Couldn't upload Event", style: cl.df),
       content: FutureBuilder(
           future: parent.validateUpload(),
           builder: (context, snapshot) {
