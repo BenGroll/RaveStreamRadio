@@ -147,7 +147,7 @@ class EventCreationScreen extends StatelessWidget {
     if (content.isEmpty) {
       return "EventID: Can't be empty.";
     }
-    String allowed = "abcdefghijklmnopqrstuvwxyz0123456789";
+    String allowed = "abcdefghijklmnopqrstuvwxyz0123456789_";
     bool notallowed = false;
     content.characters.forEach((element) {
       if (!allowed.contains(element)) {
@@ -155,7 +155,7 @@ class EventCreationScreen extends StatelessWidget {
       }
     });
     if (notallowed) {
-      return "EventID: Only a-z and 0-9 allowed.";
+      return "EventID: Only a-z,0-9 and _ allowed.";
     }
     return null;
   }
@@ -1215,8 +1215,13 @@ class UploadEventDialog extends StatelessWidget {
     }
     await db.uploadEventToDatabase(event);
     await Future.delayed(Duration(seconds: 2));
+    parent.is_awaiting_upload.value = false;
+    dbc.User? user = currently_loggedin_as.value;
+
     if (kIsWeb) {
-      Beamer.of(context).beamToNamed("/events");
+      Navigator.of(context).pop();
+      Navigator.of(context).pop();
+      //Beamer.of(context).beamToNamed("/events");
     } else {
       //
       Navigator.of(context).pop();
@@ -1229,8 +1234,8 @@ class UploadEventDialog extends StatelessWidget {
           : ScaffoldMessenger.of(context)
               .showSnackBar(cw.hintSnackBar("Event created successfully!"));
     }
+    currently_loggedin_as.value = user;
     currently_selected_screen.notifyListeners();
-    parent.is_awaiting_upload.value = false;
   }
 
   EventCreationScreen parent;

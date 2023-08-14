@@ -217,8 +217,7 @@ class NavBar extends StatelessWidget {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => FeedbackScreen()));
                 },
-                subtitle: Text("Please tell us what you think!",
-                    style: cl.df),
+                subtitle: Text("Please tell us what you think!", style: cl.df),
                 title: Text(
                     maxLines: 1,
                     "Feedback",
@@ -399,8 +398,7 @@ class ErrorScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(errormessage, style: cl.df),
-            Text("ErrorCode: ${errorcode ?? -1}",
-                style: cl.df)
+            Text("ErrorCode: ${errorcode ?? -1}", style: cl.df)
           ]),
     );
   }
@@ -596,9 +594,7 @@ class EventTable extends StatelessWidget {
                 showEditIcon: editing && allowed_to_edit,
               );
             } else if (event[key] is DocumentReference) {
-              return DataCell(
-                  buildLinkButtonFromRef(
-                      event[key], cl.df),
+              return DataCell(buildLinkButtonFromRef(event[key], cl.df),
                   showEditIcon: editing && allowed_to_edit,
                   onTap: !db.hasPermissionToEditEventObject(
                           dbc.Event.fromMap(event))
@@ -756,8 +752,7 @@ class EventTable extends StatelessWidget {
                           },
                     child: Row(
                       children: [
-                        Text("Show Description",
-                            style: cl.df),
+                        Text("Show Description", style: cl.df),
                         Icon(
                           Icons.open_in_new,
                           color: Color.fromARGB(255, 207, 207, 207),
@@ -1105,9 +1100,7 @@ class LoadingIndicator extends StatelessWidget {
                   child:
                       CircularProgressIndicator(color: color.withOpacity(0.66)),
                 )),
-            if (message != null)
-              Text(message ?? "Loading...",
-                  style: cl.df)
+            if (message != null) Text(message ?? "Loading...", style: cl.df)
           ],
         ),
       ),
@@ -1118,10 +1111,7 @@ class LoadingIndicator extends StatelessWidget {
 class SimpleStringEditDialog extends StatelessWidget {
   ValueNotifier to_notify;
   String? name;
-  SimpleStringEditDialog({
-    required this.to_notify,
-    this.name
-  });
+  SimpleStringEditDialog({required this.to_notify, this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -1189,8 +1179,7 @@ class LinkEditingDialog extends StatelessWidget {
     int i = 0;
     for (int i = 0; i < links.value.length; i++) {
       widgets.add(ListTile(
-          title:
-              Text(links.value[i].title, style: cl.df),
+          title: Text(links.value[i].title, style: cl.df),
           trailing: Text("$i", style: cl.df),
           onTap: () async {
             int index = i;
@@ -1293,8 +1282,7 @@ class SingleLinkEditDialog extends StatelessWidget {
             autofocus: true,
             style: cl.df,
             decoration: InputDecoration(
-                hintText: "Label, e.g 'Instagram'",
-                hintStyle: cl.df),
+                hintText: "Label, e.g 'Instagram'", hintStyle: cl.df),
             onChanged: (value) {
               titleS = value;
             },
@@ -1304,8 +1292,7 @@ class SingleLinkEditDialog extends StatelessWidget {
             initialValue: urlS,
             autofocus: true,
             style: cl.df,
-            decoration: InputDecoration(
-                hintText: "URL", hintStyle: cl.df),
+            decoration: InputDecoration(hintText: "URL", hintStyle: cl.df),
             onChanged: (value) {
               urlS = value;
             },
@@ -1347,8 +1334,7 @@ class DeleteEventIconButton extends StatelessWidget {
                   builder: (context) {
                     return AlertDialog(
                       backgroundColor: cl.lighterGrey,
-                      title: Text("Are you sure?",
-                          style: cl.df),
+                      title: Text("Are you sure?", style: cl.df),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -1364,8 +1350,7 @@ class DeleteEventIconButton extends StatelessWidget {
                       ),
                       actions: [
                         TextButton(
-                          child: Text("Cancel",
-                              style: cl.df),
+                          child: Text("Cancel", style: cl.df),
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
@@ -1528,8 +1513,7 @@ class EventOverviewpageSideDrawer extends StatelessWidget {
                                       fillColor: cl.lighterGrey,
                                       labelText:
                                           "Tell us more about this report...",
-                                      labelStyle:
-                                          cl.df,
+                                      labelStyle: cl.df,
                                       enabledBorder: OutlineInputBorder(
                                           borderSide:
                                               BorderSide(color: cl.lighterGrey),
@@ -1691,9 +1675,7 @@ void showLoadingDialog(context, [String? task]) {
       context: context,
       builder: (context) => AlertDialog(
             backgroundColor: cl.darkerGrey,
-            title: task != null
-                ? Text(task, style: cl.df)
-                : null,
+            title: task != null ? Text(task, style: cl.df) : null,
             content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [cw.LoadingIndicator(color: Colors.white)]),
@@ -1716,10 +1698,7 @@ void showFeedbackDialog(context, List<String>? messages) {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: messages == null
                   ? []
-                  : messages
-                      .map(
-                          (e) => Text(e, style: cl.df))
-                      .toList(),
+                  : messages.map((e) => Text(e, style: cl.df)).toList(),
             ),
           )));
 }
@@ -1751,8 +1730,7 @@ void showDevFeedbackDialog(context, List<String>? messages) {
                 children: messages == null
                     ? []
                     : messages
-                        .map((e) => SelectableText(e,
-                            style: cl.df))
+                        .map((e) => SelectableText(e, style: cl.df))
                         .toList(),
               ),
             ),
@@ -1814,8 +1792,7 @@ class FeedbackScreen extends StatelessWidget {
                         items: dbc.FeedbackCategory.values
                             .map((e) => DropdownMenuItem(
                                   value: e,
-                                  child: Text(e.name,
-                                      style: cl.df),
+                                  child: Text(e.name, style: cl.df),
                                 ))
                             .toList(),
                         onChanged: (dbc.FeedbackCategory? value) {
@@ -1886,6 +1863,7 @@ class ProfileDrawer extends StatelessWidget {
                     "deviceTokens": FieldValue.arrayRemove([fcmToken])
                   });
                   await Future.delayed(Duration(seconds: 3));
+                  Scaffold.of(context).closeEndDrawer();
                   currently_loggedin_as.value = null;
                   Navigator.of(context).pop();
                 },
@@ -1902,8 +1880,7 @@ class ProfileDrawer extends StatelessWidget {
                       barrierDismissible: true,
                       builder: (context) => AlertDialog(
                             backgroundColor: cl.darkerGrey,
-                            title: Text("Are your sure?",
-                                style: cl.df),
+                            title: Text("Are your sure?", style: cl.df),
                             content: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
@@ -1937,8 +1914,7 @@ class ProfileDrawer extends StatelessWidget {
                                         hintSnackBar(
                                             "Canceled account deletion."));
                                   },
-                                  child: Text("Dismiss",
-                                      style: cl.df)),
+                                  child: Text("Dismiss", style: cl.df)),
                               TextButton(
                                   onPressed: () async {
                                     cw.showLoadingDialog(context);
@@ -1976,11 +1952,9 @@ MaterialBanner NotificationBanner(RemoteMessage message, BuildContext context) {
   return MaterialBanner(
       backgroundColor: cl.lighterGrey,
       content: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(message.notification?.title ?? "Notification",
-            style: cl.df),
+        Text(message.notification?.title ?? "Notification", style: cl.df),
         if (message.notification?.body != null)
-          Text(message.notification?.body ?? "",
-              style: cl.df)
+          Text(message.notification?.body ?? "", style: cl.df)
       ]),
       actions: [
         TextButton(

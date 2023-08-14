@@ -554,10 +554,10 @@ class User {
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
-    //pprint(map);
+    pprint("Usermap: $map");
     return User(
       username: map['username'] as String,
-      lastEditedInMs: map['lastEditedInMs'] as int,
+      lastEditedInMs: map.containsKey("lastEditedInMs") && map["lastEditedInMs"] != null ? map['lastEditedInMs'] as int : 0,
       alias: map['alias'] as String?,
       password: map['password'] as String,
       description: map['description'] as String?,
@@ -565,9 +565,9 @@ class User {
       profile_picture: map['profile_picture'] as String?,
       path: map["path"] as String,
       topics: map.containsKey("topics") ? forceStringType(map["topics"]) : [],
-      permissions: forceStringType(map['permissions']),
-      chats: forceStringType(map['chats']),
-      deviceTokens: forceStringType(map['deviceTokens']),
+      permissions: map.containsKey("permissions") ? forceStringType(map['permissions']) : [],
+      chats: map.containsKey("chats") ? forceStringType(map['chats']) : [],
+      deviceTokens: map.containsKey("deviceTokens") ? forceStringType(map['deviceTokens']) : [],
       events: forceDocumentReferenceType(map['events']),
       joined_groups: forceDocumentReferenceType(map['joined_groups']),
       saved_events: forceDocumentReferenceType(map['saved_events']),

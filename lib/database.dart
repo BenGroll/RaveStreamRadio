@@ -107,7 +107,8 @@ Future uploadEventToDatabase(dbc.Event event) async {
         action: LogEntryAction.add));
   }
   futures.add(addEventToIndexFile(event));
-  return await Future.wait(futures);
+  await Future.wait(futures);
+  return;
 }
 
 /// Adds demoevents, demousers and demogroups to current branch.
@@ -233,10 +234,10 @@ Future<int> getEventCount() async {
 ///
 /// Query size can be specified by the [queryLimit] param
 Future<List<dbc.Event>> getEvents() async {
-  if (currently_loggedin_as.value == null) return [];
   Query query = db.collection("${branchPrefix}events");
   QuerySnapshot snapshot = await query.get();
   List<Map<String, dynamic>>? maplist = querySnapshotToMapList(snapshot);
+  print("Maplist: ${maplist.length}");
   List<dbc.Event> events = [];
   maplist.forEach((element) {
     events.add(dbc.Event.fromMap(element));
@@ -307,17 +308,13 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile(BuildContext context) async {
               },
               child: AlertDialog(
                 backgroundColor: cl.darkerGrey,
-                title: Center(
-                    child: Text("Outdated App!",
-                        style: cl.df)),
+                title: Center(child: Text("Outdated App!", style: cl.df)),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text("Your app isn't the newest version.",
-                        style: cl.df),
-                    Text("You have to update it.",
-                        style: cl.df),
+                    Text("Your app isn't the newest version.", style: cl.df),
+                    Text("You have to update it.", style: cl.df),
                     TextButton(
                         onPressed: () async {
                           if (Platform.isAndroid) {
@@ -358,10 +355,11 @@ Future<List<dbc.Event>> fetchEventsFromIndexFile(BuildContext context) async {
     print(
         "@db Eventcount in db and index file doesnt match.\nPerforming self-diagnostic fix.");
     List<dbc.Event> events = await getEvents();
+    print("Fetched Events: ${events.length}");
     String jsonindexString =
         eventMapToJson(eventListToJsonCompatibleMap(events));
     await writeEventIndexes(jsonindexString.dbsafe);
-    await Future.delayed(Duration(seconds: 5));
+    await Future.delayed(Duration(seconds: 1));
     return await fetchEventsFromIndexFile(context);
   }
   return eventList;
@@ -1219,9 +1217,10 @@ Future uploadProfilePicture(String username, File file) async {
       .child("${username}")
       .putFile(file, SettableMetadata(contentType: 'image/${fileExtension}'));
   String dldURL = await ref.child("${username}").getDownloadURL();
-  await db
-      .doc("${branchPrefix}users/$username")
-      .update({"profile_picture": dldURL, "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch});
+  await db.doc("${branchPrefix}users/$username").update({
+    "profile_picture": dldURL,
+    "lastEditedInMs": Timestamp.now().millisecondsSinceEpoch
+  });
   return dldURL;
 }
 
@@ -1582,8 +1581,7 @@ Future<void> addPermissionToUser(
   await sync([
     db.doc("${branchPrefix}users/$username").update({
       "permissions": FieldValue.arrayUnion([permit.name]),
-      "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch
-      
+      "lastEditedInMs": Timestamp.now().millisecondsSinceEpoch
     }),
     addUserToExistingTopic("role_${permit.name}", username)
   ]);
@@ -1603,7 +1601,7 @@ Future<Map<String, dynamic>?> removeUserFromExistingTopic(
         .putString(jsonEncode({"users": currentUsers})),
     db.doc("${branchPrefix}user/$username").update({
       "topics": FieldValue.arrayRemove([topicname]),
-      "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch
+      "lastEditedInMs": Timestamp.now().millisecondsSinceEpoch
     })
   ]);
   return currentUsers;
@@ -1615,7 +1613,7 @@ Future<void> removePermissionFromUser(
   List<Future> futures = [];
   futures.add(db.doc("${branchPrefix}users/$username").update({
     "permissions": FieldValue.arrayRemove([permit.name]),
-    "lastEditedInMs" : Timestamp.now().millisecondsSinceEpoch
+    "lastEditedInMs": Timestamp.now().millisecondsSinceEpoch
   }));
   futures.add(removeUserFromExistingTopic("role_${permit.name}", username));
   await Future.wait(futures);

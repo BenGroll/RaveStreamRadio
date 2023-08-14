@@ -752,12 +752,26 @@ class DevSettingsScreen extends StatelessWidget {
                         List<DocumentReference> refs =
                             allDocs.docs.map((doc) => doc.reference).toList();
                         await sync(refs.map((e) {
-                          return e.update({fieldname: null});
+                          return e.update({fieldname.value: null});
                         }).toList());
                         showDevFeedbackDialog(context, ["Added Field"]);
                       },
                       child: Text(
                           "Add field to all documents of a collection (value: null)")),
+                   ElevatedButton(
+                      onPressed: () async {
+                        QuerySnapshot allDocs = await db.db
+                            .collection("${branchPrefix}users")
+                            .get();
+                        List<DocumentReference> refs =
+                            allDocs.docs.map((doc) => doc.reference).toList();
+                        await sync(refs.map((e) {
+                          return e.update({"lastEditedInMs": Timestamp.fromDate(DateTime.now()).millisecondsSinceEpoch});
+                        }).toList());
+                        showDevFeedbackDialog(context, ["Added Field"]);
+                      },
+                      child: Text(
+                          "Set lastEditedInMs to all documents of users (value: current)")),
                 ],
               ),
             ),
